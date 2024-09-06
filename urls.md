@@ -1,26 +1,26 @@
-# URL Generation
+# URL 生成
 
-- [Introduction](#introduction)
-- [The Basics](#the-basics)
-    - [Generating URLs](#generating-urls)
-    - [Accessing the Current URL](#accessing-the-current-url)
-- [URLs for Named Routes](#urls-for-named-routes)
-    - [Signed URLs](#signed-urls)
-- [URLs for Controller Actions](#urls-for-controller-actions)
-- [Default Values](#default-values)
+- [簡介](#introduction)
+- [基礎知識](#the-basics)
+    - [生成 URL](#generating-urls)
+    - [存取目前 URL](#accessing-the-current-url)
+- [具名路由的 URL](#urls-for-named-routes)
+    - [簽署 URL](#signed-urls)
+- [控制器行為的 URL](#urls-for-controller-actions)
+- [預設值](#default-values)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel provides several helpers to assist you in generating URLs for your application. These helpers are primarily helpful when building links in your templates and API responses, or when generating redirect responses to another part of your application.
+Laravel 提供了幾個輔助函式，可協助您為應用程式生成 URL。這些輔助函式在建立模板中的連結和 API 回應時非常有用，或者在將重新導向回應生成到應用程式的其他部分時。
 
 <a name="the-basics"></a>
-## The Basics
+## 基礎知識
 
 <a name="generating-urls"></a>
-### Generating URLs
+### 生成 URL
 
-The `url` helper may be used to generate arbitrary URLs for your application. The generated URL will automatically use the scheme (HTTP or HTTPS) and host from the current request being handled by the application:
+`url` 輔助函式可用於為您的應用程式生成任意 URL。生成的 URL 將自動使用應用程式處理的目前請求中的方案（HTTP 或 HTTPS）和主機：
 
     $post = App\Models\Post::find(1);
 
@@ -29,41 +29,42 @@ The `url` helper may be used to generate arbitrary URLs for your application. Th
     // http://example.com/posts/1
 
 <a name="accessing-the-current-url"></a>
-### Accessing the Current URL
+### 存取目前 URL
 
-If no path is provided to the `url` helper, an `Illuminate\Routing\UrlGenerator` instance is returned, allowing you to access information about the current URL:
+如果未提供路徑給 `url` 輔助函式，將返回一個 `Illuminate\Routing\UrlGenerator` 實例，讓您可以存取有關目前 URL 的資訊：
 
-    // Get the current URL without the query string...
+    // 取得不包含查詢字串的目前 URL...
     echo url()->current();
 
-    // Get the current URL including the query string...
+    // 取得包含查詢字串的目前 URL...
     echo url()->full();
 
-    // Get the full URL for the previous request...
+    // 取得上一個請求的完整 URL...
     echo url()->previous();
 
-Each of these methods may also be accessed via the `URL` [facade](/docs/{{version}}/facades):
+這些方法也可以透過 `URL` [Facades](/docs/{{version}}/facades) 來存取：
 
     use Illuminate\Support\Facades\URL;
 
     echo URL::current();
 
 <a name="urls-for-named-routes"></a>
-## URLs for Named Routes
+## 具名路由的 URL
 
-The `route` helper may be used to generate URLs to [named routes](/docs/{{version}}/routing#named-routes). Named routes allow you to generate URLs without being coupled to the actual URL defined on the route. Therefore, if the route's URL changes, no changes need to be made to your calls to the `route` function. For example, imagine your application contains a route defined like the following:
+`route` 輔助函式可用於生成至[具名路由](/docs/{{version}}/routing#named-routes)的 URL。具名路由允許您生成 URL 而不與路由上實際定義的 URL 綁定。因此，如果路由的 URL 變更，則不需要修改對 `route` 函式的呼叫。例如，假設您的應用程式包含如下所示的路由定義：
 
+```markdown
     Route::get('/post/{post}', function (Post $post) {
         // ...
     })->name('post.show');
 
-To generate a URL to this route, you may use the `route` helper like so:
+要生成到這個路由的 URL，您可以使用 `route` 輔助器，如下所示：
 
     echo route('post.show', ['post' => 1]);
 
     // http://example.com/post/1
 
-Of course, the `route` helper may also be used to generate URLs for routes with multiple parameters:
+當然，`route` 輔助器也可用於生成具有多個參數的路由的 URL：
 
     Route::get('/post/{post}/comment/{comment}', function (Post $post, Comment $comment) {
         // ...
@@ -73,172 +74,197 @@ Of course, the `route` helper may also be used to generate URLs for routes with 
 
     // http://example.com/post/1/comment/3
 
-Any additional array elements that do not correspond to the route's definition parameters will be added to the URL's query string:
+任何額外的陣列元素，如果不對應路由的定義參數，將被添加到 URL 的查詢字串中：
 
     echo route('post.show', ['post' => 1, 'search' => 'rocket']);
 
     // http://example.com/post/1?search=rocket
 
 <a name="eloquent-models"></a>
-#### Eloquent Models
+#### Eloquent 模型
 
-You will often be generating URLs using the route key (typically the primary key) of [Eloquent models](/docs/{{version}}/eloquent). For this reason, you may pass Eloquent models as parameter values. The `route` helper will automatically extract the model's route key:
+通常，您將使用 [Eloquent 模型](/docs/{{version}}/eloquent) 的路由鍵（通常是主鍵）來生成 URL。因此，您可以將 Eloquent 模型作為參數值傳遞。`route` 輔助器將自動提取模型的路由鍵：
 
     echo route('post.show', ['post' => $post]);
 
 <a name="signed-urls"></a>
-### Signed URLs
+### 簽名 URL
 
-Laravel allows you to easily create "signed" URLs to named routes. These URLs have a "signature" hash appended to the query string which allows Laravel to verify that the URL has not been modified since it was created. Signed URLs are especially useful for routes that are publicly accessible yet need a layer of protection against URL manipulation.
+Laravel 允許您輕鬆地創建帶有簽名的 URL 來訪問命名路由。這些 URL 具有附加到查詢字串的 "簽名" 雜湊，這使 Laravel 能夠驗證自 URL 創建以來未被修改。簽名 URL 對於需要對抗 URL 操作的公開訪問路由特別有用。
 
-For example, you might use signed URLs to implement a public "unsubscribe" link that is emailed to your customers. To create a signed URL to a named route, use the `signedRoute` method of the `URL` facade:
+例如，您可以使用簽名 URL 來實現一個公開的 "取消訂閱" 鏈接，並將其發送給您的客戶。要創建到命名路由的簽名 URL，請使用 `URL` Facade 的 `signedRoute` 方法：
 
     use Illuminate\Support\Facades\URL;
 
     return URL::signedRoute('unsubscribe', ['user' => 1]);
 
-You may exclude the domain from the signed URL hash by providing the `absolute` argument to the `signedRoute` method:
+您可以通過向 `signedRoute` 方法提供 `absolute` 參數來排除簽名 URL 雜湊中的域：
 
     return URL::signedRoute('unsubscribe', ['user' => 1], absolute: false);
+```
 
-If you would like to generate a temporary signed route URL that expires after a specified amount of time, you may use the `temporarySignedRoute` method. When Laravel validates a temporary signed route URL, it will ensure that the expiration timestamp that is encoded into the signed URL has not elapsed:
+如果您想要生成一個在指定時間後過期的臨時簽名路由 URL，您可以使用 `temporarySignedRoute` 方法。當 Laravel 驗證臨時簽名路由 URL 時，它將確保編碼到簽名 URL 中的過期時間戳未過期：
 
-    use Illuminate\Support\Facades\URL;
+```php
+use Illuminate\Support\Facades\URL;
 
-    return URL::temporarySignedRoute(
-        'unsubscribe', now()->addMinutes(30), ['user' => 1]
-    );
+return URL::temporarySignedRoute(
+    'unsubscribe', now()->addMinutes(30), ['user' => 1]
+);
+```
 
 <a name="validating-signed-route-requests"></a>
-#### Validating Signed Route Requests
+#### 驗證簽名路由請求
 
-To verify that an incoming request has a valid signature, you should call the `hasValidSignature` method on the incoming `Illuminate\Http\Request` instance:
+要驗證傳入請求是否具有有效簽名，您應該在傳入的 `Illuminate\Http\Request` 實例上調用 `hasValidSignature` 方法：
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::get('/unsubscribe/{user}', function (Request $request) {
-        if (! $request->hasValidSignature()) {
-            abort(401);
-        }
-
-        // ...
-    })->name('unsubscribe');
-
-Sometimes, you may need to allow your application's frontend to append data to a signed URL, such as when performing client-side pagination. Therefore, you can specify request query parameters that should be ignored when validating a signed URL using the `hasValidSignatureWhileIgnoring` method. Remember, ignoring parameters allows anyone to modify those parameters on the request:
-
-    if (! $request->hasValidSignatureWhileIgnoring(['page', 'order'])) {
+Route::get('/unsubscribe/{user}', function (Request $request) {
+    if (! $request->hasValidSignature()) {
         abort(401);
     }
 
-Instead of validating signed URLs using the incoming request instance, you may assign the `Illuminate\Routing\Middleware\ValidateSignature` [middleware](/docs/{{version}}/middleware) to the route. If it is not already present, you may assign this middleware an alias in your HTTP kernel's `$middlewareAliases` array:
+    // ...
+})->name('unsubscribe');
+```
 
-    /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used to conveniently assign middleware to routes and groups.
-     *
-     * @var array<string, class-string|string>
-     */
-    protected $middlewareAliases = [
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-    ];
+有時，您可能需要允許應用程式的前端將數據附加到簽名 URL，例如在執行客戶端分頁時。因此，您可以使用 `hasValidSignatureWhileIgnoring` 方法指定應在驗證簽名 URL 時忽略的請求查詢參數。請記住，忽略參數允許任何人修改請求中的這些參數：
 
-Once you have registered the middleware in your kernel, you may attach it to a route. If the incoming request does not have a valid signature, the middleware will automatically return a `403` HTTP response:
+```php
+if (! $request->hasValidSignatureWhileIgnoring(['page', 'order'])) {
+    abort(401);
+}
+```
 
-    Route::post('/unsubscribe/{user}', function (Request $request) {
-        // ...
-    })->name('unsubscribe')->middleware('signed');
+您可以將 `Illuminate\Routing\Middleware\ValidateSignature` [中介層](/docs/{{version}}/middleware) 分配給路由，以代替使用傳入請求實例驗證簽名 URL。如果尚未存在，您可以在 HTTP 核心的 `$middlewareAliases` 陣列中為此中介層指定一個別名：
 
-If your signed URLs do not include the domain in the URL hash, you should provide the `relative` argument to the middleware:
+```php
+/**
+ * 應用程式的中介層別名。
+ *
+ * 別名可用於方便地將中介層分配給路由和群組。
+ *
+ * @var array<string, class-string|string>
+ */
+protected $middlewareAliases = [
+    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+];
+```
 
-    Route::post('/unsubscribe/{user}', function (Request $request) {
-        // ...
-    })->name('unsubscribe')->middleware('signed:relative');
+一旦您在核心中註冊了中介層，您可以將其附加到路由。如果傳入的請求沒有有效的簽名，中介層將自動返回 `403` HTTP 回應：
+
+```php
+Route::post('/unsubscribe/{user}', function (Request $request) {
+    // ...
+})->name('unsubscribe')->middleware('signed');
+```
+
+如果您的簽名 URL 不包含 URL 雜湊中的域名，您應該向中介層提供 `relative` 引數：
+
+```php
+Route::post('/unsubscribe/{user}', function (Request $request) {
+    // ...
+})->name('unsubscribe')->middleware('signed:relative');
+```
 
 <a name="responding-to-invalid-signed-routes"></a>
-#### Responding to Invalid Signed Routes
+#### 回應無效的簽名路由
 
-When someone visits a signed URL that has expired, they will receive a generic error page for the `403` HTTP status code. However, you can customize this behavior by defining a custom "renderable" closure for the `InvalidSignatureException` exception in your exception handler. This closure should return an HTTP response:
+當有人訪問一個已過期的簽名 URL 時，他們將收到一個通用的錯誤頁面，顯示 `403` HTTP 狀態碼。但是，您可以通過在例外處理程序中定義一個自定義的 "renderable" 閉包來自定義此行為，以處理 `InvalidSignatureException` 例外。這個閉包應該返回一個 HTTP 回應：
 
-    use Illuminate\Routing\Exceptions\InvalidSignatureException;
+```php
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
-    {
-        $this->renderable(function (InvalidSignatureException $e) {
-            return response()->view('error.link-expired', [], 403);
-        });
-    }
+/**
+ * 註冊應用程式的例外處理回調。
+ */
+public function register(): void
+{
+    $this->renderable(function (InvalidSignatureException $e) {
+        return response()->view('error.link-expired', [], 403);
+    });
+}
+```
 
 <a name="urls-for-controller-actions"></a>
-## URLs for Controller Actions
+## 控制器行為的 URL
 
-The `action` function generates a URL for the given controller action:
+`action` 函式為給定的控制器行為生成一個 URL：
 
-    use App\Http\Controllers\HomeController;
+```php
+use App\Http\Controllers\HomeController;
 
-    $url = action([HomeController::class, 'index']);
+$url = action([HomeController::class, 'index']);
+```
 
-If the controller method accepts route parameters, you may pass an associative array of route parameters as the second argument to the function:
+如果控制器方法接受路由參數，您可以將路由參數的關聯陣列作為函式的第二個參數傳遞：
 
-    $url = action([UserController::class, 'profile'], ['id' => 1]);
+```php
+$url = action([UserController::class, 'profile'], ['id' => 1]);
+```
 
 <a name="default-values"></a>
-## Default Values
+## 預設值
 
-For some applications, you may wish to specify request-wide default values for certain URL parameters. For example, imagine many of your routes define a `{locale}` parameter:
+對於某些應用程式，您可能希望為某些 URL 參數指定請求範圍的預設值。例如，假設您的許多路由定義了一個 `{locale}` 參數：
 
-    Route::get('/{locale}/posts', function () {
-        // ...
-    })->name('post.index');
+```php
+Route::get('/{locale}/posts', function () {
+    // ...
+})->name('post.index');
+```
 
-It is cumbersome to always pass the `locale` every time you call the `route` helper. So, you may use the `URL::defaults` method to define a default value for this parameter that will always be applied during the current request. You may wish to call this method from a [route middleware](/docs/{{version}}/middleware#assigning-middleware-to-routes) so that you have access to the current request:
+每次調用 `route` 助手時都必須傳遞 `locale` 參數很繁瑣。因此，您可以使用 `URL::defaults` 方法為此參數定義一個默認值，該值將始終應用於當前請求。您可能希望從 [路由中介層](/docs/{{version}}/middleware#assigning-middleware-to-routes) 中調用此方法，以便您可以訪問當前請求：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Closure;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\URL;
-    use Symfony\Component\HttpFoundation\Response;
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use Symfony\Component\HttpFoundation\Response;
 
-    class SetDefaultLocaleForUrls
+class SetDefaultLocaleForUrls
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        /**
-         * Handle an incoming request.
-         *
-         * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-         */
-        public function handle(Request $request, Closure $next): Response
-        {
-            URL::defaults(['locale' => $request->user()->locale]);
+        URL::defaults(['locale' => $request->user()->locale]);
 
-            return $next($request);
-        }
+        return $next($request);
     }
+}
+```
 
-Once the default value for the `locale` parameter has been set, you are no longer required to pass its value when generating URLs via the `route` helper.
+一旦設置了 `locale` 參數的默認值，您在使用 `route` 助手生成 URL 時就不再需要傳遞其值。
 
 <a name="url-defaults-middleware-priority"></a>
-#### URL Defaults and Middleware Priority
+#### URL 默認值和中介層優先級
 
-Setting URL default values can interfere with Laravel's handling of implicit model bindings. Therefore, you should [prioritize your middleware](/docs/{{version}}/middleware#sorting-middleware) that set URL defaults to be executed before Laravel's own `SubstituteBindings` middleware. You can accomplish this by making sure your middleware occurs before the `SubstituteBindings` middleware within the `$middlewarePriority` property of your application's HTTP kernel.
+設置 URL 默認值可能會干擾 Laravel 對隱式模型綁定的處理。因此，您應該將設置 URL 默認值的中介層 [優先於 Laravel 自身的 `SubstituteBindings` 中介層](/docs/{{version}}/middleware#sorting-middleware)。您可以通過確保您的中介層在應用程序的 HTTP 內核的 `$middlewarePriority` 屬性中出現在 `SubstituteBindings` 中介層之前來實現這一點。
 
-The `$middlewarePriority` property is defined in the base `Illuminate\Foundation\Http\Kernel` class. You may copy its definition from that class and overwrite it in your application's HTTP kernel in order to modify it:
+`$middlewarePriority` 屬性定義在基本的 `Illuminate\Foundation\Http\Kernel` 類中。您可以從該類中複製其定義並在應用程序的 HTTP 內核中覆蓋它以進行修改：
 
-    /**
-     * The priority-sorted list of middleware.
-     *
-     * This forces non-global middleware to always be in the given order.
-     *
-     * @var array
-     */
-    protected $middlewarePriority = [
-        // ...
-         \App\Http\Middleware\SetDefaultLocaleForUrls::class,
-         \Illuminate\Routing\Middleware\SubstituteBindings::class,
-         // ...
-    ];
+```php
+/**
+ * The priority-sorted list of middleware.
+ *
+ * This forces non-global middleware to always be in the given order.
+ *
+ * @var array
+ */
+protected $middlewarePriority = [
+    // ...
+     \App\Http\Middleware\SetDefaultLocaleForUrls::class,
+     \Illuminate\Routing\Middleware\SubstituteBindings::class,
+     // ...
+];
+```

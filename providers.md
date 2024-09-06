@@ -1,43 +1,43 @@
-# Service Providers
+# 服務提供者
 
-- [Introduction](#introduction)
-- [Writing Service Providers](#writing-service-providers)
-    - [The Register Method](#the-register-method)
-    - [The Boot Method](#the-boot-method)
-- [Registering Providers](#registering-providers)
-- [Deferred Providers](#deferred-providers)
+- [簡介](#introduction)
+- [撰寫服務提供者](#writing-service-providers)
+    - [註冊方法](#the-register-method)
+    - [啟動方法](#the-boot-method)
+- [註冊提供者](#registering-providers)
+- [延遲提供者](#deferred-providers)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Service providers are the central place of all Laravel application bootstrapping. Your own application, as well as all of Laravel's core services, are bootstrapped via service providers.
+服務提供者是所有 Laravel 應用程式啟動的中心地帶。您自己的應用程式以及 Laravel 的所有核心服務都是透過服務提供者進行啟動。
 
-But, what do we mean by "bootstrapped"? In general, we mean **registering** things, including registering service container bindings, event listeners, middleware, and even routes. Service providers are the central place to configure your application.
+但是，當我們說「啟動」時，我們指的是什麼？一般來說，我們指的是**註冊**事物，包括註冊服務容器綁定、事件監聽器、中介層，甚至路由。服務提供者是配置您的應用程式的中心地帶。
 
-If you open the `config/app.php` file included with Laravel, you will see a `providers` array. These are all of the service provider classes that will be loaded for your application. By default, a set of Laravel core service providers are listed in this array. These providers bootstrap the core Laravel components, such as the mailer, queue, cache, and others. Many of these providers are "deferred" providers, meaning they will not be loaded on every request, but only when the services they provide are actually needed.
+如果您打開 Laravel 附帶的 `config/app.php` 檔案，您會看到一個 `providers` 陣列。這些是將為您的應用程式加載的所有服務提供者類別。預設情況下，這個陣列中列出了一組 Laravel 核心服務提供者。這些提供者會啟動核心 Laravel 元件，如郵件寄送器、佇列、快取等。這些提供者中有許多是「延遲」提供者，這意味著它們不會在每個請求中加載，而只有在實際需要它們提供的服務時才會加載。
 
-In this overview, you will learn how to write your own service providers and register them with your Laravel application.
+在這個概觀中，您將學習如何撰寫自己的服務提供者並將它們註冊到您的 Laravel 應用程式中。
 
 > [!NOTE]  
-> If you would like to learn more about how Laravel handles requests and works internally, check out our documentation on the Laravel [request lifecycle](/docs/{{version}}/lifecycle).
+> 如果您想更深入了解 Laravel 如何處理請求並在內部運作，請查看我們有關 Laravel [請求生命週期](/docs/{{version}}/lifecycle) 的文件。
 
 <a name="writing-service-providers"></a>
-## Writing Service Providers
+## 撰寫服務提供者
 
-All service providers extend the `Illuminate\Support\ServiceProvider` class. Most service providers contain a `register` and a `boot` method. Within the `register` method, you should **only bind things into the [service container](/docs/{{version}}/container)**. You should never attempt to register any event listeners, routes, or any other piece of functionality within the `register` method.
+所有服務提供者都擴展自 `Illuminate\Support\ServiceProvider` 類別。大多數服務提供者包含一個 `register` 方法和一個 `boot` 方法。在 `register` 方法中，您應該**僅將事物綁定到[服務容器](/docs/{{version}}/container)**。您絕不應該在 `register` 方法中嘗試註冊任何事件監聽器、路由或任何其他功能片段。
 
-The Artisan CLI can generate a new provider via the `make:provider` command:
+Artisan 指令列介面可以透過 `make:provider` 指令來生成新的提供者：
 
 ```shell
 php artisan make:provider RiakServiceProvider
 ```
 
 <a name="the-register-method"></a>
-### The Register Method
+### 註冊方法
 
-As mentioned previously, within the `register` method, you should only bind things into the [service container](/docs/{{version}}/container). You should never attempt to register any event listeners, routes, or any other piece of functionality within the `register` method. Otherwise, you may accidentally use a service that is provided by a service provider which has not loaded yet.
+如先前提到的，在 `register` 方法中，您應該只將事物綁定到[服務容器](/docs/{{version}}/container)中。您不應試圖在 `register` 方法中註冊任何事件監聽器、路由或其他功能。否則，您可能會意外使用由尚未載入的服務提供者提供的服務。
 
-Let's take a look at a basic service provider. Within any of your service provider methods, you always have access to the `$app` property which provides access to the service container:
+讓我們來看一個基本的服務提供者。在您的任何服務提供者方法中，您始終可以訪問 `$app` 屬性，這提供對服務容器的訪問：
 
     <?php
 
@@ -50,7 +50,7 @@ Let's take a look at a basic service provider. Within any of your service provid
     class RiakServiceProvider extends ServiceProvider
     {
         /**
-         * Register any application services.
+         * 註冊任何應用程式服務。
          */
         public function register(): void
         {
@@ -60,12 +60,12 @@ Let's take a look at a basic service provider. Within any of your service provid
         }
     }
 
-This service provider only defines a `register` method, and uses that method to define an implementation of `App\Services\Riak\Connection` in the service container. If you're not yet familiar with Laravel's service container, check out [its documentation](/docs/{{version}}/container).
+此服務提供者僅定義了一個 `register` 方法，並使用該方法在服務容器中定義了 `App\Services\Riak\Connection` 的實作。如果您尚不熟悉 Laravel 的服務容器，請查看[其文件](/docs/{{version}}/container)。
 
 <a name="the-bindings-and-singletons-properties"></a>
-#### The `bindings` and `singletons` Properties
+#### `bindings` 和 `singletons` 屬性
 
-If your service provider registers many simple bindings, you may wish to use the `bindings` and `singletons` properties instead of manually registering each container binding. When the service provider is loaded by the framework, it will automatically check for these properties and register their bindings:
+如果您的服務提供者註冊了許多簡單的綁定，您可能希望使用 `bindings` 和 `singletons` 屬性，而不是手動註冊每個容器綁定。當框架載入服務提供者時，它將自動檢查這些屬性並註冊它們的綁定：
 
     <?php
 
@@ -78,120 +78,129 @@ If your service provider registers many simple bindings, you may wish to use the
     use App\Services\ServerToolsProvider;
     use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
-    {
-        /**
-         * All of the container bindings that should be registered.
-         *
-         * @var array
-         */
-        public $bindings = [
-            ServerProvider::class => DigitalOceanServerProvider::class,
-        ];
-
-        /**
-         * All of the container singletons that should be registered.
-         *
-         * @var array
-         */
-        public $singletons = [
-            DowntimeNotifier::class => PingdomDowntimeNotifier::class,
-            ServerProvider::class => ServerToolsProvider::class,
-        ];
-    }
-
-<a name="the-boot-method"></a>
-### The Boot Method
-
-So, what if we need to register a [view composer](/docs/{{version}}/views#view-composers) within our service provider? This should be done within the `boot` method. **This method is called after all other service providers have been registered**, meaning you have access to all other services that have been registered by the framework:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Support\Facades\View;
-    use Illuminate\Support\ServiceProvider;
-
-    class ComposerServiceProvider extends ServiceProvider
-    {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            View::composer('view', function () {
-                // ...
-            });
-        }
-    }
-
-<a name="boot-method-dependency-injection"></a>
-#### Boot Method Dependency Injection
-
-You may type-hint dependencies for your service provider's `boot` method. The [service container](/docs/{{version}}/container) will automatically inject any dependencies you need:
-
-    use Illuminate\Contracts\Routing\ResponseFactory;
+```php
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 應該註冊的所有容器綁定。
+     *
+     * @var array
+     */
+    public $bindings = [
+        ServerProvider::class => DigitalOceanServerProvider::class,
+    ];
 
     /**
-     * Bootstrap any application services.
+     * 應該註冊的所有容器單例。
+     *
+     * @var array
      */
-    public function boot(ResponseFactory $response): void
+    public $singletons = [
+        DowntimeNotifier::class => PingdomDowntimeNotifier::class,
+        ServerProvider::class => ServerToolsProvider::class,
+    ];
+}
+```
+
+<a name="the-boot-method"></a>
+### 啟動方法
+
+那麼，如果我們需要在我們的服務提供者中註冊一個[視圖組件](/docs/{{version}}/views#view-composers)，應該在 `boot` 方法中完成。**此方法在所有其他服務提供者註冊後調用**，這意味著您可以訪問框架註冊的所有其他服務：
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
+
+class ComposerServiceProvider extends ServiceProvider
+{
+    /**
+     * 啟動任何應用程式服務。
+     */
+    public function boot(): void
     {
-        $response->macro('serialized', function (mixed $value) {
+        View::composer('view', function () {
             // ...
         });
     }
+}
+```
+
+<a name="boot-method-dependency-injection"></a>
+#### 啟動方法依賴注入
+
+您可以為服務提供者的 `boot` 方法型別提示依賴關係。[服務容器](/docs/{{version}}/container) 將自動注入您需要的任何依賴：
+
+```php
+use Illuminate\Contracts\Routing\ResponseFactory;
+
+/**
+ * 啟動任何應用程式服務。
+ */
+public function boot(ResponseFactory $response): void
+{
+    $response->macro('serialized', function (mixed $value) {
+        // ...
+    });
+}
+```
 
 <a name="registering-providers"></a>
-## Registering Providers
+## 註冊提供者
 
-All service providers are registered in the `config/app.php` configuration file. This file contains a `providers` array where you can list the class names of your service providers. By default, a set of Laravel core service providers are registered in this array. The default providers bootstrap the core Laravel components, such as the mailer, queue, cache, and others.
+所有服務提供者都在 `config/app.php` 配置文件中註冊。此文件包含一個 `providers` 陣列，您可以在其中列出您的服務提供者的類名。默認情況下，一組 Laravel 核心服務提供者在此陣列中註冊。默認提供者引導核心 Laravel 組件，如郵件發送器、佇列、快取等。
 
-To register your provider, add it to the array:
+要註冊您的提供者，將其添加到陣列中：
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
-        // Other Service Providers
+```php
+'providers' => ServiceProvider::defaultProviders()->merge([
+    // 其他服務提供者
 
-        App\Providers\ComposerServiceProvider::class,
-    ])->toArray(),
+    App\Providers\ComposerServiceProvider::class,
+])->toArray(),
 
 <a name="deferred-providers"></a>
-## Deferred Providers
+## 延遲提供者
 
-If your provider is **only** registering bindings in the [service container](/docs/{{version}}/container), you may choose to defer its registration until one of the registered bindings is actually needed. Deferring the loading of such a provider will improve the performance of your application, since it is not loaded from the filesystem on every request.
+如果您的提供者**僅**在[服務容器](/docs/{{version}}/container)中註冊綁定，您可以選擇延遲其註冊，直到實際需要其中一個註冊的綁定。延遲加載此提供者將改善應用程式的性能，因為它不會在每次請求時從檔案系統加載。
 
-Laravel compiles and stores a list of all of the services supplied by deferred service providers, along with the name of its service provider class. Then, only when you attempt to resolve one of these services does Laravel load the service provider.
+Laravel 編譯並存儲由延遲服務提供者提供的所有服務的清單，以及其服務提供者類別的名稱。然後，只有當您嘗試解析這些服務之一時，Laravel 才會加載服務提供者。
 
-To defer the loading of a provider, implement the `\Illuminate\Contracts\Support\DeferrableProvider` interface and define a `provides` method. The `provides` method should return the service container bindings registered by the provider:
+要延遲提供者的加載，請實現`\Illuminate\Contracts\Support\DeferrableProvider`介面並定義一個`provides`方法。`provides`方法應返回提供者註冊的服務容器綁定：
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use App\Services\Riak\Connection;
-    use Illuminate\Contracts\Foundation\Application;
-    use Illuminate\Contracts\Support\DeferrableProvider;
-    use Illuminate\Support\ServiceProvider;
+use App\Services\Riak\Connection;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Support\ServiceProvider;
 
-    class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
+class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     */
+    public function register(): void
     {
-        /**
-         * Register any application services.
-         */
-        public function register(): void
-        {
-            $this->app->singleton(Connection::class, function (Application $app) {
-                return new Connection($app['config']['riak']);
-            });
-        }
-
-        /**
-         * Get the services provided by the provider.
-         *
-         * @return array<int, string>
-         */
-        public function provides(): array
-        {
-            return [Connection::class];
-        }
+        $this->app->singleton(Connection::class, function (Application $app) {
+            return new Connection($app['config']['riak']);
+        });
     }
+
+    /**
+     * 取得提供者提供的服務。
+     *
+     * @return array<int, string>
+     */
+    public function provides(): array
+    {
+        return [Connection::class];
+    }
+}
+```

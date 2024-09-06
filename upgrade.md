@@ -1,148 +1,149 @@
-# Upgrade Guide
+# 升級指南
 
-- [Upgrading to 10.0 from 9.x](#upgrade-10.0)
+- [從 9.x 升級到 10.0](#upgrade-10.0)
 
 <a name="high-impact-changes"></a>
-## High Impact Changes
+## 高影響變更
 
 <div class="content-list" markdown="1">
 
-- [Updating Dependencies](#updating-dependencies)
-- [Updating Minimum Stability](#updating-minimum-stability)
+- [更新依賴項](#updating-dependencies)
+- [更新最小穩定性](#updating-minimum-stability)
 
 </div>
 
 <a name="medium-impact-changes"></a>
-## Medium Impact Changes
+## 中等影響變更
 
 <div class="content-list" markdown="1">
 
-- [Database Expressions](#database-expressions)
-- [Model "Dates" Property](#model-dates-property)
+- [資料庫表達式](#database-expressions)
+- [模型 "Dates" 屬性](#model-dates-property)
 - [Monolog 3](#monolog-3)
-- [Redis Cache Tags](#redis-cache-tags)
-- [Service Mocking](#service-mocking)
-- [The Language Directory](#language-directory)
+- [Redis 快取標籤](#redis-cache-tags)
+- [服務模擬](#service-mocking)
+- [語言目錄](#language-directory)
 
 </div>
 
 <a name="low-impact-changes"></a>
-## Low Impact Changes
+## 低影響變更
 
 <div class="content-list" markdown="1">
 
-- [Closure Validation Rule Messages](#closure-validation-rule-messages)
-- [Form Request `after` Method](#form-request-after-method)
-- [Public Path Binding](#public-path-binding)
-- [Query Exception Constructor](#query-exception-constructor)
-- [Rate Limiter Return Values](#rate-limiter-return-values)
-- [The `Redirect::home` Method](#redirect-home)
-- [The `Bus::dispatchNow` Method](#dispatch-now)
-- [The `registerPolicies` Method](#register-policies)
-- [ULID Columns](#ulid-columns)
+- [閉包驗證規則訊息](#closure-validation-rule-messages)
+- [表單請求 `after` 方法](#form-request-after-method)
+- [公共路徑綁定](#public-path-binding)
+- [查詢例外建構子](#query-exception-constructor)
+- [速率限制器返回值](#rate-limiter-return-values)
+- [`Redirect::home` 方法](#redirect-home)
+- [`Bus::dispatchNow` 方法](#dispatch-now)
+- [`registerPolicies` 方法](#register-policies)
+- [ULID 欄位](#ulid-columns)
 
 </div>
 
 <a name="upgrade-10.0"></a>
-## Upgrading to 10.0 from 9.x
+## 從 9.x 升級到 10.0
 
 <a name="estimated-upgrade-time-??-minutes"></a>
-#### Estimated Upgrade Time: 10 Minutes
+#### 預估升級時間：10 分鐘
 
 > [!NOTE]  
-> We attempt to document every possible breaking change. Since some of these breaking changes are in obscure parts of the framework only a portion of these changes may actually affect your application. Want to save time? You can use [Laravel Shift](https://laravelshift.com/) to help automate your application upgrades.
+> 我們試圖記錄每一個可能的破壞性變更。由於一些這些破壞性變更位於框架的晦澀部分，只有部分變更可能會影響您的應用程式。想要節省時間嗎？您可以使用 [Laravel Shift](https://laravelshift.com/) 來協助自動化您的應用程式升級。
 
 <a name="updating-dependencies"></a>
-### Updating Dependencies
+### 更新依賴項
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-#### PHP 8.1.0 Required
+#### 需要 PHP 8.1.0
 
-Laravel now requires PHP 8.1.0 or greater.
+Laravel 現在需要 PHP 8.1.0 或更高版本。
 
-#### Composer 2.2.0 Required
+#### 需要 Composer 2.2.0
 
-Laravel now requires [Composer](https://getcomposer.org) 2.2.0 or greater.
+Laravel 現在需要 [Composer](https://getcomposer.org) 2.2.0 或更高版本。
 
-#### Composer Dependencies
+#### Composer 依賴項
 
-You should update the following dependencies in your application's `composer.json` file:
-
-<div class="content-list" markdown="1">
-
-- `laravel/framework` to `^10.0`
-- `laravel/sanctum` to `^3.2`
-- `doctrine/dbal` to `^3.0`
-- `spatie/laravel-ignition` to `^2.0`
-- `laravel/passport` to `^11.0` ([Upgrade Guide](https://github.com/laravel/passport/blob/11.x/UPGRADE.md))
-- `laravel/ui` to `^4.0`
-
-</div>
-
-If you are upgrading to Sanctum 3.x from the 2.x release series, please consult the [Sanctum upgrade guide](https://github.com/laravel/sanctum/blob/3.x/UPGRADE.md).
-
-Furthermore, if you wish to use [PHPUnit 10](https://phpunit.de/announcements/phpunit-10.html), you should delete the `processUncoveredFiles` attribute from the `<coverage>` section of your application's `phpunit.xml` configuration file. Then, update the following dependencies in your application's `composer.json` file:
+您應該在應用程式的 `composer.json` 檔案中更新以下依賴項：
 
 <div class="content-list" markdown="1">
 
-- `nunomaduro/collision` to `^7.0`
-- `phpunit/phpunit` to `^10.0`
+- `laravel/framework` 到 `^10.0`
+- `laravel/sanctum` 到 `^3.2`
+- `doctrine/dbal` 到 `^3.0`
+- `spatie/laravel-ignition` 到 `^2.0`
+- `laravel/passport` 到 `^11.0` ([升級指南](https://github.com/laravel/passport/blob/11.x/UPGRADE.md))
+- `laravel/ui` 到 `^4.0`
 
 </div>
 
-Finally, examine any other third-party packages consumed by your application and verify you are using the proper version for Laravel 10 support.
+如果您正在從 2.x 版本系列升級到 Sanctum 3.x，請參考 [Sanctum 升級指南](https://github.com/laravel/sanctum/blob/3.x/UPGRADE.md)。
+
+此外，如果您希望使用 [PHPUnit 10](https://phpunit.de/announcements/phpunit-10.html)，您應該從應用程式的 `phpunit.xml` 組態檔案的 `<coverage>` 部分中刪除 `processUncoveredFiles` 屬性。然後，更新應用程式的 `composer.json` 檔案中以下相依性：
+
+
+<div class="content-list" markdown="1">
+
+- `nunomaduro/collision` 到 `^7.0`
+- `phpunit/phpunit` 到 `^10.0`
+
+</div>
+
+最後，檢查您的應用程式使用的任何其他第三方套件，並確認您正在使用適用於 Laravel 10 的正確版本。
 
 <a name="updating-minimum-stability"></a>
-#### Minimum Stability
+#### 最小穩定性
 
-You should update the `minimum-stability` setting in your application's `composer.json` file to `stable`. Or, since the default value of `minimum-stability` is `stable`, you may delete this setting from your application's `composer.json` file:
+您應該將應用程式的 `composer.json` 檔案中的 `minimum-stability` 設定更新為 `stable`。或者，由於 `minimum-stability` 的預設值為 `stable`，您可以從應用程式的 `composer.json` 檔案中刪除此設定：
 
 ```json
 "minimum-stability": "stable",
 ```
 
-### Application
+### 應用程式
 
 <a name="public-path-binding"></a>
-#### Public Path Binding
+#### 公共路徑綁定
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-If your application is customizing its "public path" by binding `path.public` into the container, you should instead update your code to invoke the `usePublicPath` method offered by the `Illuminate\Foundation\Application` object:
+如果您的應用程式通過將 `path.public` 綁定到容器來自訂其 "公共路徑"，則應更新您的程式碼以調用 `Illuminate\Foundation\Application` 物件提供的 `usePublicPath` 方法：
 
 ```php
 app()->usePublicPath(__DIR__.'/public');
 ```
 
-### Authorization
+### 授權
 
 <a name="register-policies"></a>
-### The `registerPolicies` Method
+### `registerPolicies` 方法
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The `registerPolicies` method of the `AuthServiceProvider` is now invoked automatically by the framework. Therefore, you may remove the call to this method from the `boot` method of your application's `AuthServiceProvider`.
+`AuthServiceProvider` 的 `registerPolicies` 方法現在由框架自動調用。因此，您可以從應用程式的 `AuthServiceProvider` 的 `boot` 方法中刪除對此方法的呼叫。
 
-### Cache
+### 快取
 
 <a name="redis-cache-tags"></a>
-#### Redis Cache Tags
+#### Redis 快取標籤
 
-**Likelihood Of Impact: Medium**
+**影響可能性: 中等**
 
-Usage of `Cache::tags()` is only recommended for applications using Memcached. If you are using Redis as your application's cache driver, you should consider moving to Memcached or using an alternative solution.
+僅建議在使用 Memcached 的應用程式中使用 `Cache::tags()`。如果您將 Redis 用作應用程式的快取驅動程式，您應該考慮轉換為 Memcached 或使用其他解決方案。
 
-### Database
+### 資料庫
 
 <a name="database-expressions"></a>
-#### Database Expressions
+#### 資料庫表達式
 
-**Likelihood Of Impact: Medium**
+**影響可能性: 中等**
 
-Database "expressions" (typically generated via `DB::raw`) have been rewritten in Laravel 10.x to offer additional functionality in the future. Notably, the grammar's raw string value must now be retrieved via the expression's `getValue(Grammar $grammar)` method. Casting an expression to a string using `(string)` is no longer supported.
+Laravel 10.x 中已重新編寫資料庫「表達式」（通常透過 `DB::raw` 生成），以提供未來的額外功能。值得注意的是，現在必須透過表達式的 `getValue(Grammar $grammar)` 方法來檢索語法的原始字串值。不再支援將表達式轉換為字串使用 `(string)`。
 
-**Typically, this does not affect end-user applications**; however, if your application is manually casting database expressions to strings using `(string)` or invoking the `__toString` method on the expression directly, you should update your code to invoke the `getValue` method instead:
+**通常不會影響最終用戶應用程式**；但是，如果您的應用程式正在手動將資料庫表達式轉換為字串使用 `(string)` 或直接調用表達式的 `__toString` 方法，則應更新您的程式碼以調用 `getValue` 方法：
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -153,33 +154,33 @@ $string = $expression->getValue(DB::connection()->getQueryGrammar());
 ```
 
 <a name="query-exception-constructor"></a>
-#### Query Exception Constructor
+#### 查詢例外建構子
 
-**Likelihood Of Impact: Very Low**
+**影響可能性: 非常低**
 
-The `Illuminate\Database\QueryException` constructor now accepts a string connection name as its first argument. If your application is manually throwing this exception, you should adjust your code accordingly.
+`Illuminate\Database\QueryException` 建構子現在將字符串連線名稱作為其第一個引數。如果您的應用程式正在手動拋出此例外，您應相應地調整您的程式碼。
 
 <a name="ulid-columns"></a>
-#### ULID Columns
+#### ULID 欄位
 
-**Likelihood Of Impact: Low**
+**影響可能性: 低**
 
-When migrations invoke the `ulid` method without any arguments, the column will now be named `ulid`. In previous releases of Laravel, invoking this method without any arguments created a column erroneously named `uuid`:
+當遷移調用 `ulid` 方法而沒有任何引數時，該欄位現在將被命名為 `ulid`。在 Laravel 的先前版本中，調用此方法而沒有任何引數會錯誤地創建一個名為 `uuid` 的欄位：
 
     $table->ulid();
 
-To explicitly specify a column name when invoking the `ulid` method, you may pass the column name to the method:
+當調用 `ulid` 方法時明確指定欄位名稱，您可以將欄位名稱傳遞給該方法：
 
     $table->ulid('ulid');
 
 ### Eloquent
 
 <a name="model-dates-property"></a>
-#### Model "Dates" Property
+#### 模型「日期」屬性
 
-**Likelihood Of Impact: Medium**
+**影響可能性: 中等**
 
-The Eloquent model's deprecated `$dates` property has been removed. Your application should now use the `$casts` property:
+Eloquent 模型中已刪除了已棄用的 `$dates` 屬性。您的應用程式現在應該使用 `$casts` 屬性：
 
 ```php
 protected $casts = [
@@ -187,61 +188,60 @@ protected $casts = [
 ];
 ```
 
-### Localization
+### 本地化
 
 <a name="language-directory"></a>
-#### The Language Directory
 
-**Likelihood Of Impact: None**
+**影響可能性：無**
 
-Though not relevant to existing applications, the Laravel application skeleton no longer contains the `lang` directory by default. Instead, when writing new Laravel applications, it may be published using the `lang:publish` Artisan command:
+雖然對現有應用程式無關，但 Laravel 應用程式骨架不再預設包含 `lang` 目錄。取而代之的是，在撰寫新的 Laravel 應用程式時，可以使用 `lang:publish` Artisan 指令來發佈：
 
 ```shell
 php artisan lang:publish
 ```
 
-### Logging
+### 記錄
 
 <a name="monolog-3"></a>
 #### Monolog 3
 
-**Likelihood Of Impact: Medium**
+**影響可能性：中**
 
-Laravel's Monolog dependency has been updated to Monolog 3.x. If you are directly interacting with Monolog within your application, you should review Monolog's [upgrade guide](https://github.com/Seldaek/monolog/blob/main/UPGRADE.md).
+Laravel 的 Monolog 依賴已更新為 Monolog 3.x。如果您在應用程式中直接與 Monolog 互動，應該檢閱 Monolog 的[升級指南](https://github.com/Seldaek/monolog/blob/main/UPGRADE.md)。
 
-If you are using third-party logging services such as BugSnag or Rollbar, you may need to upgrade those third-party packages to a version that supports Monolog 3.x and Laravel 10.x.
+如果您使用 BugSnag 或 Rollbar 等第三方記錄服務，可能需要升級這些第三方套件至支援 Monolog 3.x 和 Laravel 10.x 的版本。
 
-### Queues
+### 佇列
 
 <a name="dispatch-now"></a>
-#### The `Bus::dispatchNow` Method
+#### `Bus::dispatchNow` 方法
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The deprecated `Bus::dispatchNow` and `dispatch_now` methods have been removed. Instead, your application should use the `Bus::dispatchSync` and `dispatch_sync` methods, respectively.
+已移除不建議使用的 `Bus::dispatchNow` 和 `dispatch_now` 方法。取而代之，您的應用程式應使用 `Bus::dispatchSync` 和 `dispatch_sync` 方法。
 
 <a name="dispatch-return"></a>
-#### The `dispatch()` Helper Return Value
+#### `dispatch()` 輔助函式回傳值
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-Invoking `dispatch` with a class that does not implement `Illuminate\Contracts\Queue` would previously return the result of the class's `handle` method. However, this will now return an `Illuminate\Foundation\Bus\PendingBatch` instance. You may use `dispatch_sync()` to replicate the previous behavior.
+以未實作 `Illuminate\Contracts\Queue` 的類別呼叫 `dispatch` 會回傳該類別的 `handle` 方法結果。然而，現在將回傳 `Illuminate\Foundation\Bus\PendingBatch` 實例。您可以使用 `dispatch_sync()` 來複製先前的行為。
 
-### Routing
+### 路由
 
 <a name="middleware-aliases"></a>
-#### Middleware Aliases
+#### 中介層別名
 
-**Likelihood Of Impact: Optional**
+**影響可能性：選擇性**
 
-In new Laravel applications, the `$routeMiddleware` property of the `App\Http\Kernel` class has been renamed to `$middlewareAliases` to better reflect its purpose. You are welcome to rename this property in your existing applications; however, it is not required.
+在新的 Laravel 應用程式中，`App\Http\Kernel` 類的 `$routeMiddleware` 屬性已更名為 `$middlewareAliases`，以更好反映其用途。您可以在現有應用程式中重新命名此屬性；但並非必要。
 
 <a name="rate-limiter-return-values"></a>
-#### Rate Limiter Return Values
+#### 速率限制器回傳值
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-When invoking the `RateLimiter::attempt` method, the value returned by the provided closure will now be returned by the method. If nothing or `null` is returned, the `attempt` method will return `true`:
+當調用 `RateLimiter::attempt` 方法時，由提供的閉包返回的值現在將由該方法返回。如果返回空或 `null`，`attempt` 方法將返回 `true`：
 
 ```php
 $value = RateLimiter::attempt('key', 10, fn () => ['example'], 1);
@@ -250,37 +250,37 @@ $value; // ['example']
 ```
 
 <a name="redirect-home"></a>
-#### The `Redirect::home` Method
+#### `Redirect::home` 方法
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The deprecated `Redirect::home` method has been removed. Instead, your application should redirect to an explicitly named route:
+已刪除不建議使用的 `Redirect::home` 方法。取而代之，您的應用程式應該導向到一個明確命名的路由：
 
 ```php
 return Redirect::route('home');
 ```
 
-### Testing
+### 測試
 
 <a name="service-mocking"></a>
-#### Service Mocking
+#### 服務模擬
 
-**Likelihood Of Impact: Medium**
+**影響可能性：中等**
 
-The deprecated `MocksApplicationServices` trait has been removed from the framework. This trait provided testing methods such as `expectsEvents`, `expectsJobs`, and `expectsNotifications`.
+已從框架中刪除不建議使用的 `MocksApplicationServices` 特性。這個特性提供了測試方法，如 `expectsEvents`、`expectsJobs` 和 `expectsNotifications`。
 
-If your application uses these methods, we recommend you transition to `Event::fake`, `Bus::fake`, and `Notification::fake`, respectively. You can learn more about mocking via fakes in the corresponding documentation for the component you are attempting to fake.
+如果您的應用程式使用這些方法，我們建議您過渡到分別使用 `Event::fake`、`Bus::fake` 和 `Notification::fake`。您可以在您嘗試模擬的組件的相應文件中了解更多有關使用假物件進行模擬的信息。
 
-### Validation
+### 驗證
 
 <a name="closure-validation-rule-messages"></a>
-#### Closure Validation Rule Messages
+#### 閉包驗證規則訊息
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-When writing closure based custom validation rules, invoking the `$fail` callback more than once will now append the messages to an array instead of overwriting the previous message. Typically, this will not affect your application.
+在編寫基於閉包的自訂驗證規則時，多次調用 `$fail` 回呼現在將訊息附加到陣列中，而不是覆蓋先前的訊息。通常，這不會影響您的應用程式。
 
-In addition, the `$fail` callback now returns an object. If you were previously type-hinting the return type of your validation closure, this may require you to update your type-hint:
+此外，`$fail` 回呼現在返回一個物件。如果您之前對您的驗證閉包的返回類型進行了類型提示，這可能需要您更新您的類型提示：
 
 ```php
 public function rules()
@@ -294,11 +294,11 @@ public function rules()
 ```
 
 <a name="validation-messages-and-closure-rules"></a>
-#### Validation Messages and Closure Rules
+#### 驗證訊息和閉包規則
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-Previously, you could assign a failure message to a different key by providing an array to the `$fail` callback injected into Closure based validation rules. However, you should now provide the key as the first argument and the failure message as the second argument:
+以前，您可以通過將陣列提供給注入到基於閉包的驗證規則中的 `$fail` 回呼，將失敗訊息分配給不同的鍵。但是，現在您應該將鍵作為第一個引數提供，將失敗訊息作為第二個引數提供：
 
 ```php
 Validator::make([
@@ -310,15 +310,15 @@ Validator::make([
 ```
 
 <a name="form-request-after-method"></a>
-#### Form Request After Method
+#### 表單請求後方法
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-Within form requests, the `after` method is now [reserved by Laravel](https://github.com/laravel/framework/pull/46757). If your form requests define an `after` method, the method should be renamed or modified to utilize the new "after validation" feature of Laravel's form requests.
+在表單請求中，`after` 方法現在已被 Laravel [保留](https://github.com/laravel/framework/pull/46757)。如果您的表單請求定義了 `after` 方法，該方法應該被重新命名或修改以利用 Laravel 表單請求的新「驗證後」功能。
 
 <a name="miscellaneous"></a>
-### Miscellaneous
+### 其他
 
-We also encourage you to view the changes in the `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). While many of these changes are not required, you may wish to keep these files in sync with your application. Some of these changes will be covered in this upgrade guide, but others, such as changes to configuration files or comments, will not be.
+我們也鼓勵您查看 `laravel/laravel` [GitHub 存儲庫](https://github.com/laravel/laravel) 中的更改。雖然許多這些更改並非必需，但您可能希望將這些文件與應用程式保持同步。本次升級指南將涵蓋其中一些更改，但其他更改，如配置文件或註釋的更改，則不會。
 
-You can easily view the changes with the [GitHub comparison tool](https://github.com/laravel/laravel/compare/9.x...10.x) and choose which updates are important to you. However, many of the changes shown by the GitHub comparison tool are due to our organization's adoption of PHP native types. These changes are backwards compatible and the adoption of them during the migration to Laravel 10 is optional.
+您可以使用 [GitHub 比較工具](https://github.com/laravel/laravel/compare/9.x...10.x) 輕鬆查看這些更改，並選擇哪些更新對您重要。然而，GitHub 比較工具顯示的許多更改是由於我們組織採用 PHP 原生類型。這些更改是向後兼容的，並且在遷移到 Laravel 10 時採用它們是可選的。

@@ -1,56 +1,56 @@
-# Deployment
+# 部署
 
-- [Introduction](#introduction)
-- [Server Requirements](#server-requirements)
-- [Server Configuration](#server-configuration)
+- [簡介](#introduction)
+- [伺服器需求](#server-requirements)
+- [伺服器設定](#server-configuration)
     - [Nginx](#nginx)
-- [Optimization](#optimization)
-    - [Autoloader Optimization](#autoloader-optimization)
-    - [Caching Configuration](#optimizing-configuration-loading)
-    - [Caching Events](#caching-events)
-    - [Caching Routes](#optimizing-route-loading)
-    - [Caching Views](#optimizing-view-loading)
-- [Debug Mode](#debug-mode)
-- [Easy Deployment With Forge / Vapor](#deploying-with-forge-or-vapor)
+- [優化](#optimization)
+    - [自動載入器優化](#autoloader-optimization)
+    - [快取設定](#optimizing-configuration-loading)
+    - [快取事件](#caching-events)
+    - [快取路由](#optimizing-route-loading)
+    - [快取視圖](#optimizing-view-loading)
+- [除錯模式](#debug-mode)
+- [使用 Forge / Vapor 輕鬆部署](#deploying-with-forge-or-vapor)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-When you're ready to deploy your Laravel application to production, there are some important things you can do to make sure your application is running as efficiently as possible. In this document, we'll cover some great starting points for making sure your Laravel application is deployed properly.
+當您準備將 Laravel 應用程式部署到正式環境時，有一些重要的事項可以確保您的應用程式運行效率最大化。在本文件中，我們將介紹一些確保您的 Laravel 應用程式正確部署的重要起點。
 
 <a name="server-requirements"></a>
-## Server Requirements
+## 伺服器需求
 
-The Laravel framework has a few system requirements. You should ensure that your web server has the following minimum PHP version and extensions:
+Laravel 框架有一些系統需求。您應確保您的網頁伺服器具備以下最低 PHP 版本和擴充功能：
 
 <div class="content-list" markdown="1">
 
 - PHP >= 8.1
-- Ctype PHP Extension
-- cURL PHP Extension
-- DOM PHP Extension
-- Fileinfo PHP Extension
-- Filter PHP Extension
-- Hash PHP Extension
-- Mbstring PHP Extension
-- OpenSSL PHP Extension
-- PCRE PHP Extension
-- PDO PHP Extension
-- Session PHP Extension
-- Tokenizer PHP Extension
-- XML PHP Extension
+- Ctype PHP 擴充功能
+- cURL PHP 擴充功能
+- DOM PHP 擴充功能
+- Fileinfo PHP 擴充功能
+- Filter PHP 擴充功能
+- Hash PHP 擴充功能
+- Mbstring PHP 擴充功能
+- OpenSSL PHP 擴充功能
+- PCRE PHP 擴充功能
+- PDO PHP 擴充功能
+- Session PHP 擴充功能
+- Tokenizer PHP 擴充功能
+- XML PHP 擴充功能
 
 </div>
 
 <a name="server-configuration"></a>
-## Server Configuration
+## 伺服器設定
 
 <a name="nginx"></a>
 ### Nginx
 
-If you are deploying your application to a server that is running Nginx, you may use the following configuration file as a starting point for configuring your web server. Most likely, this file will need to be customized depending on your server's configuration. **If you would like assistance in managing your server, consider using a first-party Laravel server management and deployment service such as [Laravel Forge](https://forge.laravel.com).**
+如果您將應用程式部署到運行 Nginx 的伺服器，您可以使用以下配置文件作為配置網頁伺服器的起點。很可能，根據您的伺服器配置，這個文件需要進行自定義。**如果您需要協助管理伺服器，考慮使用第一方 Laravel 伺服器管理和部署服務，例如[Laravel Forge](https://forge.laravel.com)。**
 
-Please ensure, like the configuration below, your web server directs all requests to your application's `public/index.php` file. You should never attempt to move the `index.php` file to your project's root, as serving the application from the project root will expose many sensitive configuration files to the public Internet:
+請確保像下面的配置一樣，您的網頁伺服器將所有請求導向應用程式的 `public/index.php` 檔案。您絕不應試圖將 `index.php` 檔案移至專案根目錄，因為從專案根目錄提供應用程式將會將許多敏感配置檔案暴露給公共網際網路：
 
 ```nginx
 server {
@@ -88,87 +88,86 @@ server {
 ```
 
 <a name="optimization"></a>
-## Optimization
+## 優化
 
 <a name="autoloader-optimization"></a>
-### Autoloader Optimization
+### 自動載入器優化
 
-When deploying to production, make sure that you are optimizing Composer's class autoloader map so Composer can quickly find the proper file to load for a given class:
+在部署到正式環境時，請確保優化 Composer 的類別自動載入器映射，以便 Composer 可以快速找到要為給定類別加載的正確檔案：
 
 ```shell
 composer install --optimize-autoloader --no-dev
 ```
 
 > [!NOTE]  
-> In addition to optimizing the autoloader, you should always be sure to include a `composer.lock` file in your project's source control repository. Your project's dependencies can be installed much faster when a `composer.lock` file is present.
+> 除了優化自動載入器外，您應該始終確保在專案的原始碼控制存儲庫中包含一個 `composer.lock` 檔案。當存在 `composer.lock` 檔案時，可以更快地安裝專案的相依性。
 
 <a name="optimizing-configuration-loading"></a>
-### Caching Configuration
+### 快取組態
 
-When deploying your application to production, you should make sure that you run the `config:cache` Artisan command during your deployment process:
+在將應用程式部署到正式環境時，您應該確保在部署過程中執行 `config:cache` Artisan 指令：
 
 ```shell
 php artisan config:cache
 ```
 
-This command will combine all of Laravel's configuration files into a single, cached file, which greatly reduces the number of trips the framework must make to the filesystem when loading your configuration values.
+此指令將所有 Laravel 的組態檔案合併為一個快取檔案，大大減少框架在載入組態值時必須對檔案系統進行的查找次數。
 
 > [!WARNING]  
-> If you execute the `config:cache` command during your deployment process, you should be sure that you are only calling the `env` function from within your configuration files. Once the configuration has been cached, the `.env` file will not be loaded and all calls to the `env` function for `.env` variables will return `null`.
+> 如果在部署過程中執行 `config:cache` 指令，請確保您僅在組態檔案中從 `env` 函式中調用。一旦組態被快取，`.env` 檔案將不會被載入，並且對 `.env` 變數的所有 `env` 函式調用將返回 `null`。
 
 <a name="caching-events"></a>
-### Caching Events
+### 快取事件
 
-If your application is utilizing [event discovery](/docs/{{version}}/events#event-discovery), you should cache your application's event to listener mappings during your deployment process. This can be accomplished by invoking the `event:cache` Artisan command during deployment:
+如果您的應用程式正在使用 [事件發現](/docs/{{version}}/events#event-discovery)，您應該在部署過程中對應用程式的事件到監聽器映射進行快取。這可以通過在部署過程中調用 `event:cache` Artisan 指令來完成：
 
 ```shell
 php artisan event:cache
 ```
 
 <a name="optimizing-route-loading"></a>
-### Caching Routes
+### 快取路由
 
-If you are building a large application with many routes, you should make sure that you are running the `route:cache` Artisan command during your deployment process:
+如果您正在建立具有許多路由的大型應用程式，請確保在部署過程中執行 `route:cache` Artisan 指令：
 
 ```shell
 php artisan route:cache
 ```
 
-This command reduces all of your route registrations into a single method call within a cached file, improving the performance of route registration when registering hundreds of routes.
+此命令將所有路由註冊縮減為一個方法調用，存儲在快取文件中，當註冊數百個路由時，可以提高路由註冊的性能。
 
 <a name="optimizing-view-loading"></a>
-### Caching Views
+### 快取視圖
 
-When deploying your application to production, you should make sure that you run the `view:cache` Artisan command during your deployment process:
+在將應用部署到正式環境時，應確保在部署過程中運行 `view:cache` Artisan 命令：
 
 ```shell
 php artisan view:cache
 ```
 
-This command precompiles all your Blade views so they are not compiled on demand, improving the performance of each request that returns a view.
+此命令預先編譯所有 Blade 視圖，以便它們不會按需編譯，從而提高每個返回視圖的請求的性能。
 
 <a name="debug-mode"></a>
-## Debug Mode
+## 調試模式
 
-The debug option in your config/app.php configuration file determines how much information about an error is actually displayed to the user. By default, this option is set to respect the value of the `APP_DEBUG` environment variable, which is stored in your application's `.env` file.
+在您的 config/app.php 配置文件中的 debug 選項決定實際向用戶顯示有關錯誤的信息量。默認情況下，此選項設置為尊重 `APP_DEBUG` 環境變量的值，該值存儲在應用的 `.env` 文件中。
 
 > [!WARNING]  
-> **In your production environment, this value should always be `false`. If the `APP_DEBUG` variable is set to `true` in production, you risk exposing sensitive configuration values to your application's end users.**
+> **在正式環境中，此值應始終為 `false`。如果在正式環境中將 `APP_DEBUG` 變量設置為 `true`，則有風險將敏感配置值暴露給應用的最終用戶。**
 
 <a name="deploying-with-forge-or-vapor"></a>
-## Easy Deployment With Forge / Vapor
+## 使用 Forge / Vapor 輕鬆部署
 
 <a name="laravel-forge"></a>
 #### Laravel Forge
 
-If you aren't quite ready to manage your own server configuration or aren't comfortable configuring all of the various services needed to run a robust Laravel application, [Laravel Forge](https://forge.laravel.com) is a wonderful alternative.
+如果您還沒有準備好管理自己的伺服器配置，或者不熟悉配置運行強大 Laravel 應用所需的各種服務，[Laravel Forge](https://forge.laravel.com) 是一個很好的選擇。
 
-Laravel Forge can create servers on various infrastructure providers such as DigitalOcean, Linode, AWS, and more. In addition, Forge installs and manages all of the tools needed to build robust Laravel applications, such as Nginx, MySQL, Redis, Memcached, Beanstalk, and more.
+Laravel Forge 可以在各種基礎設施提供商上創建伺服器，如 DigitalOcean、Linode、AWS 等。此外，Forge 安裝並管理構建強大 Laravel 應用所需的所有工具，如 Nginx、MySQL、Redis、Memcached、Beanstalk 等。
 
 > [!NOTE]  
-> Want a full guide to deploying with Laravel Forge? Check out the [Laravel Bootcamp](https://bootcamp.laravel.com/deploying) and the Forge [video series available on Laracasts](https://laracasts.com/series/learn-laravel-forge-2022-edition).
+> 想要了解使用 Laravel Forge 部署的完整指南嗎？請查看 [Laravel Bootcamp](https://bootcamp.laravel.com/deploying) 和 Laracasts 上提供的 Forge [視頻系列](https://laracasts.com/series/learn-laravel-forge-2022-edition)。
 
-<a name="laravel-vapor"></a>
 #### Laravel Vapor
 
-If you would like a totally serverless, auto-scaling deployment platform tuned for Laravel, check out [Laravel Vapor](https://vapor.laravel.com). Laravel Vapor is a serverless deployment platform for Laravel, powered by AWS. Launch your Laravel infrastructure on Vapor and fall in love with the scalable simplicity of serverless. Laravel Vapor is fine-tuned by Laravel's creators to work seamlessly with the framework so you can keep writing your Laravel applications exactly like you're used to.
+如果您想要一個完全無伺服器、自動擴展的部署平台，專為 Laravel 調校，請查看 [Laravel Vapor](https://vapor.laravel.com)。Laravel Vapor 是一個由 AWS 提供動力的 Laravel 無伺服器部署平台。在 Vapor 上啟動您的 Laravel 基礎架構，並愛上無伺服器的可擴展簡單性。Laravel Vapor 被 Laravel 的創作者們微調，以無縫地與框架配合，讓您可以繼續像往常一樣撰寫 Laravel 應用程式。

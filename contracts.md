@@ -1,77 +1,78 @@
-# Contracts
+# 合約
 
-- [Introduction](#introduction)
-    - [Contracts vs. Facades](#contracts-vs-facades)
-- [When to Use Contracts](#when-to-use-contracts)
-- [How to Use Contracts](#how-to-use-contracts)
-- [Contract Reference](#contract-reference)
+- [簡介](#introduction)
+    - [合約 vs. Facades](#contracts-vs-facades)
+- [何時使用合約](#when-to-use-contracts)
+- [如何使用合約](#how-to-use-contracts)
+- [合約參考](#contract-reference)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's "contracts" are a set of interfaces that define the core services provided by the framework. For example, an `Illuminate\Contracts\Queue\Queue` contract defines the methods needed for queueing jobs, while the `Illuminate\Contracts\Mail\Mailer` contract defines the methods needed for sending e-mail.
+Laravel 的「合約」是一組介面，定義了框架提供的核心服務。例如，`Illuminate\Contracts\Queue\Queue` 合約定義了排程工作所需的方法，而 `Illuminate\Contracts\Mail\Mailer` 合約定義了發送電子郵件所需的方法。
 
-Each contract has a corresponding implementation provided by the framework. For example, Laravel provides a queue implementation with a variety of drivers, and a mailer implementation that is powered by [Symfony Mailer](https://symfony.com/doc/6.0/mailer.html).
+每個合約都有框架提供的相應實作。例如，Laravel 提供了具有各種驅動程式的排程實作，以及由 [Symfony Mailer](https://symfony.com/doc/6.0/mailer.html) 驅動的郵件實作。
 
-All of the Laravel contracts live in [their own GitHub repository](https://github.com/illuminate/contracts). This provides a quick reference point for all available contracts, as well as a single, decoupled package that may be utilized when building packages that interact with Laravel services.
+所有 Laravel 合約都位於 [它們自己的 GitHub 存儲庫](https://github.com/illuminate/contracts) 中。這提供了所有可用合約的快速參考點，以及一個可以在建立與 Laravel 服務互動的套件時使用的單一、解耦的套件。
 
 <a name="contracts-vs-facades"></a>
-### Contracts vs. Facades
+### 合約 vs. Facades
 
-Laravel's [facades](/docs/{{version}}/facades) and helper functions provide a simple way of utilizing Laravel's services without needing to type-hint and resolve contracts out of the service container. In most cases, each facade has an equivalent contract.
+Laravel 的 [facades](/docs/{{version}}/facades) 和輔助函式提供了一種簡單的方式來使用 Laravel 的服務，而無需在服務容器中進行型別提示和解析合約。在大多數情況下，每個 facade 都有對應的合約。
 
-Unlike facades, which do not require you to require them in your class' constructor, contracts allow you to define explicit dependencies for your classes. Some developers prefer to explicitly define their dependencies in this way and therefore prefer to use contracts, while other developers enjoy the convenience of facades. **In general, most applications can use facades without issue during development.**
+與不需要在類別的建構子中引入它們不同，合約允許您為您的類別定義明確的依賴關係。一些開發人員喜歡以這種方式明確定義他們的依賴關係，因此更喜歡使用合約，而其他開發人員則享受 facades 的便利性。**一般來說，在開發過程中，大多數應用程式可以無問題地使用 facades。**
 
 <a name="when-to-use-contracts"></a>
-## When to Use Contracts
+## 何時使用合約
 
-The decision to use contracts or facades will come down to personal taste and the tastes of your development team. Both contracts and facades can be used to create robust, well-tested Laravel applications. Contracts and facades are not mutually exclusive. Some parts of your applications may use facades while others depend on contracts. As long as you are keeping your class' responsibilities focused, you will notice very few practical differences between using contracts and facades.
+使用合約或 facades 的決定將取決於個人喜好和您的開發團隊的喜好。合約和 facades 都可以用於創建堅固、經過良好測試的 Laravel 應用程式。合約和 facades 不是互斥的。應用程式的某些部分可能使用 facades，而其他部分則依賴於合約。只要保持類別的責任專注，您將會注意到在使用合約和 facades 之間幾乎沒有實際差異。
 
-In general, most applications can use facades without issue during development. If you are building a package that integrates with multiple PHP frameworks you may wish to use the `illuminate/contracts` package to define your integration with Laravel's services without the need to require Laravel's concrete implementations in your package's `composer.json` file.
+一般來說，在開發過程中，大多數應用程式可以無問題地使用 Facedes。如果您正在建立一個與多個 PHP 框架集成的套件，您可能希望使用 `illuminate/contracts` 套件來定義與 Laravel 服務的集成，而無需在您的套件的 `composer.json` 檔案中要求 Laravel 的具體實現。
 
 <a name="how-to-use-contracts"></a>
-## How to Use Contracts
+## 如何使用 Contracts
 
-So, how do you get an implementation of a contract? It's actually quite simple.
+那麼，如何獲取合約的實現？其實非常簡單。
 
-Many types of classes in Laravel are resolved through the [service container](/docs/{{version}}/container), including controllers, event listeners, middleware, queued jobs, and even route closures. So, to get an implementation of a contract, you can just "type-hint" the interface in the constructor of the class being resolved.
+在 Laravel 中，許多類型的類別都是通過[服務容器](/docs/{{version}}/container)解析的，包括控制器、事件監聽器、中介層、佇列作業，甚至路由閉包。因此，要獲取合約的實現，您只需在被解析的類別的建構子中「型別提示」介面即可。
 
-For example, take a look at this event listener:
+例如，看一下這個事件監聽器：
 
-    <?php
+```php
+namespace App\Listeners;
 
-    namespace App\Listeners;
+use App\Events\OrderWasPlaced;
+use App\Models\User;
+use Illuminate\Contracts\Redis\Factory;
 
-    use App\Events\OrderWasPlaced;
-    use App\Models\User;
-    use Illuminate\Contracts\Redis\Factory;
+class CacheOrderInformation
+{
+    /**
+     * Create a new event handler instance.
+     */
+    public function __construct(
+        protected Factory $redis,
+    ) {}
 
-    class CacheOrderInformation
+    /**
+     * Handle the event.
+     */
+    public function handle(OrderWasPlaced $event): void
     {
-        /**
-         * Create a new event handler instance.
-         */
-        public function __construct(
-            protected Factory $redis,
-        ) {}
-
-        /**
-         * Handle the event.
-         */
-        public function handle(OrderWasPlaced $event): void
-        {
-            // ...
-        }
+        // ...
     }
+}
+```
 
-When the event listener is resolved, the service container will read the type-hints on the constructor of the class, and inject the appropriate value. To learn more about registering things in the service container, check out [its documentation](/docs/{{version}}/container).
+當事件監聽器被解析時，服務容器將讀取類別建構子上的型別提示，並注入適當的值。要了解有關在服務容器中註冊事物的更多信息，請查看[其文件](/docs/{{version}}/container)。
 
 <a name="contract-reference"></a>
-## Contract Reference
+## 合約參考
 
-This table provides a quick reference to all of the Laravel contracts and their equivalent facades:
+此表提供了所有 Laravel 合約及其對應 Facedes 的快速參考：
 
-| Contract                                                                                                                                               | References Facade         |
+
+| 合約                                                                                                                                                   | 參考 Facedes              |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
 | [Illuminate\Contracts\Auth\Access\Authorizable](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Authorizable.php)                 |  &nbsp;                   |
 | [Illuminate\Contracts\Auth\Access\Gate](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Gate.php)                                 | `Gate`                    |
@@ -152,3 +153,27 @@ This table provides a quick reference to all of the Laravel contracts and their 
 | [Illuminate\Contracts\View\Engine](https://github.com/illuminate/contracts/blob/{{version}}/View/Engine.php)                                           | &nbsp;                    |
 | [Illuminate\Contracts\View\Factory](https://github.com/illuminate/contracts/blob/{{version}}/View/Factory.php)                                         | `View`                    |
 | [Illuminate\Contracts\View\View](https://github.com/illuminate/contracts/blob/{{version}}/View/View.php)                                               | `View::make()`            |
+
+```markdown
+# Laravel Documentation
+
+## Introduction
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in most web projects.
+
+## Installation
+Laravel utilizes Composer to manage its dependencies. So, before using Laravel, make sure you have Composer installed on your machine.
+
+For more detailed installation instructions, check out the [official Laravel documentation](https://laravel.com/docs/installation).
+
+## Configuration
+The configuration files for Laravel are stored in the `config` directory. Each option is documented, so feel free to look through the files and get familiar with the options available.
+
+For more information on configuration options, refer to the [configuration documentation](https://laravel.com/docs/configuration).
+
+## Routing
+Laravel provides a simple and expressive way to define routes using closures or controller classes. The routes are defined in the `routes/web.php` file.
+
+To learn more about routing in Laravel, visit the [routing documentation](https://laravel.com/docs/routing).
+
+```
+```

@@ -1,84 +1,84 @@
-# Release Notes
+# 發行說明
 
-- [Versioning Scheme](#versioning-scheme)
-- [Support Policy](#support-policy)
+- [版本控制方案](#versioning-scheme)
+- [支援政策](#support-policy)
 - [Laravel 10](#laravel-10)
 
 <a name="versioning-scheme"></a>
-## Versioning Scheme
+## 版本控制方案
 
-Laravel and its other first-party packages follow [Semantic Versioning](https://semver.org). Major framework releases are released every year (~Q1), while minor and patch releases may be released as often as every week. Minor and patch releases should **never** contain breaking changes.
+Laravel 及其其他第一方套件遵循 [語義化版本](https://semver.org)。主要框架版本每年釋出一次（約在第一季度），而次要和修補版本可能每週釋出一次。次要和修補版本**絕對不應該**包含破壞性變更。
 
-When referencing the Laravel framework or its components from your application or package, you should always use a version constraint such as `^10.0`, since major releases of Laravel do include breaking changes. However, we strive to always ensure you may update to a new major release in one day or less.
+當從您的應用程式或套件引用 Laravel 框架或其元件時，應始終使用版本約束，例如 `^10.0`，因為 Laravel 的主要版本確實包含破壞性變更。但是，我們始終努力確保您可以在一天或更短的時間內更新到新的主要版本。
 
 <a name="named-arguments"></a>
-#### Named Arguments
+#### 命名引數
 
-[Named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) are not covered by Laravel's backwards compatibility guidelines. We may choose to rename function arguments when necessary in order to improve the Laravel codebase. Therefore, using named arguments when calling Laravel methods should be done cautiously and with the understanding that the parameter names may change in the future.
+[Laravel 不涵蓋命名引數](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) 在其向後兼容性指南中。我們可能會選擇在必要時重新命名函數引數，以改進 Laravel 代碼庫。因此，在調用 Laravel 方法時使用命名引數應該謹慎進行，並且應理解參數名稱可能會在未來更改。
 
 <a name="support-policy"></a>
-## Support Policy
+## 支援政策
 
-For all Laravel releases, bug fixes are provided for 18 months and security fixes are provided for 2 years. For all additional libraries, including Lumen, only the latest major release receives bug fixes. In addition, please review the database versions [supported by Laravel](/docs/{{version}}/database#introduction).
+對於所有 Laravel 發行版，提供 18 個月的錯誤修復和 2 年的安全修復。對於所有其他附加函式庫，包括 Lumen，僅最新的主要版本接收錯誤修復。此外，請查看 Laravel 支援的資料庫版本 [支援情況](/docs/{{version}}/database#introduction)。
 
 
 <div class="overflow-auto">
 
-| Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
+| 版本 | PHP (*) | 釋出日期 | 錯誤修復截止日期 | 安全修復截止日期 |
 | --- | --- | --- | --- | --- |
-| 8 | 7.3 - 8.1 | September 8th, 2020 | July 26th, 2022 | January 24th, 2023 |
-| 9 | 8.0 - 8.2 | February 8th, 2022 | August 8th, 2023 | February 6th, 2024 |
-| 10 | 8.1 - 8.3 | February 14th, 2023 | August 6th, 2024 | February 4th, 2025 |
-| 11 | 8.2 - 8.3 | March 12th, 2024 | August 5th, 2025 | February 3rd, 2026 |
+| 8 | 7.3 - 8.1 | 2020年9月8日 | 2022年7月26日 | 2023年1月24日 |
+| 9 | 8.0 - 8.2 | 2022年2月8日 | 2023年8月8日 | 2024年2月6日 |
+| 10 | 8.1 - 8.3 | 2023年2月14日 | 2024年8月6日 | 2025年2月4日 |
+| 11 | 8.2 - 8.3 | 2024年3月12日 | 2025年8月5日 | 2026年2月3日 |
 
 </div>
 
 <div class="version-colors">
     <div class="end-of-life">
         <div class="color-box"></div>
-        <div>End of life</div>
+        <div>生命週期結束</div>
     </div>
     <div class="security-fixes">
         <div class="color-box"></div>
-        <div>Security fixes only</div>
+        <div>僅安全修復</div>
     </div>
 </div>
 
-(*) Supported PHP versions
+(*) 支援的 PHP 版本
 
 <a name="laravel-10"></a>
 ## Laravel 10
 
-As you may know, Laravel transitioned to yearly releases with the release of Laravel 8. Previously, major versions were released every 6 months. This transition is intended to ease the maintenance burden on the community and challenge our development team to ship amazing, powerful new features without introducing breaking changes. Therefore, we have shipped a variety of robust features to Laravel 9 without breaking backwards compatibility.
+正如您所知，自 Laravel 8 發布以來，Laravel 已轉為每年發布一次。之前，每 6 個月發布一個主要版本。這個轉變旨在減輕社區的維護負擔，並挑戰我們的開發團隊在不引入破壞性變更的情況下交付令人驚嘆、強大的新功能。因此，我們在不破壞向後兼容性的情況下為 Laravel 9 提供了各種強大的功能。
 
-Therefore, this commitment to ship great new features during the current release will likely lead to future "major" releases being primarily used for "maintenance" tasks such as upgrading upstream dependencies, which can be seen in these release notes.
+因此，對於當前版本的承諾交付出色的新功能，可能導致未來的“主要”版本主要用於“維護”任務，例如升級上游依賴項，這些可以在這些發行說明中看到。
 
-Laravel 10 continues the improvements made in Laravel 9.x by introducing argument and return types to all application skeleton methods, as well as all stub files used to generate classes throughout the framework. In addition, a new, developer-friendly abstraction layer has been introduced for starting and interacting with external processes. Further, Laravel Pennant has been introduced to provide a wonderful approach to managing your application's "feature flags".
+Laravel 10 在 Laravel 9.x 中所做的改進繼續引入了對所有應用程式骨架方法以及用於在整個框架中生成類別的所有樣板文件的引數和返回類型。此外，還引入了一個新的、開發人員友好的抽象層，用於啟動和與外部進程互動。此外，Laravel Pennant 已被引入，提供了一種出色的方法來管理應用程式的“功能標誌”。
 
 <a name="php-8"></a>
 ### PHP 8.1
 
-Laravel 10.x requires a minimum PHP version of 8.1.
+Laravel 10.x 需要最低 PHP 版本為 8.1。
 
 <a name="types"></a>
-### Types
+### 類型
 
-_Application skeleton and stub type-hints were contributed by [Nuno Maduro](https://github.com/nunomaduro)_.
+_應用程式骨架和樣板類型提示由 [Nuno Maduro](https://github.com/nunomaduro) 貢獻_。
 
-On its initial release, Laravel utilized all of the type-hinting features available in PHP at the time. However, many new features have been added to PHP in the subsequent years, including additional primitive type-hints, return types, and union types.
+在最初的發布中，Laravel 利用了當時 PHP 中所有可用的類型提示功能。然而，在隨後的幾年中，PHP 添加了許多新功能，包括額外的基本類型提示、返回類型和聯合類型。
 
-Laravel 10.x thoroughly updates the application skeleton and all stubs utilized by the framework to introduce argument and return types to all method signatures. In addition, extraneous "doc block" type-hint information has been deleted.
+Laravel 10.x 徹底更新了框架使用的應用程式骨架和所有樣板，以在所有方法簽名中引入引數和返回類型。此外，已刪除了多餘的“doc block”類型提示信息。
 
-This change is entirely backwards compatible with existing applications. Therefore, existing applications that do not have these type-hints will continue to function normally.
+這個改變完全向後兼容現有應用程式。因此，沒有這些型別提示的現有應用程式將繼續正常運作。
 
 <a name="laravel-pennant"></a>
 ### Laravel Pennant
 
-_Laravel Pennant was developed by [Tim MacDonald](https://github.com/timacdonald)_.
+_Laravel Pennant 是由 [Tim MacDonald](https://github.com/timacdonald) 開發的_。
 
-A new first-party package, Laravel Pennant, has been released. Laravel Pennant offers a light-weight, streamlined approach to managing your application's feature flags. Out of the box, Pennant includes an in-memory `array` driver and a `database` driver for persistent feature storage.
+一個新的第一方套件，Laravel Pennant，已經釋出。Laravel Pennant 提供了一種輕量、精簡的方法來管理應用程式的功能標誌。Pennant 預設包含一個記憶體中的 `array` 驅動程式和一個用於持久性功能儲存的 `database` 驅動程式。
 
-Features can be easily defined via the `Feature::define` method:
+功能可以通過 `Feature::define` 方法輕鬆定義：
 
 ```php
 use Laravel\Pennant\Feature;
@@ -89,7 +89,7 @@ Feature::define('new-onboarding-flow', function () {
 });
 ```
 
-Once a feature has been defined, you may easily determine if the current user has access to the given feature:
+一旦定義了功能，您可以輕鬆判斷當前使用者是否有權限存取給定的功能：
 
 ```php
 if (Feature::active('new-onboarding-flow')) {
@@ -97,7 +97,7 @@ if (Feature::active('new-onboarding-flow')) {
 }
 ```
 
-Of course, for convenience, Blade directives are also available:
+當然，為了方便起見，Blade 指示詞也是可用的：
 
 ```blade
 @feature('new-onboarding-flow')
@@ -107,14 +107,14 @@ Of course, for convenience, Blade directives are also available:
 @endfeature
 ```
 
-Pennant offers a variety of more advanced features and APIs. For more information, please consult the [comprehensive Pennant documentation](/docs/{{version}}/pennant).
+Pennant 提供了各種更高級的功能和 API。有關更多資訊，請參考[全面的 Pennant 文件](/docs/{{version}}/pennant)。
 
 <a name="process"></a>
-### Process Interaction
+### 處理程序互動
 
-_The process abstraction layer was contributed by [Nuno Maduro](https://github.com/nunomaduro) and [Taylor Otwell](https://github.com/taylorotwell)_.
+_處理程序抽象層由 [Nuno Maduro](https://github.com/nunomaduro) 和 [Taylor Otwell](https://github.com/taylorotwell) 貢獻_。
 
-Laravel 10.x introduces a beautiful abstraction layer for starting and interacting with external processes via a new `Process` facade:
+Laravel 10.x 引入了一個美麗的抽象層，用於啟動和與外部處理程序互動，透過一個新的 `Process` 門面：
 
 ```php
 use Illuminate\Support\Facades\Process;
@@ -124,7 +124,7 @@ $result = Process::run('ls -la');
 return $result->output();
 ```
 
-Processes may even be started in pools, allowing for the convenient execution and management of concurrent processes:
+甚至可以在池中啟動處理程序，以便方便地執行和管理並行處理：
 
 ```php
 use Illuminate\Process\Pool;
@@ -139,7 +139,7 @@ use Illuminate\Support\Facades\Process;
 return $first->output();
 ```
 
-In addition, processes may be faked for convenient testing:
+此外，處理程序可以進行模擬，以便進行方便的測試：
 
 ```php
 Process::fake();
@@ -149,20 +149,20 @@ Process::fake();
 Process::assertRan('ls -la');
 ```
 
-For more information on interacting with processes, please consult the [comprehensive process documentation](/docs/{{version}}/processes).
+有關與處理程序互動的更多資訊，請參考[全面的處理程序文件](/docs/{{version}}/processes)。
 
 <a name="test-profiling"></a>
-### Test Profiling
+### 測試分析
 
-_Test profiling was contributed by [Nuno Maduro](https://github.com/nunomaduro)_.
+_測試分析由 [Nuno Maduro](https://github.com/nunomaduro) 貢獻_。
 
-The Artisan `test` command has received a new `--profile` option that allows you to easily identify the slowest tests in your application:
+Artisan 的 `test` 指令已新增了一個 `--profile` 選項，讓您可以輕鬆識別應用程式中最慢的測試：
 
 ```shell
 php artisan test --profile
 ```
 
-For convenience, the slowest tests will be displayed directly within the CLI output:
+為了方便起見，最慢的測試將直接顯示在 CLI 輸出中：
 
 <p align="center">
     <img width="100%" src="https://user-images.githubusercontent.com/5457236/217328439-d8d983ec-d0fc-4cde-93d9-ae5bccf5df14.png"/>
@@ -171,7 +171,7 @@ For convenience, the slowest tests will be displayed directly within the CLI out
 <a name="pest-scaffolding"></a>
 ### Pest Scaffolding
 
-New Laravel projects may now be created with Pest test scaffolding by default. To opt-in to this feature, provide the `--pest` flag when creating a new application via the Laravel installer:
+新的 Laravel 專案現在可以預設使用 Pest 測試腳手架來建立。若要啟用此功能，請在透過 Laravel 安裝程式建立新應用程式時提供 `--pest` 標誌：
 
 ```shell
 laravel new example-application --pest
@@ -180,9 +180,9 @@ laravel new example-application --pest
 <a name="generator-cli-prompts"></a>
 ### Generator CLI Prompts
 
-_Generator CLI prompts were contributed by [Jess Archer](https://github.com/jessarcher)_.
+_生成器 CLI 提示由 [Jess Archer](https://github.com/jessarcher) 貢獻_。
 
-To improve the framework's developer experience, all of Laravel's built-in `make` commands no longer require any input. If the commands are invoked without input, you will be prompted for the required arguments:
+為了改善框架的開發者體驗，所有 Laravel 內建的 `make` 指令現在不再需要任何輸入。如果在沒有輸入的情況下調用這些指令，將提示您輸入所需的引數：
 
 ```shell
 php artisan make:controller
@@ -191,6 +191,6 @@ php artisan make:controller
 <a name="horizon-telescope-facelift"></a>
 ### Horizon / Telescope Facelift
 
-[Horizon](/docs/{{version}}/horizon) and [Telescope](/docs/{{version}}/telescope) have been updated with a fresh, modern look including improved typography, spacing, and design:
+[Horizon](/docs/{{version}}/horizon) 和 [Telescope](/docs/{{version}}/telescope) 已經更新，具有全新、現代的外觀，包括改進的排版、間距和設計：
 
 <img src="https://laravel.com/img/docs/horizon-example.png">

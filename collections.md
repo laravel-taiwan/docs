@@ -1,20 +1,20 @@
-# Collections
+# 集合
 
-- [Introduction](#introduction)
-    - [Creating Collections](#creating-collections)
-    - [Extending Collections](#extending-collections)
-- [Available Methods](#available-methods)
-- [Higher Order Messages](#higher-order-messages)
-- [Lazy Collections](#lazy-collections)
-    - [Introduction](#lazy-collection-introduction)
-    - [Creating Lazy Collections](#creating-lazy-collections)
-    - [The Enumerable Contract](#the-enumerable-contract)
-    - [Lazy Collection Methods](#lazy-collection-methods)
+- [簡介](#introduction)
+    - [建立集合](#creating-collections)
+    - [擴充集合](#extending-collections)
+- [可用方法](#available-methods)
+- [高階訊息](#higher-order-messages)
+- [延遲集合](#lazy-collections)
+    - [簡介](#lazy-collection-introduction)
+    - [建立延遲集合](#creating-lazy-collections)
+    - [可列舉合約](#the-enumerable-contract)
+    - [延遲集合方法](#lazy-collection-methods)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-The `Illuminate\Support\Collection` class provides a fluent, convenient wrapper for working with arrays of data. For example, check out the following code. We'll use the `collect` helper to create a new collection instance from the array, run the `strtoupper` function on each element, and then remove all empty elements:
+`Illuminate\Support\Collection` 類別提供了一個流暢、方便的封裝，用於處理數據陣列。例如，請查看以下程式碼。我們將使用 `collect` 助手從陣列中創建一個新的集合實例，對每個元素運行 `strtoupper` 函式，然後刪除所有空元素：
 
     $collection = collect(['taylor', 'abigail', null])->map(function (?string $name) {
         return strtoupper($name);
@@ -22,62 +22,66 @@ The `Illuminate\Support\Collection` class provides a fluent, convenient wrapper 
         return empty($name);
     });
 
-As you can see, the `Collection` class allows you to chain its methods to perform fluent mapping and reducing of the underlying array. In general, collections are immutable, meaning every `Collection` method returns an entirely new `Collection` instance.
+如您所見，`Collection` 類別允許您鏈接其方法以執行流暢的映射和減少底層陣列。一般來說，集合是不可變的，這意味著每個 `Collection` 方法都會返回一個全新的 `Collection` 實例。
 
 <a name="creating-collections"></a>
-### Creating Collections
+### 建立集合
 
-As mentioned above, the `collect` helper returns a new `Illuminate\Support\Collection` instance for the given array. So, creating a collection is as simple as:
+如上所述，`collect` 助手會為給定的陣列返回一個新的 `Illuminate\Support\Collection` 實例。因此，創建集合就是這麼簡單：
 
     $collection = collect([1, 2, 3]);
 
 > [!NOTE]  
-> The results of [Eloquent](/docs/{{version}}/eloquent) queries are always returned as `Collection` instances.
+> [Eloquent](/docs/{{version}}/eloquent) 查詢的結果始終以 `Collection` 實例返回。
 
 <a name="extending-collections"></a>
-### Extending Collections
+### 擴充集合
 
-Collections are "macroable", which allows you to add additional methods to the `Collection` class at run time. The `Illuminate\Support\Collection` class' `macro` method accepts a closure that will be executed when your macro is called. The macro closure may access the collection's other methods via `$this`, just as if it were a real method of the collection class. For example, the following code adds a `toUpper` method to the `Collection` class:
+集合是“可擴充”的，這允許您在運行時向 `Collection` 類別添加額外的方法。`Illuminate\Support\Collection` 類別的 `macro` 方法接受一個在調用您的巨集時將被執行的閉包。巨集閉包可以通過 `$this` 訪問集合的其他方法，就像它是集合類別的真實方法一樣。例如，以下程式碼將一個 `toUpper` 方法添加到 `Collection` 類別中：
 
-    use Illuminate\Support\Collection;
-    use Illuminate\Support\Str;
+```php
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
-    Collection::macro('toUpper', function () {
-        return $this->map(function (string $value) {
-            return Str::upper($value);
-        });
+Collection::macro('toUpper', function () {
+    return $this->map(function (string $value) {
+        return Str::upper($value);
     });
+});
 
-    $collection = collect(['first', 'second']);
+$collection = collect(['first', 'second']);
 
-    $upper = $collection->toUpper();
+$upper = $collection->toUpper();
 
-    // ['FIRST', 'SECOND']
+// ['FIRST', 'SECOND']
+```
 
-Typically, you should declare collection macros in the `boot` method of a [service provider](/docs/{{version}}/providers).
+通常情況下，您應該在[服務提供者](/docs/{{version}}/providers)的`boot`方法中聲明集合宏。
 
 <a name="macro-arguments"></a>
-#### Macro Arguments
+#### 宏參數
 
-If necessary, you may define macros that accept additional arguments:
+如有必要，您可以定義接受額外參數的宏：
 
-    use Illuminate\Support\Collection;
-    use Illuminate\Support\Facades\Lang;
+```php
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
 
-    Collection::macro('toLocale', function (string $locale) {
-        return $this->map(function (string $value) use ($locale) {
-            return Lang::get($value, [], $locale);
-        });
+Collection::macro('toLocale', function (string $locale) {
+    return $this->map(function (string $value) use ($locale) {
+        return Lang::get($value, [], $locale);
     });
+});
 
-    $collection = collect(['first', 'second']);
+$collection = collect(['first', 'second']);
 
-    $translated = $collection->toLocale('es');
+$translated = $collection->toLocale('es');
+```
 
 <a name="available-methods"></a>
-## Available Methods
+## 可用方法
 
-For the majority of the remaining collection documentation, we'll discuss each method available on the `Collection` class. Remember, all of these methods may be chained to fluently manipulate the underlying array. Furthermore, almost every method returns a new `Collection` instance, allowing you to preserve the original copy of the collection when necessary:
+對於剩餘的集合文檔，我們將討論`Collection`類上可用的每個方法。請記住，所有這些方法都可以鏈接在一起以流暢地操作底層數組。此外，幾乎每個方法都會返回一個新的`Collection`實例，讓您在必要時保留集合的原始副本：
 
 <style>
     .collection-method-list > p {
@@ -114,7 +118,7 @@ For the majority of the remaining collection documentation, we'll discuss each m
 [diffAssoc](#method-diffassoc)
 [diffAssocUsing](#method-diffassocusing)
 [diffKeys](#method-diffkeys)
-[doesntContain](#method-doesntcontain)
+doesntContain](#method-doesntcontain)
 [dot](#method-dot)
 [dump](#method-dump)
 [duplicates](#method-duplicates)
@@ -239,11 +243,9 @@ For the majority of the remaining collection documentation, we'll discuss each m
 [whereNull](#method-wherenull)
 [wrap](#method-wrap)
 [zip](#method-zip)
+```
 
-</div>
-
-<a name="method-listing"></a>
-## Method Listing
+## 方法清單
 
 <style>
     .collection-method code {
@@ -255,24 +257,21 @@ For the majority of the remaining collection documentation, we'll discuss each m
     }
 </style>
 
-<a name="method-all"></a>
 #### `all()` {.collection-method .first-collection-method}
 
-The `all` method returns the underlying array represented by the collection:
+`all` 方法返回由集合表示的底層陣列：
 
     collect([1, 2, 3])->all();
 
     // [1, 2, 3]
 
-<a name="method-average"></a>
 #### `average()` {.collection-method}
 
-Alias for the [`avg`](#method-avg) method.
+[`avg`](#method-avg) 方法的別名。
 
-<a name="method-avg"></a>
 #### `avg()` {.collection-method}
 
-The `avg` method returns the [average value](https://en.wikipedia.org/wiki/Average) of a given key:
+`avg` 方法返回給定鍵的[平均值](https://en.wikipedia.org/wiki/Average)：
 
     $average = collect([
         ['foo' => 10],
@@ -287,10 +286,9 @@ The `avg` method returns the [average value](https://en.wikipedia.org/wiki/Avera
 
     // 2
 
-<a name="method-chunk"></a>
 #### `chunk()` {.collection-method}
 
-The `chunk` method breaks the collection into multiple, smaller collections of a given size:
+`chunk` 方法將集合分成多個指定大小的較小集合：
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7]);
 
@@ -300,7 +298,7 @@ The `chunk` method breaks the collection into multiple, smaller collections of a
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
-This method is especially useful in [views](/docs/{{version}}/views) when working with a grid system such as [Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid/). For example, imagine you have a collection of [Eloquent](/docs/{{version}}/eloquent) models you want to display in a grid:
+這個方法在[視圖](/docs/{{version}}/views)中特別有用，當與像[Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid/)這樣的網格系統一起使用時。例如，假設您有一個[Eloquent](/docs/{{version}}/eloquent)模型的集合，您希望在網格中顯示：
 
 ```blade
 @foreach ($products->chunk(3) as $chunk)
@@ -312,10 +310,9 @@ This method is especially useful in [views](/docs/{{version}}/views) when workin
 @endforeach
 ```
 
-<a name="method-chunkwhile"></a>
 #### `chunkWhile()` {.collection-method}
 
-The `chunkWhile` method breaks the collection into multiple, smaller collections based on the evaluation of the given callback. The `$chunk` variable passed to the closure may be used to inspect the previous element:
+`chunkWhile` 方法根據給定回調函數的評估將集合分成多個較小集合。傳遞給閉包的 `$chunk` 變數可用於檢查前一個元素：
 
     $collection = collect(str_split('AABBCCCD'));
 
@@ -325,156 +322,175 @@ The `chunkWhile` method breaks the collection into multiple, smaller collections
 
     $chunks->all();
 
-    // [['A', 'A'], ['B', 'B'], ['C', 'C', 'C'], ['D']]
 
 <a name="method-collapse"></a>
 #### `collapse()` {.collection-method}
 
-The `collapse` method collapses a collection of arrays into a single, flat collection:
+`collapse` 方法將一組陣列收縮為單一的平坦集合：
 
-    $collection = collect([
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9],
-    ]);
+```php
+$collection = collect([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+]);
 
-    $collapsed = $collection->collapse();
+$collapsed = $collection->collapse();
 
-    $collapsed->all();
+$collapsed->all();
 
-    // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+// [1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
 
 <a name="method-collect"></a>
 #### `collect()` {.collection-method}
 
-The `collect` method returns a new `Collection` instance with the items currently in the collection:
+`collect` 方法使用目前集合中的項目返回一個新的 `Collection` 實例：
 
-    $collectionA = collect([1, 2, 3]);
+```php
+$collectionA = collect([1, 2, 3]);
 
-    $collectionB = $collectionA->collect();
+$collectionB = $collectionA->collect();
 
-    $collectionB->all();
+$collectionB->all();
 
-    // [1, 2, 3]
+// [1, 2, 3]
+```
 
-The `collect` method is primarily useful for converting [lazy collections](#lazy-collections) into standard `Collection` instances:
+`collect` 方法主要用於將[延遲集合](#lazy-collections)轉換為標準的 `Collection` 實例：
 
-    $lazyCollection = LazyCollection::make(function () {
-        yield 1;
-        yield 2;
-        yield 3;
-    });
+```php
+$lazyCollection = LazyCollection::make(function () {
+    yield 1;
+    yield 2;
+    yield 3;
+});
 
-    $collection = $lazyCollection->collect();
+$collection = $lazyCollection->collect();
 
-    $collection::class;
+$collection::class;
 
-    // 'Illuminate\Support\Collection'
+// 'Illuminate\Support\Collection'
 
-    $collection->all();
+$collection->all();
 
-    // [1, 2, 3]
+// [1, 2, 3]
+```
 
 > [!NOTE]  
-> The `collect` method is especially useful when you have an instance of `Enumerable` and need a non-lazy collection instance. Since `collect()` is part of the `Enumerable` contract, you can safely use it to get a `Collection` instance.
+> 當您擁有 `Enumerable` 實例並且需要非延遲集合實例時，`collect` 方法尤其有用。由於 `collect()` 是 `Enumerable` 合約的一部分，您可以安全地使用它來獲取 `Collection` 實例。
 
 <a name="method-combine"></a>
 #### `combine()` {.collection-method}
 
-The `combine` method combines the values of the collection, as keys, with the values of another array or collection:
+`combine` 方法將集合的值作為鍵與另一個陣列或集合的值組合：
 
-    $collection = collect(['name', 'age']);
+```php
+$collection = collect(['name', 'age']);
 
-    $combined = $collection->combine(['George', 29]);
+$combined = $collection->combine(['George', 29]);
 
-    $combined->all();
+$combined->all();
 
-    // ['name' => 'George', 'age' => 29]
+// ['name' => 'George', 'age' => 29]
+```
 
 <a name="method-concat"></a>
 #### `concat()` {.collection-method}
 
-The `concat` method appends the given `array` or collection's values onto the end of another collection:
+`concat` 方法將給定的 `array` 或集合的值附加到另一個集合的末尾：
 
-    $collection = collect(['John Doe']);
+```php
+$collection = collect(['John Doe']);
 
-    $concatenated = $collection->concat(['Jane Doe'])->concat(['name' => 'Johnny Doe']);
+$concatenated = $collection->concat(['Jane Doe'])->concat(['name' => 'Johnny Doe']);
 
-    $concatenated->all();
+$concatenated->all();
+```
 
-    // ['John Doe', 'Jane Doe', 'Johnny Doe']
+```php
+// ['John Doe', 'Jane Doe', 'Johnny Doe']
 
-The `concat` method numerically reindexes keys for items concatenated onto the original collection. To maintain keys in associative collections, see the [merge](#method-merge) method.
+`concat` 方法會對附加到原始集合上的項目重新索引鍵。若要保持關聯集合中的鍵，請參閱 [merge](#method-merge) 方法。
 
 <a name="method-contains"></a>
 #### `contains()` {.collection-method}
 
-The `contains` method determines whether the collection contains a given item. You may pass a closure to the `contains` method to determine if an element exists in the collection matching a given truth test:
+`contains` 方法用於確定集合是否包含給定項目。您可以將閉包傳遞給 `contains` 方法，以確定集合中是否存在與給定真值測試匹配的元素：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->contains(function (int $value, int $key) {
-        return $value > 5;
-    });
+$collection->contains(function (int $value, int $key) {
+    return $value > 5;
+});
 
-    // false
+// false
+```
 
-Alternatively, you may pass a string to the `contains` method to determine whether the collection contains a given item value:
+或者，您可以將字符串傳遞給 `contains` 方法，以確定集合是否包含給定項目值：
 
-    $collection = collect(['name' => 'Desk', 'price' => 100]);
+```php
+$collection = collect(['name' => 'Desk', 'price' => 100]);
 
-    $collection->contains('Desk');
+$collection->contains('Desk');
 
-    // true
+// true
 
-    $collection->contains('New York');
+$collection->contains('New York');
 
-    // false
+// false
+```
 
-You may also pass a key / value pair to the `contains` method, which will determine if the given pair exists in the collection:
+您還可以將鍵/值對傳遞給 `contains` 方法，以確定集合中是否存在給定對：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
-        ['product' => 'Chair', 'price' => 100],
-    ]);
+```php
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+]);
 
-    $collection->contains('product', 'Bookcase');
+$collection->contains('product', 'Bookcase');
 
-    // false
+// false
+```
 
-The `contains` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the [`containsStrict`](#method-containsstrict) method to filter using "strict" comparisons.
+`contains` 方法在檢查項目值時使用「寬鬆」比較，這意味著具有整數值的字符串將被視為等於具有相同值的整數。使用 [`containsStrict`](#method-containsstrict) 方法使用「嚴格」比較進行篩選。
 
-For the inverse of `contains`, see the [doesntContain](#method-doesntcontain) method.
+若要查看 `contains` 的相反操作，請參閱 [doesntContain](#method-doesntcontain) 方法。
 
 <a name="method-containsoneitem"></a>
 #### `containsOneItem()` {.collection-method}
 
-The `containsOneItem` method determines whether the collection contains a single item:
+`containsOneItem` 方法用於確定集合是否包含單個項目：
 
-    collect([])->containsOneItem();
+```php
+collect([])->containsOneItem();
 
-    // false
+// false
 
-    collect(['1'])->containsOneItem();
+collect(['1'])->containsOneItem();
 
-    // true
+// true
 
-    collect(['1', '2'])->containsOneItem();
+collect(['1', '2'])->containsOneItem();
 
-    // false
+// false
+```
 
 <a name="method-containsstrict"></a>
 #### `containsStrict()` {.collection-method}
+```
 
-This method has the same signature as the [`contains`](#method-contains) method; however, all values are compared using "strict" comparisons.
+這個方法與 [`contains`](#method-contains) 方法具有相同的簽名；然而，所有的值都是使用"嚴格"比較來進行比較。
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-contains).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-contains) 時，此方法的行為會被修改。
 
 <a name="method-count"></a>
 #### `count()` {.collection-method}
 
-The `count` method returns the total number of items in the collection:
+`count` 方法返回集合中項目的總數：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -485,7 +501,7 @@ The `count` method returns the total number of items in the collection:
 <a name="method-countBy"></a>
 #### `countBy()` {.collection-method}
 
-The `countBy` method counts the occurrences of values in the collection. By default, the method counts the occurrences of every element, allowing you to count certain "types" of elements in the collection:
+`countBy` 方法計算集合中值的出現次數。默認情況下，該方法計算每個元素的出現次數，允許您計算集合中某些"類型"的元素：
 
     $collection = collect([1, 2, 2, 2, 3]);
 
@@ -495,7 +511,7 @@ The `countBy` method counts the occurrences of values in the collection. By defa
 
     // [1 => 1, 2 => 3, 3 => 1]
 
-You pass a closure to the `countBy` method to count all items by a custom value:
+您可以向 `countBy` 方法傳遞一個閉包，按自定義值計算所有項目：
 
     $collection = collect(['alice@gmail.com', 'bob@yahoo.com', 'carlos@gmail.com']);
 
@@ -510,7 +526,7 @@ You pass a closure to the `countBy` method to count all items by a custom value:
 <a name="method-crossjoin"></a>
 #### `crossJoin()` {.collection-method}
 
-The `crossJoin` method cross joins the collection's values among the given arrays or collections, returning a Cartesian product with all possible permutations:
+`crossJoin` 方法在給定的數組或集合之間交叉連接集合的值，返回所有可能排列的笛卡爾積：
 
     $collection = collect([1, 2]);
 
@@ -546,10 +562,11 @@ The `crossJoin` method cross joins the collection's values among the given array
         ]
     */
 
+
 <a name="method-dd"></a>
 #### `dd()` {.collection-method}
 
-The `dd` method dumps the collection's items and ends execution of the script:
+`dd` 方法會將集合的項目輸出並結束腳本的執行：
 
     $collection = collect(['John Doe', 'Jane Doe']);
 
@@ -564,12 +581,12 @@ The `dd` method dumps the collection's items and ends execution of the script:
         }
     */
 
-If you do not want to stop executing the script, use the [`dump`](#method-dump) method instead.
+如果您不想停止腳本的執行，請改用 [`dump`](#method-dump) 方法。
 
 <a name="method-diff"></a>
 #### `diff()` {.collection-method}
 
-The `diff` method compares the collection against another collection or a plain PHP `array` based on its values. This method will return the values in the original collection that are not present in the given collection:
+`diff` 方法會將集合與另一個集合或純 PHP `array` 進行比較，基於其值。此方法將返回原始集合中不在給定集合中的值：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -580,12 +597,12 @@ The `diff` method compares the collection against another collection or a plain 
     // [1, 3, 5]
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-diff).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-diff) 時，此方法的行為會有所修改。
 
 <a name="method-diffassoc"></a>
 #### `diffAssoc()` {.collection-method}
 
-The `diffAssoc` method compares the collection against another collection or a plain PHP `array` based on its keys and values. This method will return the key / value pairs in the original collection that are not present in the given collection:
+`diffAssoc` 方法會將集合與另一個集合或純 PHP `array` 進行比較，基於其鍵和值。此方法將返回原始集合中不在給定集合中的鍵 / 值對：
 
     $collection = collect([
         'color' => 'orange',
@@ -607,7 +624,7 @@ The `diffAssoc` method compares the collection against another collection or a p
 <a name="method-diffassocusing"></a>
 #### `diffAssocUsing()` {.collection-method}
 
-Unlike `diffAssoc`, `diffAssocUsing` accepts a user supplied callback function for the indices comparison:
+與 `diffAssoc` 不同，`diffAssocUsing` 接受用戶提供的回調函數進行索引比較：
 
     $collection = collect([
         'color' => 'orange',
@@ -621,289 +638,331 @@ Unlike `diffAssoc`, `diffAssocUsing` accepts a user supplied callback function f
         'Remain' => 3,
     ], 'strnatcasecmp');
 
-    $diff->all();
+```php
+$diff->all();
 
-    // ['color' => 'orange', 'remain' => 6]
+// ['color' => 'orange', 'remain' => 6]
+```
 
-The callback must be a comparison function that returns an integer less than, equal to, or greater than zero. For more information, refer to the PHP documentation on [`array_diff_uassoc`](https://www.php.net/array_diff_uassoc#refsect1-function.array-diff-uassoc-parameters), which is the PHP function that the `diffAssocUsing` method utilizes internally.
+回呼函式必須是一個比較函式，返回小於、等於或大於零的整數。有關更多信息，請參閱 PHP 文檔中有關 [`array_diff_uassoc`](https://www.php.net/array_diff_uassoc#refsect1-function.array-diff-uassoc-parameters) 的說明，這是 `diffAssocUsing` 方法在內部使用的 PHP 函式。
 
 <a name="method-diffkeys"></a>
 #### `diffKeys()` {.collection-method}
 
-The `diffKeys` method compares the collection against another collection or a plain PHP `array` based on its keys. This method will return the key / value pairs in the original collection that are not present in the given collection:
+`diffKeys` 方法根據其鍵與另一個集合或純 PHP `array` 進行比較。此方法將返回原始集合中存在但給定集合中不存在的鍵/值對：
 
-    $collection = collect([
-        'one' => 10,
-        'two' => 20,
-        'three' => 30,
-        'four' => 40,
-        'five' => 50,
-    ]);
+```php
+$collection = collect([
+    'one' => 10,
+    'two' => 20,
+    'three' => 30,
+    'four' => 40,
+    'five' => 50,
+]);
 
-    $diff = $collection->diffKeys([
-        'two' => 2,
-        'four' => 4,
-        'six' => 6,
-        'eight' => 8,
-    ]);
+$diff = $collection->diffKeys([
+    'two' => 2,
+    'four' => 4,
+    'six' => 6,
+    'eight' => 8,
+]);
 
-    $diff->all();
+$diff->all();
 
-    // ['one' => 10, 'three' => 30, 'five' => 50]
+// ['one' => 10, 'three' => 30, 'five' => 50]
+```
 
 <a name="method-doesntcontain"></a>
 #### `doesntContain()` {.collection-method}
 
-The `doesntContain` method determines whether the collection does not contain a given item. You may pass a closure to the `doesntContain` method to determine if an element does not exist in the collection matching a given truth test:
+`doesntContain` 方法確定集合是否不包含給定項目。您可以將一個閉包傳遞給 `doesntContain` 方法，以確定集合中不存在與給定真值測試匹配的元素：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->doesntContain(function (int $value, int $key) {
-        return $value < 5;
-    });
+$collection->doesntContain(function (int $value, int $key) {
+    return $value < 5;
+});
 
-    // false
+// false
+```
 
-Alternatively, you may pass a string to the `doesntContain` method to determine whether the collection does not contain a given item value:
+或者，您可以將一個字符串傳遞給 `doesntContain` 方法，以確定集合是否不包含給定項目值：
 
-    $collection = collect(['name' => 'Desk', 'price' => 100]);
+```php
+$collection = collect(['name' => 'Desk', 'price' => 100]);
 
-    $collection->doesntContain('Table');
+$collection->doesntContain('Table');
 
-    // true
+// true
 
-    $collection->doesntContain('Desk');
+$collection->doesntContain('Desk');
 
-    // false
+// false
+```
 
-You may also pass a key / value pair to the `doesntContain` method, which will determine if the given pair does not exist in the collection:
+您還可以將一個鍵/值對傳遞給 `doesntContain` 方法，該方法將確定給定對是否不存在於集合中：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
-        ['product' => 'Chair', 'price' => 100],
-    ]);
+```php
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+]);
+```
 
-    $collection->doesntContain('product', 'Bookcase');
+```php
+$collection->doesntContain('product', 'Bookcase');
 
-    // true
+// true
+```
 
-The `doesntContain` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value.
+`doesntContain` 方法在檢查項目值時使用「寬鬆」比較，這意味著具有整數值的字串將被視為與相同值的整數相等。
 
 <a name="method-dot"></a>
 #### `dot()` {.collection-method}
 
-The `dot` method flattens a multi-dimensional collection into a single level collection that uses "dot" notation to indicate depth:
+`dot` 方法將多維集合扁平化為單層集合，並使用「點」表示深度：
 
-    $collection = collect(['products' => ['desk' => ['price' => 100]]]);
+```php
+$collection = collect(['products' => ['desk' => ['price' => 100]]]);
 
-    $flattened = $collection->dot();
+$flattened = $collection->dot();
 
-    $flattened->all();
+$flattened->all();
 
-    // ['products.desk.price' => 100]
+// ['products.desk.price' => 100]
+```
 
 <a name="method-dump"></a>
 #### `dump()` {.collection-method}
 
-The `dump` method dumps the collection's items:
+`dump` 方法將集合的項目輸出：
 
-    $collection = collect(['John Doe', 'Jane Doe']);
+```php
+$collection = collect(['John Doe', 'Jane Doe']);
 
-    $collection->dump();
+$collection->dump();
 
-    /*
-        Collection {
-            #items: array:2 [
-                0 => "John Doe"
-                1 => "Jane Doe"
-            ]
-        }
-    */
+/*
+    Collection {
+        #items: array:2 [
+            0 => "John Doe"
+            1 => "Jane Doe"
+        ]
+    }
+*/
+```
 
-If you want to stop executing the script after dumping the collection, use the [`dd`](#method-dd) method instead.
+如果您希望在輸出集合後停止執行腳本，請改用 [`dd`](#method-dd) 方法。
 
 <a name="method-duplicates"></a>
 #### `duplicates()` {.collection-method}
 
-The `duplicates` method retrieves and returns duplicate values from the collection:
+`duplicates` 方法檢索並返回集合中的重複值：
 
-    $collection = collect(['a', 'b', 'a', 'c', 'b']);
+```php
+$collection = collect(['a', 'b', 'a', 'c', 'b']);
 
-    $collection->duplicates();
+$collection->duplicates();
 
-    // [2 => 'a', 4 => 'b']
+// [2 => 'a', 4 => 'b']
+```
 
-If the collection contains arrays or objects, you can pass the key of the attributes that you wish to check for duplicate values:
+如果集合包含陣列或物件，您可以傳遞要檢查重複值的屬性鍵：
 
-    $employees = collect([
-        ['email' => 'abigail@example.com', 'position' => 'Developer'],
-        ['email' => 'james@example.com', 'position' => 'Designer'],
-        ['email' => 'victoria@example.com', 'position' => 'Developer'],
-    ]);
+```php
+$employees = collect([
+    ['email' => 'abigail@example.com', 'position' => 'Developer'],
+    ['email' => 'james@example.com', 'position' => 'Designer'],
+    ['email' => 'victoria@example.com', 'position' => 'Developer'],
+]);
 
-    $employees->duplicates('position');
+$employees->duplicates('position');
 
-    // [2 => 'Developer']
+// [2 => 'Developer']
+```
 
 <a name="method-duplicatesstrict"></a>
 #### `duplicatesStrict()` {.collection-method}
 
-This method has the same signature as the [`duplicates`](#method-duplicates) method; however, all values are compared using "strict" comparisons.
+此方法與 [`duplicates`](#method-duplicates) 方法具有相同的簽名；但是，所有值都使用「嚴格」比較進行比較。
 
 <a name="method-each"></a>
 #### `each()` {.collection-method}
+```
 
-The `each` method iterates over the items in the collection and passes each item to a closure:
+`each` 方法遍歷集合中的項目並將每個項目傳遞給閉包：
 
-    $collection = collect([1, 2, 3, 4]);
+```php
+$collection = collect([1, 2, 3, 4]);
 
-    $collection->each(function (int $item, int $key) {
-        // ...
-    });
+$collection->each(function (int $item, int $key) {
+    // ...
+});
+```
 
-If you would like to stop iterating through the items, you may return `false` from your closure:
+如果您想要停止遍歷項目，可以從閉包中返回 `false`：
 
-    $collection->each(function (int $item, int $key) {
-        if (/* condition */) {
-            return false;
-        }
-    });
-
-<a name="method-eachspread"></a>
-#### `eachSpread()` {.collection-method}
-
-The `eachSpread` method iterates over the collection's items, passing each nested item value into the given callback:
-
-    $collection = collect([['John Doe', 35], ['Jane Doe', 33]]);
-
-    $collection->eachSpread(function (string $name, int $age) {
-        // ...
-    });
-
-You may stop iterating through the items by returning `false` from the callback:
-
-    $collection->eachSpread(function (string $name, int $age) {
+```php
+$collection->each(function (int $item, int $key) {
+    if (/* 條件 */) {
         return false;
-    });
+    }
+});
+```
 
-<a name="method-ensure"></a>
-#### `ensure()` {.collection-method}
+#### `eachSpread()` {.collection-method} <a name="method-eachspread"></a>
 
-The `ensure` method may be used to verify that all elements of a collection are of a given type or list of types. Otherwise, an `UnexpectedValueException` will be thrown:
+`eachSpread` 方法遍歷集合的項目，將每個嵌套項目的值傳遞給給定的回調函式：
 
-    return $collection->ensure(User::class);
+```php
+$collection = collect([['John Doe', 35], ['Jane Doe', 33]]);
 
-    return $collection->ensure([User::class, Customer::class]);
+$collection->eachSpread(function (string $name, int $age) {
+    // ...
+});
+```
 
-Primitive types such as `string`, `int`, `float`, `bool`, and `array` may also be specified:
+您可以通過從回調函式中返回 `false` 來停止遍歷項目：
 
-    return $collection->ensure('int');
+```php
+$collection->eachSpread(function (string $name, int $age) {
+    return false;
+});
+```
+
+#### `ensure()` {.collection-method} <a name="method-ensure"></a>
+
+`ensure` 方法可用於驗證集合的所有元素是否屬於給定類型或類型列表。否則，將拋出 `UnexpectedValueException`：
+
+```php
+return $collection->ensure(User::class);
+
+return $collection->ensure([User::class, Customer::class]);
+```
+
+也可以指定基本類型，如 `string`、`int`、`float`、`bool` 和 `array`：
+
+```php
+return $collection->ensure('int');
+```
 
 > [!WARNING]  
-> The `ensure` method does not guarantee that elements of different types will not be added to the collection at a later time.
+> `ensure` 方法不能保證以後不會將不同類型的元素添加到集合中。
 
-<a name="method-every"></a>
-#### `every()` {.collection-method}
+#### `every()` {.collection-method} <a name="method-every"></a>
 
-The `every` method may be used to verify that all elements of a collection pass a given truth test:
+`every` 方法可用於驗證集合的所有元素是否通過給定的真值測試：
 
-    collect([1, 2, 3, 4])->every(function (int $value, int $key) {
-        return $value > 2;
-    });
+```php
+collect([1, 2, 3, 4])->every(function (int $value, int $key) {
+    return $value > 2;
+});
 
-    // false
+// false
+```
 
-If the collection is empty, the `every` method will return true:
+如果集合為空，`every` 方法將返回 true：
 
-    $collection = collect([]);
+```php
+$collection = collect([]);
 
-    $collection->every(function (int $value, int $key) {
-        return $value > 2;
-    });
+$collection->every(function (int $value, int $key) {
+    return $value > 2;
+});
+```
 
-    // true
 
-<a name="method-except"></a>
 #### `except()` {.collection-method}
 
-The `except` method returns all items in the collection except for those with the specified keys:
+`except` 方法返回集合中除了指定鍵之外的所有項目：
 
-    $collection = collect(['product_id' => 1, 'price' => 100, 'discount' => false]);
+```php
+$collection = collect(['product_id' => 1, 'price' => 100, 'discount' => false]);
 
-    $filtered = $collection->except(['price', 'discount']);
+$filtered = $collection->except(['price', 'discount']);
 
-    $filtered->all();
+$filtered->all();
 
-    // ['product_id' => 1]
+// ['product_id' => 1]
+```
 
-For the inverse of `except`, see the [only](#method-only) method.
+要查看 `except` 的相反操作，請參閱 [only](#method-only) 方法。
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-except).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-except) 時，此方法的行為會有所修改。
 
-<a name="method-filter"></a>
 #### `filter()` {.collection-method}
 
-The `filter` method filters the collection using the given callback, keeping only those items that pass a given truth test:
+`filter` 方法使用給定的回調函式來過濾集合，僅保留通過特定真值測試的項目：
 
-    $collection = collect([1, 2, 3, 4]);
+```php
+$collection = collect([1, 2, 3, 4]);
 
-    $filtered = $collection->filter(function (int $value, int $key) {
-        return $value > 2;
-    });
+$filtered = $collection->filter(function (int $value, int $key) {
+    return $value > 2;
+});
 
-    $filtered->all();
+$filtered->all();
 
-    // [3, 4]
+// [3, 4]
+```
 
-If no callback is supplied, all entries of the collection that are equivalent to `false` will be removed:
+如果未提供回調函式，則將刪除集合中等於 `false` 的所有項目：
 
-    $collection = collect([1, 2, 3, null, false, '', 0, []]);
+```php
+$collection = collect([1, 2, 3, null, false, '', 0, []]);
 
-    $collection->filter()->all();
+$collection->filter()->all();
 
-    // [1, 2, 3]
+// [1, 2, 3]
+```
 
-For the inverse of `filter`, see the [reject](#method-reject) method.
+要查看 `filter` 的相反操作，請參閱 [reject](#method-reject) 方法。
 
-<a name="method-first"></a>
 #### `first()` {.collection-method}
 
-The `first` method returns the first element in the collection that passes a given truth test:
+`first` 方法返回集合中通過特定真值測試的第一個元素：
 
-    collect([1, 2, 3, 4])->first(function (int $value, int $key) {
-        return $value > 2;
-    });
+```php
+collect([1, 2, 3, 4])->first(function (int $value, int $key) {
+    return $value > 2;
+});
 
-    // 3
+// 3
+```
 
-You may also call the `first` method with no arguments to get the first element in the collection. If the collection is empty, `null` is returned:
+您也可以不帶參數調用 `first` 方法以獲取集合中的第一個元素。如果集合為空，則返回 `null`：
 
-    collect([1, 2, 3, 4])->first();
+```php
+collect([1, 2, 3, 4])->first();
 
-    // 1
+// 1
+```
 
-<a name="method-first-or-fail"></a>
 #### `firstOrFail()` {.collection-method}
 
-The `firstOrFail` method is identical to the `first` method; however, if no result is found, an `Illuminate\Support\ItemNotFoundException` exception will be thrown:
+`firstOrFail` 方法與 `first` 方法相同；但是，如果找不到結果，將拋出一個 `Illuminate\Support\ItemNotFoundException` 例外：
 
-    collect([1, 2, 3, 4])->firstOrFail(function (int $value, int $key) {
-        return $value > 5;
-    });
+```php
+collect([1, 2, 3, 4])->firstOrFail(function (int $value, int $key) {
+    return $value > 5;
+});
+```
 
-    // Throws ItemNotFoundException...
+```markdown
+    // 拋出 ItemNotFoundException...
 
-You may also call the `firstOrFail` method with no arguments to get the first element in the collection. If the collection is empty, an `Illuminate\Support\ItemNotFoundException` exception will be thrown:
+您也可以調用 `firstOrFail` 方法而不帶任何引數來獲取集合中的第一個元素。如果集合為空，將拋出一個 `Illuminate\Support\ItemNotFoundException` 異常：
 
     collect([])->firstOrFail();
 
-    // Throws ItemNotFoundException...
+    // 拋出 ItemNotFoundException...
 
 <a name="method-first-where"></a>
 #### `firstWhere()` {.collection-method}
 
-The `firstWhere` method returns the first element in the collection with the given key / value pair:
+`firstWhere` 方法返回具有給定鍵 / 值對的集合中的第一個元素：
 
     $collection = collect([
         ['name' => 'Regena', 'age' => null],
@@ -916,13 +975,13 @@ The `firstWhere` method returns the first element in the collection with the giv
 
     // ['name' => 'Linda', 'age' => 14]
 
-You may also call the `firstWhere` method with a comparison operator:
+您也可以使用比較運算符調用 `firstWhere` 方法：
 
     $collection->firstWhere('age', '>=', 18);
 
     // ['name' => 'Diego', 'age' => 23]
 
-Like the [where](#method-where) method, you may pass one argument to the `firstWhere` method. In this scenario, the `firstWhere` method will return the first item where the given item key's value is "truthy":
+與 [where](#method-where) 方法類似，您可以向 `firstWhere` 方法傳遞一個引數。在這種情況下，`firstWhere` 方法將返回第一個項目，其中給定項目鍵的值為“真值”：
 
     $collection->firstWhere('age');
 
@@ -931,7 +990,7 @@ Like the [where](#method-where) method, you may pass one argument to the `firstW
 <a name="method-flatmap"></a>
 #### `flatMap()` {.collection-method}
 
-The `flatMap` method iterates through the collection and passes each value to the given closure. The closure is free to modify the item and return it, thus forming a new collection of modified items. Then, the array is flattened by one level:
+`flatMap` 方法遍歷集合並將每個值傳遞給給定的閉包。閉包可以修改項目並返回它，從而形成一個新的修改過的項目集合。然後，數組被壓平一級：
 
     $collection = collect([
         ['name' => 'Sally'],
@@ -950,7 +1009,7 @@ The `flatMap` method iterates through the collection and passes each value to th
 <a name="method-flatten"></a>
 #### `flatten()` {.collection-method}
 
-The `flatten` method flattens a multi-dimensional collection into a single dimension:
+`flatten` 方法將多維集合壓縮為單一維度：
 
     $collection = collect([
         'name' => 'taylor',
@@ -958,235 +1017,264 @@ The `flatten` method flattens a multi-dimensional collection into a single dimen
             'php', 'javascript'
         ]
     ]);
+```
 
-    $flattened = $collection->flatten();
+```php
+$flattened = $collection->flatten();
 
-    $flattened->all();
+$flattened->all();
 
-    // ['taylor', 'php', 'javascript'];
+// ['taylor', 'php', 'javascript'];
+```
 
-If necessary, you may pass the `flatten` method a "depth" argument:
+如果需要，您可以將 `flatten` 方法傳遞一個 "depth" 引數：
 
-    $collection = collect([
-        'Apple' => [
-            [
-                'name' => 'iPhone 6S',
-                'brand' => 'Apple'
-            ],
-        ],
-        'Samsung' => [
-            [
-                'name' => 'Galaxy S7',
-                'brand' => 'Samsung'
-            ],
-        ],
-    ]);
-
-    $products = $collection->flatten(1);
-
-    $products->values()->all();
-
-    /*
+```php
+$collection = collect([
+    'Apple' => [
         [
-            ['name' => 'iPhone 6S', 'brand' => 'Apple'],
-            ['name' => 'Galaxy S7', 'brand' => 'Samsung'],
-        ]
-    */
+            'name' => 'iPhone 6S',
+            'brand' => 'Apple'
+        ],
+    ],
+    'Samsung' => [
+        [
+            'name' => 'Galaxy S7',
+            'brand' => 'Samsung'
+        ],
+    ],
+]);
 
-In this example, calling `flatten` without providing the depth would have also flattened the nested arrays, resulting in `['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung']`. Providing a depth allows you to specify the number of levels nested arrays will be flattened.
+$products = $collection->flatten(1);
+
+$products->values()->all();
+
+/*
+    [
+        ['name' => 'iPhone 6S', 'brand' => 'Apple'],
+        ['name' => 'Galaxy S7', 'brand' => 'Samsung'],
+    ]
+*/
+```
+
+在這個例子中，如果沒有提供深度，調用 `flatten` 也會將嵌套的陣列扁平化，結果為 `['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung']`。提供深度可以指定要將嵌套陣列扁平化的層級數。
 
 <a name="method-flip"></a>
 #### `flip()` {.collection-method}
 
-The `flip` method swaps the collection's keys with their corresponding values:
+`flip` 方法將集合的鍵與對應的值交換：
 
-    $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
+```php
+$collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
-    $flipped = $collection->flip();
+$flipped = $collection->flip();
 
-    $flipped->all();
+$flipped->all();
 
-    // ['taylor' => 'name', 'laravel' => 'framework']
+// ['taylor' => 'name', 'laravel' => 'framework']
+```
 
 <a name="method-forget"></a>
 #### `forget()` {.collection-method}
 
-The `forget` method removes an item from the collection by its key:
+`forget` 方法根據鍵名從集合中刪除一個項目：
 
-    $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
+```php
+$collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
-    $collection->forget('name');
+$collection->forget('name');
 
-    $collection->all();
+$collection->all();
 
-    // ['framework' => 'laravel']
+// ['framework' => 'laravel']
+```
 
 > [!WARNING]  
-> Unlike most other collection methods, `forget` does not return a new modified collection; it modifies the collection it is called on.
+> 與大多數其他集合方法不同，`forget` 不會返回一個新的修改後的集合；它會修改被調用的集合。
 
 <a name="method-forpage"></a>
 #### `forPage()` {.collection-method}
 
-The `forPage` method returns a new collection containing the items that would be present on a given page number. The method accepts the page number as its first argument and the number of items to show per page as its second argument:
+`forPage` 方法返回一個新的集合，其中包含特定頁碼上應該存在的項目。該方法將頁碼作為第一個引數，每頁要顯示的項目數作為第二個引數：
+```
 
-    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+```php
+$collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-    $chunk = $collection->forPage(2, 3);
+$chunk = $collection->forPage(2, 3);
 
-    $chunk->all();
+$chunk->all();
 
-    // [4, 5, 6]
+// [4, 5, 6]
+```
 
 <a name="method-get"></a>
 #### `get()` {.collection-method}
 
-The `get` method returns the item at a given key. If the key does not exist, `null` is returned:
+`get` 方法會返回指定鍵的項目。如果鍵不存在，將返回 `null`：
 
-    $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
+```php
+$collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
-    $value = $collection->get('name');
+$value = $collection->get('name');
 
-    // taylor
+// taylor
+```
 
-You may optionally pass a default value as the second argument:
+您可以選擇性地將默認值作為第二個引數傳遞：
 
-    $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
+```php
+$collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
-    $value = $collection->get('age', 34);
+$value = $collection->get('age', 34);
 
-    // 34
+// 34
+```
 
-You may even pass a callback as the method's default value. The result of the callback will be returned if the specified key does not exist:
+您甚至可以將回調函數作為方法的默認值傳遞。如果指定的鍵不存在，將返回回調函數的結果：
 
-    $collection->get('email', function () {
-        return 'taylor@example.com';
-    });
+```php
+$collection->get('email', function () {
+    return 'taylor@example.com';
+});
 
-    // taylor@example.com
+// taylor@example.com
+```
 
 <a name="method-groupby"></a>
 #### `groupBy()` {.collection-method}
 
-The `groupBy` method groups the collection's items by a given key:
+`groupBy` 方法按照給定的鍵對集合的項目進行分組：
 
-    $collection = collect([
-        ['account_id' => 'account-x10', 'product' => 'Chair'],
-        ['account_id' => 'account-x10', 'product' => 'Bookcase'],
-        ['account_id' => 'account-x11', 'product' => 'Desk'],
-    ]);
+```php
+$collection = collect([
+    ['account_id' => 'account-x10', 'product' => 'Chair'],
+    ['account_id' => 'account-x10', 'product' => 'Bookcase'],
+    ['account_id' => 'account-x11', 'product' => 'Desk'],
+]);
 
-    $grouped = $collection->groupBy('account_id');
+$grouped = $collection->groupBy('account_id');
 
-    $grouped->all();
+$grouped->all();
 
-    /*
-        [
-            'account-x10' => [
-                ['account_id' => 'account-x10', 'product' => 'Chair'],
-                ['account_id' => 'account-x10', 'product' => 'Bookcase'],
-            ],
-            'account-x11' => [
-                ['account_id' => 'account-x11', 'product' => 'Desk'],
-            ],
-        ]
-    */
-
-Instead of passing a string `key`, you may pass a callback. The callback should return the value you wish to key the group by:
-
-    $grouped = $collection->groupBy(function (array $item, int $key) {
-        return substr($item['account_id'], -3);
-    });
-
-    $grouped->all();
-
-    /*
-        [
-            'x10' => [
-                ['account_id' => 'account-x10', 'product' => 'Chair'],
-                ['account_id' => 'account-x10', 'product' => 'Bookcase'],
-            ],
-            'x11' => [
-                ['account_id' => 'account-x11', 'product' => 'Desk'],
-            ],
-        ]
-    */
-
-Multiple grouping criteria may be passed as an array. Each array element will be applied to the corresponding level within a multi-dimensional array:
-
-    $data = new Collection([
-        10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
-        20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
-        30 => ['user' => 3, 'skill' => 2, 'roles' => ['Role_1']],
-        40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
-    ]);
-
-    $result = $data->groupBy(['skill', function (array $item) {
-        return $item['roles'];
-    }], preserveKeys: true);
-
-    /*
+/*
     [
-        1 => [
-            'Role_1' => [
-                10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
-                20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
-            ],
-            'Role_2' => [
-                20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
-            ],
-            'Role_3' => [
-                10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
-            ],
+        'account-x10' => [
+            ['account_id' => 'account-x10', 'product' => 'Chair'],
+            ['account_id' => 'account-x10', 'product' => 'Bookcase'],
         ],
-        2 => [
-            'Role_1' => [
-                30 => ['user' => 3, 'skill' => 2, 'roles' => ['Role_1']],
-            ],
-            'Role_2' => [
-                40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
-            ],
+        'account-x11' => [
+            ['account_id' => 'account-x11', 'product' => 'Desk'],
         ],
-    ];
-    */
+    ]
+*/
+```
+
+您可以傳遞回調函數而不是字符串 `key`。回調函數應返回您希望按其分組的值：
+
+```php
+$grouped = $collection->groupBy(function (array $item, int $key) {
+    return substr($item['account_id'], -3);
+});
+
+$grouped->all();
+
+/*
+    [
+        'x10' => [
+            ['account_id' => 'account-x10', 'product' => 'Chair'],
+            ['account_id' => 'account-x10', 'product' => 'Bookcase'],
+        ],
+        'x11' => [
+            ['account_id' => 'account-x11', 'product' => 'Desk'],
+        ],
+    ]
+*/
+```
+
+多個分組標準可以作為陣列傳遞。每個陣列元素將應用於多維陣列中對應的層級：
+
+```php
+$data = new Collection([
+    10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
+    20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
+    30 => ['user' => 3, 'skill' => 2, 'roles' => ['Role_1']],
+    40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
+]);
+
+$result = $data->groupBy(['skill', function (array $item) {
+    return $item['roles'];
+}], preserveKeys: true);
+```
+
+```php
+[
+    1 => [
+        'Role_1' => [
+            10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
+            20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
+        ],
+        'Role_2' => [
+            20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
+        ],
+        'Role_3' => [
+            10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
+        ],
+    ],
+    2 => [
+        'Role_1' => [
+            30 => ['user' => 3, 'skill' => 2, 'roles' => ['Role_1']],
+        ],
+        'Role_2' => [
+            40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
+        ],
+    ],
+];
+```
 
 <a name="method-has"></a>
 #### `has()` {.collection-method}
 
-The `has` method determines if a given key exists in the collection:
+`has` 方法用於確定集合中是否存在給定的鍵：
 
-    $collection = collect(['account_id' => 1, 'product' => 'Desk', 'amount' => 5]);
+```php
+$collection = collect(['account_id' => 1, 'product' => 'Desk', 'amount' => 5]);
 
-    $collection->has('product');
+$collection->has('product');
 
-    // true
+// true
 
-    $collection->has(['product', 'amount']);
+$collection->has(['product', 'amount']);
 
-    // true
+// true
 
-    $collection->has(['amount', 'price']);
+$collection->has(['amount', 'price']);
 
-    // false
+// false
+```
 
 <a name="method-hasany"></a>
 #### `hasAny()` {.collection-method}
 
-The `hasAny` method determines whether any of the given keys exist in the collection:
+`hasAny` 方法用於確定集合中是否存在任何給定的鍵：
 
-    $collection = collect(['account_id' => 1, 'product' => 'Desk', 'amount' => 5]);
+```php
+$collection = collect(['account_id' => 1, 'product' => 'Desk', 'amount' => 5]);
 
-    $collection->hasAny(['product', 'price']);
+$collection->hasAny(['product', 'price']);
 
-    // true
+// true
 
-    $collection->hasAny(['name', 'price']);
+$collection->hasAny(['name', 'price']);
+```
 
+```markdown
     // false
 
 <a name="method-implode"></a>
 #### `implode()` {.collection-method}
 
-The `implode` method joins items in a collection. Its arguments depend on the type of items in the collection. If the collection contains arrays or objects, you should pass the key of the attributes you wish to join, and the "glue" string you wish to place between the values:
+`implode` 方法將集合中的項目連接起來。其引數取決於集合中項目的類型。如果集合包含陣列或物件，您應該傳遞您希望連接的屬性鍵以及您希望放在值之間的 "黏合" 字串：
 
     $collection = collect([
         ['account_id' => 1, 'product' => 'Desk'],
@@ -1197,13 +1285,13 @@ The `implode` method joins items in a collection. Its arguments depend on the ty
 
     // Desk, Chair
 
-If the collection contains simple strings or numeric values, you should pass the "glue" as the only argument to the method:
+如果集合包含簡單字串或數值，您應該將 "黏合" 作為該方法的唯一引數傳遞：
 
     collect([1, 2, 3, 4, 5])->implode('-');
 
     // '1-2-3-4-5'
 
-You may pass a closure to the `implode` method if you would like to format the values being imploded:
+如果您希望格式化被連接的值，可以將閉包傳遞給 `implode` 方法：
 
     $collection->implode(function (array $item, int $key) {
         return strtoupper($item['product']);
@@ -1214,7 +1302,7 @@ You may pass a closure to the `implode` method if you would like to format the v
 <a name="method-intersect"></a>
 #### `intersect()` {.collection-method}
 
-The `intersect` method removes any values from the original collection that are not present in the given `array` or collection. The resulting collection will preserve the original collection's keys:
+`intersect` 方法從原始集合中移除不在給定 `array` 或集合中的任何值。結果集合將保留原始集合的鍵：
 
     $collection = collect(['Desk', 'Sofa', 'Chair']);
 
@@ -1225,12 +1313,12 @@ The `intersect` method removes any values from the original collection that are 
     // [0 => 'Desk', 2 => 'Chair']
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-intersect).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-intersect) 時，此方法的行為會有所修改。
 
 <a name="method-intersectAssoc"></a>
 #### `intersectAssoc()` {.collection-method}
 
-The `intersectAssoc` method compares the original collection against another collection or `array`, returning the key / value pairs that are present in all of the given collections:
+`intersectAssoc` 方法將原始集合與另一個集合或 `array` 進行比較，返回存在於所有給定集合中的鍵 / 值對：
 
     $collection = collect([
         'color' => 'red',
@@ -1243,7 +1331,9 @@ The `intersectAssoc` method compares the original collection against another col
         'size' => 'M',
         'material' => 'polyester'
     ]);
+```
 
+```markdown
     $intersect->all();
 
     // ['size' => 'M']
@@ -1251,7 +1341,7 @@ The `intersectAssoc` method compares the original collection against another col
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {.collection-method}
 
-The `intersectByKeys` method removes any keys and their corresponding values from the original collection that are not present in the given `array` or collection:
+`intersectByKeys` 方法從原始集合中刪除任何不在給定 `array` 或集合中的鍵及其對應值：
 
     $collection = collect([
         'serial' => 'UX301', 'type' => 'screen', 'year' => 2009,
@@ -1268,7 +1358,7 @@ The `intersectByKeys` method removes any keys and their corresponding values fro
 <a name="method-isempty"></a>
 #### `isEmpty()` {.collection-method}
 
-The `isEmpty` method returns `true` if the collection is empty; otherwise, `false` is returned:
+`isEmpty` 方法在集合為空時返回 `true`；否則返回 `false`：
 
     collect([])->isEmpty();
 
@@ -1277,7 +1367,7 @@ The `isEmpty` method returns `true` if the collection is empty; otherwise, `fals
 <a name="method-isnotempty"></a>
 #### `isNotEmpty()` {.collection-method}
 
-The `isNotEmpty` method returns `true` if the collection is not empty; otherwise, `false` is returned:
+`isNotEmpty` 方法在集合不為空時返回 `true`；否則返回 `false`：
 
     collect([])->isNotEmpty();
 
@@ -1286,7 +1376,7 @@ The `isNotEmpty` method returns `true` if the collection is not empty; otherwise
 <a name="method-join"></a>
 #### `join()` {.collection-method}
 
-The `join` method joins the collection's values with a string. Using this method's second argument, you may also specify how the final element should be appended to the string:
+`join` 方法將集合的值與字符串連接。使用此方法的第二個引數，您還可以指定如何將最後一個元素附加到字符串：
 
     collect(['a', 'b', 'c'])->join(', '); // 'a, b, c'
     collect(['a', 'b', 'c'])->join(', ', ', and '); // 'a, b, and c'
@@ -1297,7 +1387,7 @@ The `join` method joins the collection's values with a string. Using this method
 <a name="method-keyby"></a>
 #### `keyBy()` {.collection-method}
 
-The `keyBy` method keys the collection by the given key. If multiple items have the same key, only the last one will appear in the new collection:
+`keyBy` 方法按給定鍵對集合進行鍵控制。如果多個項目具有相同的鍵，則新集合中只會出現最後一個：
 
     $collection = collect([
         ['product_id' => 'prod-100', 'name' => 'Desk'],
@@ -1314,94 +1404,108 @@ The `keyBy` method keys the collection by the given key. If multiple items have 
             'prod-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
         ]
     */
+```  
 
-You may also pass a callback to the method. The callback should return the value to key the collection by:
+您也可以將回呼函式傳遞給該方法。回呼函式應返回用於對集合進行鍵值對應的值：
 
-    $keyed = $collection->keyBy(function (array $item, int $key) {
-        return strtoupper($item['product_id']);
-    });
+```php
+$keyed = $collection->keyBy(function (array $item, int $key) {
+    return strtoupper($item['product_id']);
+});
 
-    $keyed->all();
+$keyed->all();
 
-    /*
-        [
-            'PROD-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
-            'PROD-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
-        ]
-    */
+/*
+    [
+        'PROD-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
+        'PROD-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
+    ]
+*/
+```
 
 <a name="method-keys"></a>
 #### `keys()` {.collection-method}
 
-The `keys` method returns all of the collection's keys:
+`keys` 方法返回集合的所有鍵：
 
-    $collection = collect([
-        'prod-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
-        'prod-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
-    ]);
+```php
+$collection = collect([
+    'prod-100' => ['product_id' => 'prod-100', 'name' => 'Desk'],
+    'prod-200' => ['product_id' => 'prod-200', 'name' => 'Chair'],
+]);
 
-    $keys = $collection->keys();
+$keys = $collection->keys();
 
-    $keys->all();
+$keys->all();
 
-    // ['prod-100', 'prod-200']
+// ['prod-100', 'prod-200']
+```
 
 <a name="method-last"></a>
 #### `last()` {.collection-method}
 
-The `last` method returns the last element in the collection that passes a given truth test:
+`last` 方法返回集合中通過給定真值測試的最後一個元素：
 
-    collect([1, 2, 3, 4])->last(function (int $value, int $key) {
-        return $value < 3;
-    });
+```php
+collect([1, 2, 3, 4])->last(function (int $value, int $key) {
+    return $value < 3;
+});
 
-    // 2
+// 2
+```
 
-You may also call the `last` method with no arguments to get the last element in the collection. If the collection is empty, `null` is returned:
+您也可以不帶參數調用 `last` 方法以獲取集合中的最後一個元素。如果集合為空，則返回 `null`：
 
-    collect([1, 2, 3, 4])->last();
+```php
+collect([1, 2, 3, 4])->last();
 
-    // 4
+// 4
+```
 
 <a name="method-lazy"></a>
 #### `lazy()` {.collection-method}
 
-The `lazy` method returns a new [`LazyCollection`](#lazy-collections) instance from the underlying array of items:
+`lazy` 方法從底層項目數組返回一個新的 [`LazyCollection`](#lazy-collections) 實例：
 
-    $lazyCollection = collect([1, 2, 3, 4])->lazy();
+```php
+$lazyCollection = collect([1, 2, 3, 4])->lazy();
 
-    $lazyCollection::class;
+$lazyCollection::class;
 
-    // Illuminate\Support\LazyCollection
+// Illuminate\Support\LazyCollection
 
-    $lazyCollection->all();
+$lazyCollection->all();
 
-    // [1, 2, 3, 4]
+// [1, 2, 3, 4]
+```
 
-This is especially useful when you need to perform transformations on a huge `Collection` that contains many items:
+當您需要對包含許多項目的龐大 `Collection` 執行轉換時，這將特別有用：
 
-    $count = $hugeCollection
-        ->lazy()
-        ->where('country', 'FR')
-        ->where('balance', '>', '100')
-        ->count();
+```php
+$count = $hugeCollection
+    ->lazy()
+    ->where('country', 'FR')
+    ->where('balance', '>', '100')
+    ->count();
+```
 
-By converting the collection to a `LazyCollection`, we avoid having to allocate a ton of additional memory. Though the original collection still keeps _its_ values in memory, the subsequent filters will not. Therefore, virtually no additional memory will be allocated when filtering the collection's results.
+通過將集合轉換為 `LazyCollection`，我們避免了必須分配大量額外內存。儘管原始集合仍將保留其值在內存中，但後續的篩選不會。因此，在篩選集合結果時幾乎不會分配額外的內存。
+
 
 <a name="method-macro"></a>
 #### `macro()` {.collection-method}
 
-The static `macro` method allows you to add methods to the `Collection` class at run time. Refer to the documentation on [extending collections](#extending-collections) for more information.
+靜態 `macro` 方法允許您在運行時將方法添加到 `Collection` 類別中。有關更多資訊，請參閱[擴展集合](#extending-collections)的文件。
 
 <a name="method-make"></a>
 #### `make()` {.collection-method}
 
-The static `make` method creates a new collection instance. See the [Creating Collections](#creating-collections) section.
+靜態 `make` 方法創建一個新的集合實例。請參閱[創建集合](#creating-collections)部分。
 
 <a name="method-map"></a>
 #### `map()` {.collection-method}
 
-The `map` method iterates through the collection and passes each value to the given callback. The callback is free to modify the item and return it, thus forming a new collection of modified items:
+`map` 方法遍歷集合並將每個值傳遞給給定的回調函式。回調函式可以自由修改項目並返回它，從而形成一個修改後項目的新集合：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1414,17 +1518,17 @@ The `map` method iterates through the collection and passes each value to the gi
     // [2, 4, 6, 8, 10]
 
 > [!WARNING]  
-> Like most other collection methods, `map` returns a new collection instance; it does not modify the collection it is called on. If you want to transform the original collection, use the [`transform`](#method-transform) method.
+> 像大多數其他集合方法一樣，`map` 返回一個新的集合實例；它不會修改調用它的集合。如果您想要轉換原始集合，請使用[`transform`](#method-transform) 方法。
 
 <a name="method-mapinto"></a>
 #### `mapInto()` {.collection-method}
 
-The `mapInto()` method iterates over the collection, creating a new instance of the given class by passing the value into the constructor:
+`mapInto()` 方法遍歷集合，通過將值傳遞給構造函式來創建給定類別的新實例：
 
     class Currency
     {
         /**
-         * Create a new currency instance.
+         * 創建一個新的貨幣實例。
          */
         function __construct(
             public string $code
@@ -1442,166 +1546,184 @@ The `mapInto()` method iterates over the collection, creating a new instance of 
 <a name="method-mapspread"></a>
 #### `mapSpread()` {.collection-method}
 
-The `mapSpread` method iterates over the collection's items, passing each nested item value into the given closure. The closure is free to modify the item and return it, thus forming a new collection of modified items:
+`mapSpread` 方法遍歷集合的項目，將每個嵌套項目的值傳遞給給定的閉包。閉包可以自由修改項目並返回它，從而形成一個修改後項目的新集合：
 
     $collection = collect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-    $chunks = $collection->chunk(2);
+```php
+$chunks = $collection->chunk(2);
 
-    $sequence = $chunks->mapSpread(function (int $even, int $odd) {
-        return $even + $odd;
-    });
+$sequence = $chunks->mapSpread(function (int $even, int $odd) {
+    return $even + $odd;
+});
 
-    $sequence->all();
+$sequence->all();
 
-    // [1, 5, 9, 13, 17]
+// [1, 5, 9, 13, 17]
+```
 
 <a name="method-maptogroups"></a>
 #### `mapToGroups()` {.collection-method}
 
-The `mapToGroups` method groups the collection's items by the given closure. The closure should return an associative array containing a single key / value pair, thus forming a new collection of grouped values:
+`mapToGroups` 方法會根據給定的閉包將集合的項目分組。閉包應返回包含單個鍵/值對的關聯陣列，從而形成一個新的分組值集合：
 
-    $collection = collect([
-        [
-            'name' => 'John Doe',
-            'department' => 'Sales',
-        ],
-        [
-            'name' => 'Jane Doe',
-            'department' => 'Sales',
-        ],
-        [
-            'name' => 'Johnny Doe',
-            'department' => 'Marketing',
-        ]
-    ]);
+```php
+$collection = collect([
+    [
+        'name' => 'John Doe',
+        'department' => 'Sales',
+    ],
+    [
+        'name' => 'Jane Doe',
+        'department' => 'Sales',
+    ],
+    [
+        'name' => 'Johnny Doe',
+        'department' => 'Marketing',
+    ]
+]);
 
-    $grouped = $collection->mapToGroups(function (array $item, int $key) {
-        return [$item['department'] => $item['name']];
-    });
+$grouped = $collection->mapToGroups(function (array $item, int $key) {
+    return [$item['department'] => $item['name']];
+});
 
-    $grouped->all();
+$grouped->all();
 
-    /*
-        [
-            'Sales' => ['John Doe', 'Jane Doe'],
-            'Marketing' => ['Johnny Doe'],
-        ]
-    */
+/*
+    [
+        'Sales' => ['John Doe', 'Jane Doe'],
+        'Marketing' => ['Johnny Doe'],
+    ]
+*/
 
-    $grouped->get('Sales')->all();
+$grouped->get('Sales')->all();
 
-    // ['John Doe', 'Jane Doe']
+// ['John Doe', 'Jane Doe']
+```
 
 <a name="method-mapwithkeys"></a>
 #### `mapWithKeys()` {.collection-method}
 
-The `mapWithKeys` method iterates through the collection and passes each value to the given callback. The callback should return an associative array containing a single key / value pair:
+`mapWithKeys` 方法遍歷集合並將每個值傳遞給給定的回呼函式。回呼函式應返回包含單個鍵/值對的關聯陣列：
 
-    $collection = collect([
-        [
-            'name' => 'John',
-            'department' => 'Sales',
-            'email' => 'john@example.com',
-        ],
-        [
-            'name' => 'Jane',
-            'department' => 'Marketing',
-            'email' => 'jane@example.com',
-        ]
-    ]);
+```php
+$collection = collect([
+    [
+        'name' => 'John',
+        'department' => 'Sales',
+        'email' => 'john@example.com',
+    ],
+    [
+        'name' => 'Jane',
+        'department' => 'Marketing',
+        'email' => 'jane@example.com',
+    ]
+]);
 
-    $keyed = $collection->mapWithKeys(function (array $item, int $key) {
-        return [$item['email'] => $item['name']];
-    });
+$keyed = $collection->mapWithKeys(function (array $item, int $key) {
+    return [$item['email'] => $item['name']];
+});
 
-    $keyed->all();
+$keyed->all();
 
-    /*
-        [
-            'john@example.com' => 'John',
-            'jane@example.com' => 'Jane',
-        ]
-    */
+/*
+    [
+        'john@example.com' => 'John',
+        'jane@example.com' => 'Jane',
+    ]
+*/
+```
 
 <a name="method-max"></a>
 #### `max()` {.collection-method}
+```
 
-The `max` method returns the maximum value of a given key:
+`max` 方法返回給定鍵的最大值：
 
-    $max = collect([
-        ['foo' => 10],
-        ['foo' => 20]
-    ])->max('foo');
+```php
+$max = collect([
+    ['foo' => 10],
+    ['foo' => 20]
+])->max('foo');
 
-    // 20
+// 20
 
-    $max = collect([1, 2, 3, 4, 5])->max();
+$max = collect([1, 2, 3, 4, 5])->max();
 
-    // 5
+// 5
+```
 
 <a name="method-median"></a>
 #### `median()` {.collection-method}
 
-The `median` method returns the [median value](https://en.wikipedia.org/wiki/Median) of a given key:
+`median` 方法返回給定鍵的[中位數值](https://en.wikipedia.org/wiki/Median)：
 
-    $median = collect([
-        ['foo' => 10],
-        ['foo' => 10],
-        ['foo' => 20],
-        ['foo' => 40]
-    ])->median('foo');
+```php
+$median = collect([
+    ['foo' => 10],
+    ['foo' => 10],
+    ['foo' => 20],
+    ['foo' => 40]
+])->median('foo');
 
-    // 15
+// 15
 
-    $median = collect([1, 1, 2, 4])->median();
+$median = collect([1, 1, 2, 4])->median();
 
-    // 1.5
+// 1.5
+```
 
 <a name="method-merge"></a>
 #### `merge()` {.collection-method}
 
-The `merge` method merges the given array or collection with the original collection. If a string key in the given items matches a string key in the original collection, the given item's value will overwrite the value in the original collection:
+`merge` 方法將給定的陣列或集合與原始集合合併。如果給定項目中的字串鍵與原始集合中的字串鍵匹配，則給定項目的值將覆蓋原始集合中的值：
 
-    $collection = collect(['product_id' => 1, 'price' => 100]);
+```php
+$collection = collect(['product_id' => 1, 'price' => 100]);
 
-    $merged = $collection->merge(['price' => 200, 'discount' => false]);
+$merged = $collection->merge(['price' => 200, 'discount' => false]);
 
-    $merged->all();
+$merged->all();
 
-    // ['product_id' => 1, 'price' => 200, 'discount' => false]
+// ['product_id' => 1, 'price' => 200, 'discount' => false]
+```
 
-If the given item's keys are numeric, the values will be appended to the end of the collection:
+如果給定項目的鍵是數字，則值將附加到集合的末尾：
 
-    $collection = collect(['Desk', 'Chair']);
+```php
+$collection = collect(['Desk', 'Chair']);
 
-    $merged = $collection->merge(['Bookcase', 'Door']);
+$merged = $collection->merge(['Bookcase', 'Door']);
 
-    $merged->all();
+$merged->all();
 
-    // ['Desk', 'Chair', 'Bookcase', 'Door']
+// ['Desk', 'Chair', 'Bookcase', 'Door']
+```
 
 <a name="method-mergerecursive"></a>
 #### `mergeRecursive()` {.collection-method}
 
-The `mergeRecursive` method merges the given array or collection recursively with the original collection. If a string key in the given items matches a string key in the original collection, then the values for these keys are merged together into an array, and this is done recursively:
+`mergeRecursive` 方法將給定的陣列或集合與原始集合進行遞迴合併。如果給定項目中的字串鍵與原始集合中的字串鍵匹配，則這些鍵的值將合併到一個陣列中，並且這將遞迴進行：
 
-    $collection = collect(['product_id' => 1, 'price' => 100]);
+```php
+$collection = collect(['product_id' => 1, 'price' => 100]);
 
-    $merged = $collection->mergeRecursive([
-        'product_id' => 2,
-        'price' => 200,
-        'discount' => false
-    ]);
+$merged = $collection->mergeRecursive([
+    'product_id' => 2,
+    'price' => 200,
+    'discount' => false
+]);
 
-    $merged->all();
+$merged->all();
 
-    // ['product_id' => [1, 2], 'price' => [100, 200], 'discount' => false]
+// ['product_id' => [1, 2], 'price' => [100, 200], 'discount' => false]
+```
+
 
 <a name="method-min"></a>
 #### `min()` {.collection-method}
 
-The `min` method returns the minimum value of a given key:
+`min` 方法返回給定鍵的最小值：
 
     $min = collect([['foo' => 10], ['foo' => 20]])->min('foo');
 
@@ -1614,7 +1736,7 @@ The `min` method returns the minimum value of a given key:
 <a name="method-mode"></a>
 #### `mode()` {.collection-method}
 
-The `mode` method returns the [mode value](https://en.wikipedia.org/wiki/Mode_(statistics)) of a given key:
+`mode` 方法返回給定鍵的[眾數值](https://en.wikipedia.org/wiki/Mode_(statistics))：
 
     $mode = collect([
         ['foo' => 10],
@@ -1636,7 +1758,7 @@ The `mode` method returns the [mode value](https://en.wikipedia.org/wiki/Mode_(s
 <a name="method-nth"></a>
 #### `nth()` {.collection-method}
 
-The `nth` method creates a new collection consisting of every n-th element:
+`nth` 方法創建一個新的集合，其中包含每個第 n 個元素：
 
     $collection = collect(['a', 'b', 'c', 'd', 'e', 'f']);
 
@@ -1644,7 +1766,7 @@ The `nth` method creates a new collection consisting of every n-th element:
 
     // ['a', 'e']
 
-You may optionally pass a starting offset as the second argument:
+您可以選擇性地將起始偏移量作為第二個引數傳遞：
 
     $collection->nth(4, 1);
 
@@ -1653,7 +1775,7 @@ You may optionally pass a starting offset as the second argument:
 <a name="method-only"></a>
 #### `only()` {.collection-method}
 
-The `only` method returns the items in the collection with the specified keys:
+`only` 方法返回具有指定鍵的集合中的項目：
 
     $collection = collect([
         'product_id' => 1,
@@ -1668,55 +1790,59 @@ The `only` method returns the items in the collection with the specified keys:
 
     // ['product_id' => 1, 'name' => 'Desk']
 
-For the inverse of `only`, see the [except](#method-except) method.
+對於 `only` 的相反操作，請參見 [except](#method-except) 方法。
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-only).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-only) 時，此方法的行為會有所修改。
 
 <a name="method-pad"></a>
 #### `pad()` {.collection-method}
 
-The `pad` method will fill the array with the given value until the array reaches the specified size. This method behaves like the [array_pad](https://secure.php.net/manual/en/function.array-pad.php) PHP function.
+`pad` 方法將使用給定值填充陣列，直到陣列達到指定大小。此方法的行為類似於 [array_pad](https://secure.php.net/manual/en/function.array-pad.php) PHP 函式。
 
-To pad to the left, you should specify a negative size. No padding will take place if the absolute value of the given size is less than or equal to the length of the array:
+要向左填充，您應該指定一個負數大小。如果給定大小的絕對值小於或等於陣列的長度，則不會進行填充：
 
-    $collection = collect(['A', 'B', 'C']);
+```php
+$collection = collect(['A', 'B', 'C']);
 
-    $filtered = $collection->pad(5, 0);
+$filtered = $collection->pad(5, 0);
 
-    $filtered->all();
+$filtered->all();
 
-    // ['A', 'B', 'C', 0, 0]
+// ['A', 'B', 'C', 0, 0]
 
-    $filtered = $collection->pad(-5, 0);
+$filtered = $collection->pad(-5, 0);
 
-    $filtered->all();
+$filtered->all();
+```
 
-    // [0, 0, 'A', 'B', 'C']
+// [0, 0, 'A', 'B', 'C']
 
 <a name="method-partition"></a>
 #### `partition()` {.collection-method}
 
-The `partition` method may be combined with PHP array destructuring to separate elements that pass a given truth test from those that do not:
+`partition` 方法可與 PHP 陣列解構結合，將通過給定真值測試的元素與未通過的元素分開：
 
-    $collection = collect([1, 2, 3, 4, 5, 6]);
+```php
+$collection = collect([1, 2, 3, 4, 5, 6]);
 
-    [$underThree, $equalOrAboveThree] = $collection->partition(function (int $i) {
-        return $i < 3;
-    });
+[$underThree, $equalOrAboveThree] = $collection->partition(function (int $i) {
+    return $i < 3;
+});
 
-    $underThree->all();
+$underThree->all();
 
-    // [1, 2]
+// [1, 2]
 
-    $equalOrAboveThree->all();
+$equalOrAboveThree->all();
 
-    // [3, 4, 5, 6]
+// [3, 4, 5, 6]
+```
 
 <a name="method-percentage"></a>
 #### `percentage()` {.collection-method}
 
-The `percentage` method may be used to quickly determine the percentage of items in the collection that pass a given truth test:
+`percentage` 方法可用於快速確定通過給定真值測試的集合項目的百分比：
 
 ```php
 $collection = collect([1, 1, 2, 2, 2, 3]);
@@ -1726,7 +1852,7 @@ $percentage = $collection->percentage(fn ($value) => $value === 1);
 // 33.33
 ```
 
-By default, the percentage will be rounded to two decimal places. However, you may customize this behavior by providing a second argument to the method:
+預設情況下，百分比將四捨五入到小數點後兩位。但是，您可以通過向方法提供第二個引數來自定義此行為：
 
 ```php
 $percentage = $collection->percentage(fn ($value) => $value === 1, precision: 3);
@@ -1737,116 +1863,130 @@ $percentage = $collection->percentage(fn ($value) => $value === 1, precision: 3)
 <a name="method-pipe"></a>
 #### `pipe()` {.collection-method}
 
-The `pipe` method passes the collection to the given closure and returns the result of the executed closure:
+`pipe` 方法將集合傳遞給給定閉包並返回執行後閉包的結果：
 
-    $collection = collect([1, 2, 3]);
+```php
+$collection = collect([1, 2, 3]);
 
-    $piped = $collection->pipe(function (Collection $collection) {
-        return $collection->sum();
-    });
+$piped = $collection->pipe(function (Collection $collection) {
+    return $collection->sum();
+});
 
-    // 6
+// 6
+```
 
 <a name="method-pipeinto"></a>
 #### `pipeInto()` {.collection-method}
 
-The `pipeInto` method creates a new instance of the given class and passes the collection into the constructor:
+`pipeInto` 方法創建給定類別的新實例並將集合傳遞給構造函數：
 
-    class ResourceCollection
-    {
-        /**
-         * Create a new ResourceCollection instance.
-         */
-        public function __construct(
-          public Collection $collection,
-        ) {}
-    }
+```php
+class ResourceCollection
+{
+    /**
+     * 創建新的 ResourceCollection 實例。
+     */
+    public function __construct(
+      public Collection $collection,
+    ) {}
+}
 
-    $collection = collect([1, 2, 3]);
+$collection = collect([1, 2, 3]);
 
-    $resource = $collection->pipeInto(ResourceCollection::class);
+$resource = $collection->pipeInto(ResourceCollection::class);
 
-    $resource->collection->all();
+$resource->collection->all();
+```
 
-    // [1, 2, 3]
 
 <a name="method-pipethrough"></a>
 #### `pipeThrough()` {.collection-method}
 
-The `pipeThrough` method passes the collection to the given array of closures and returns the result of the executed closures:
+`pipeThrough` 方法將集合傳遞給給定的閉包陣列並返回執行後的結果：
 
-    use Illuminate\Support\Collection;
+```php
+use Illuminate\Support\Collection;
 
-    $collection = collect([1, 2, 3]);
+$collection = collect([1, 2, 3]);
 
-    $result = $collection->pipeThrough([
-        function (Collection $collection) {
-            return $collection->merge([4, 5]);
-        },
-        function (Collection $collection) {
-            return $collection->sum();
-        },
-    ]);
+$result = $collection->pipeThrough([
+    function (Collection $collection) {
+        return $collection->merge([4, 5]);
+    },
+    function (Collection $collection) {
+        return $collection->sum();
+    },
+]);
+```
 
-    // 15
+// 15
 
 <a name="method-pluck"></a>
 #### `pluck()` {.collection-method}
 
-The `pluck` method retrieves all of the values for a given key:
+`pluck` 方法檢索給定鍵的所有值：
 
-    $collection = collect([
-        ['product_id' => 'prod-100', 'name' => 'Desk'],
-        ['product_id' => 'prod-200', 'name' => 'Chair'],
-    ]);
+```php
+$collection = collect([
+    ['product_id' => 'prod-100', 'name' => 'Desk'],
+    ['product_id' => 'prod-200', 'name' => 'Chair'],
+]);
 
-    $plucked = $collection->pluck('name');
+$plucked = $collection->pluck('name');
 
-    $plucked->all();
+$plucked->all();
+```
 
-    // ['Desk', 'Chair']
+// ['Desk', 'Chair']
 
-You may also specify how you wish the resulting collection to be keyed:
+您還可以指定希望結果集合的鍵：
 
-    $plucked = $collection->pluck('name', 'product_id');
+```php
+$plucked = $collection->pluck('name', 'product_id');
 
-    $plucked->all();
+$plucked->all();
+```
 
-    // ['prod-100' => 'Desk', 'prod-200' => 'Chair']
+// ['prod-100' => 'Desk', 'prod-200' => 'Chair']
 
-The `pluck` method also supports retrieving nested values using "dot" notation:
+`pluck` 方法還支持使用「點」表示法檢索嵌套值：
 
-    $collection = collect([
-        [
-            'name' => 'Laracon',
-            'speakers' => [
-                'first_day' => ['Rosa', 'Judith'],
-            ],
+```php
+$collection = collect([
+    [
+        'name' => 'Laracon',
+        'speakers' => [
+            'first_day' => ['Rosa', 'Judith'],
         ],
-        [
-            'name' => 'VueConf',
-            'speakers' => [
-                'first_day' => ['Abigail', 'Joey'],
-            ],
+    ],
+    [
+        'name' => 'VueConf',
+        'speakers' => [
+            'first_day' => ['Abigail', 'Joey'],
         ],
-    ]);
+    ],
+]);
 
-    $plucked = $collection->pluck('speakers.first_day');
+$plucked = $collection->pluck('speakers.first_day');
 
-    $plucked->all();
+$plucked->all();
+```
 
-    // [['Rosa', 'Judith'], ['Abigail', 'Joey']]
+// [['Rosa', 'Judith'], ['Abigail', 'Joey']]
 
-If duplicate keys exist, the last matching element will be inserted into the plucked collection:
+如果存在重複的鍵，將最後一個匹配的元素插入到檢索的集合中：
 
-    $collection = collect([
-        ['brand' => 'Tesla',  'color' => 'red'],
-        ['brand' => 'Pagani', 'color' => 'white'],
-        ['brand' => 'Tesla',  'color' => 'black'],
-        ['brand' => 'Pagani', 'color' => 'orange'],
-    ]);
+```php
+$collection = collect([
+    ['brand' => 'Tesla',  'color' => 'red'],
+    ['brand' => 'Pagani', 'color' => 'white'],
+    ['brand' => 'Tesla',  'color' => 'black'],
+    ['brand' => 'Pagani', 'color' => 'orange'],
+]);
 
-    $plucked = $collection->pluck('color', 'brand');
+$plucked = $collection->pluck('color', 'brand');
+```
+
 
     $plucked->all();
 
@@ -1855,7 +1995,7 @@ If duplicate keys exist, the last matching element will be inserted into the plu
 <a name="method-pop"></a>
 #### `pop()` {.collection-method}
 
-The `pop` method removes and returns the last item from the collection:
+`pop` 方法會移除並返回集合中的最後一個項目：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1867,7 +2007,7 @@ The `pop` method removes and returns the last item from the collection:
 
     // [1, 2, 3, 4]
 
-You may pass an integer to the `pop` method to remove and return multiple items from the end of a collection:
+您可以將整數傳遞給 `pop` 方法，以從集合末尾移除並返回多個項目：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1882,7 +2022,7 @@ You may pass an integer to the `pop` method to remove and return multiple items 
 <a name="method-prepend"></a>
 #### `prepend()` {.collection-method}
 
-The `prepend` method adds an item to the beginning of the collection:
+`prepend` 方法將一個項目添加到集合的開頭：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1892,7 +2032,7 @@ The `prepend` method adds an item to the beginning of the collection:
 
     // [0, 1, 2, 3, 4, 5]
 
-You may also pass a second argument to specify the key of the prepended item:
+您也可以傳遞第二個參數來指定要添加的項目的鍵：
 
     $collection = collect(['one' => 1, 'two' => 2]);
 
@@ -1905,7 +2045,7 @@ You may also pass a second argument to specify the key of the prepended item:
 <a name="method-pull"></a>
 #### `pull()` {.collection-method}
 
-The `pull` method removes and returns an item from the collection by its key:
+`pull` 方法根據其鍵從集合中移除並返回一個項目：
 
     $collection = collect(['product_id' => 'prod-100', 'name' => 'Desk']);
 
@@ -1920,7 +2060,7 @@ The `pull` method removes and returns an item from the collection by its key:
 <a name="method-push"></a>
 #### `push()` {.collection-method}
 
-The `push` method appends an item to the end of the collection:
+`push` 方法將一個項目附加到集合的末尾：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1933,7 +2073,7 @@ The `push` method appends an item to the end of the collection:
 <a name="method-put"></a>
 #### `put()` {.collection-method}
 
-The `put` method sets the given key and value in the collection:
+`put` 方法在集合中設置給定的鍵和值：
 
     $collection = collect(['product_id' => 1, 'name' => 'Desk']);
 
@@ -1946,90 +2086,93 @@ The `put` method sets the given key and value in the collection:
 <a name="method-random"></a>
 #### `random()` {.collection-method}
 
-The `random` method returns a random item from the collection:
+`random` 方法從集合中返回一個隨機項目：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->random();
+$collection->random();
 
-    // 4 - (retrieved randomly)
+// 4 - (隨機擷取)
 
-You may pass an integer to `random` to specify how many items you would like to randomly retrieve. A collection of items is always returned when explicitly passing the number of items you wish to receive:
+您可以傳遞一個整數給 `random` 方法，以指定您想要隨機擷取多少項目。當明確傳遞您希望接收的項目數量時，將始終返回一個項目集合：
 
-    $random = $collection->random(3);
+$random = $collection->random(3);
 
-    $random->all();
+$random->all();
 
-    // [2, 4, 5] - (retrieved randomly)
+// [2, 4, 5] - (隨機擷取)
 
-If the collection instance has fewer items than requested, the `random` method will throw an `InvalidArgumentException`.
+如果集合實例的項目數少於請求的數量，`random` 方法將拋出一個 `InvalidArgumentException`。
 
-The `random` method also accepts a closure, which will receive the current collection instance:
+`random` 方法還接受一個閉包，該閉包將接收當前的集合實例：
 
-    use Illuminate\Support\Collection;
+use Illuminate\Support\Collection;
 
-    $random = $collection->random(fn (Collection $items) => min(10, count($items)));
+$random = $collection->random(fn (Collection $items) => min(10, count($items)));
 
-    $random->all();
+$random->all();
 
-    // [1, 2, 3, 4, 5] - (retrieved randomly)
+// [1, 2, 3, 4, 5] - (隨機擷取)
 
 <a name="method-range"></a>
 #### `range()` {.collection-method}
 
-The `range` method returns a collection containing integers between the specified range:
+`range` 方法返回包含指定範圍內整數的集合：
 
-    $collection = collect()->range(3, 6);
+$collection = collect()->range(3, 6);
 
-    $collection->all();
+$collection->all();
 
-    // [3, 4, 5, 6]
+// [3, 4, 5, 6]
 
 <a name="method-reduce"></a>
 #### `reduce()` {.collection-method}
 
-The `reduce` method reduces the collection to a single value, passing the result of each iteration into the subsequent iteration:
+`reduce` 方法將集合減少為單一值，將每次迭代的結果傳遞到後續迭代：
 
-    $collection = collect([1, 2, 3]);
+$collection = collect([1, 2, 3]);
 
-    $total = $collection->reduce(function (?int $carry, int $item) {
-        return $carry + $item;
-    });
+$total = $collection->reduce(function (?int $carry, int $item) {
+    return $carry + $item;
+});
 
-    // 6
+// 6
 
-The value for `$carry` on the first iteration is `null`; however, you may specify its initial value by passing a second argument to `reduce`:
+第一次迭代時，`$carry` 的值為 `null`；但是，您可以通過將第二個參數傳遞給 `reduce` 來指定其初始值：
 
-    $collection->reduce(function (int $carry, int $item) {
-        return $carry + $item;
-    }, 4);
+$collection->reduce(function (int $carry, int $item) {
+    return $carry + $item;
+}, 4);
 
-    // 10
+// 10
 
-The `reduce` method also passes array keys in associative collections to the given callback:
+`reduce` 方法還將關聯集合中的數組鍵傳遞給給定的回調函式：
 
-    $collection = collect([
-        'usd' => 1400,
-        'gbp' => 1200,
-        'eur' => 1000,
-    ]);
+$collection = collect([
+    'usd' => 1400,
+    'gbp' => 1200,
+    'eur' => 1000,
+]);
 
-    $ratio = [
-        'usd' => 1,
-        'gbp' => 1.37,
-        'eur' => 1.22,
-    ];
+$ratio = [
+    'usd' => 1,
+    'gbp' => 1.37,
+    'eur' => 1.22,
+];
 
-    $collection->reduce(function (int $carry, int $value, int $key) use ($ratio) {
-        return $carry + ($value * $ratio[$key]);
-    });
+$collection->reduce(function (int $carry, int $value, int $key) use ($ratio) {
+    return $carry + ($value * $ratio[$key]);
+});
+```
 
-    // 4264
-    
+```markdown
+// 4264
+
 <a name="method-reduce-spread"></a>
 #### `reduceSpread()` {.collection-method}
 
-The `reduceSpread` method reduces the collection to an array of values, passing the results of each iteration into the subsequent iteration. This method is similar to the `reduce` method; however, it can accept multiple initial values:
+`reduceSpread` 方法將集合減少為值陣列，將每次迭代的結果傳遞到後續迭代中。此方法類似於 `reduce` 方法；但它可以接受多個初始值：
 
     [$creditsRemaining, $batch] = Image::where('status', 'unprocessed')
         ->get()
@@ -2046,7 +2189,7 @@ The `reduceSpread` method reduces the collection to an array of values, passing 
 <a name="method-reject"></a>
 #### `reject()` {.collection-method}
 
-The `reject` method filters the collection using the given closure. The closure should return `true` if the item should be removed from the resulting collection:
+`reject` 方法使用給定的閉包來過濾集合。如果項目應從結果集合中移除，則閉包應返回 `true`：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2058,12 +2201,12 @@ The `reject` method filters the collection using the given closure. The closure 
 
     // [1, 2]
 
-For the inverse of the `reject` method, see the [`filter`](#method-filter) method.
+對於 `reject` 方法的相反操作，請參見 [`filter`](#method-filter) 方法。
 
 <a name="method-replace"></a>
 #### `replace()` {.collection-method}
 
-The `replace` method behaves similarly to `merge`; however, in addition to overwriting matching items that have string keys, the `replace` method will also overwrite items in the collection that have matching numeric keys:
+`replace` 方法的行為類似於 `merge`；但是，除了覆蓋具有字符串鍵的匹配項目之外，`replace` 方法還將覆蓋集合中具有匹配數字鍵的項目：
 
     $collection = collect(['Taylor', 'Abigail', 'James']);
 
@@ -2076,7 +2219,7 @@ The `replace` method behaves similarly to `merge`; however, in addition to overw
 <a name="method-replacerecursive"></a>
 #### `replaceRecursive()` {.collection-method}
 
-This method works like `replace`, but it will recur into arrays and apply the same replacement process to the inner values:
+此方法類似於 `replace`，但它將遞歸到陣列並將相同的替換過程應用於內部值：
 
     $collection = collect([
         'Taylor',
@@ -2087,66 +2230,77 @@ This method works like `replace`, but it will recur into arrays and apply the sa
             'Finn'
         ]
     ]);
+```
 
-    $replaced = $collection->replaceRecursive([
-        'Charlie',
-        2 => [1 => 'King']
-    ]);
+```php
+$replaced = $collection->replaceRecursive([
+    'Charlie',
+    2 => [1 => 'King']
+]);
 
-    $replaced->all();
+$replaced->all();
 
-    // ['Charlie', 'Abigail', ['James', 'King', 'Finn']]
+// ['Charlie', 'Abigail', ['James', 'King', 'Finn']]
+```
 
 <a name="method-reverse"></a>
 #### `reverse()` {.collection-method}
 
-The `reverse` method reverses the order of the collection's items, preserving the original keys:
+`reverse` 方法會反轉集合項目的順序，保留原始鍵：
 
-    $collection = collect(['a', 'b', 'c', 'd', 'e']);
+```php
+$collection = collect(['a', 'b', 'c', 'd', 'e']);
 
-    $reversed = $collection->reverse();
+$reversed = $collection->reverse();
 
-    $reversed->all();
+$reversed->all();
 
-    /*
-        [
-            4 => 'e',
-            3 => 'd',
-            2 => 'c',
-            1 => 'b',
-            0 => 'a',
-        ]
-    */
+/*
+    [
+        4 => 'e',
+        3 => 'd',
+        2 => 'c',
+        1 => 'b',
+        0 => 'a',
+    ]
+*/
+```
 
 <a name="method-search"></a>
 #### `search()` {.collection-method}
 
-The `search` method searches the collection for the given value and returns its key if found. If the item is not found, `false` is returned:
+`search` 方法會在集合中搜尋指定的值，並返回其鍵。如果未找到該項目，則返回 `false`：
 
-    $collection = collect([2, 4, 6, 8]);
+```php
+$collection = collect([2, 4, 6, 8]);
 
-    $collection->search(4);
+$collection->search(4);
 
-    // 1
+// 1
+```
 
-The search is done using a "loose" comparison, meaning a string with an integer value will be considered equal to an integer of the same value. To use "strict" comparison, pass `true` as the second argument to the method:
+搜索是使用“寬鬆”比較進行的，這意味著具有整數值的字符串將被視為等於具有相同值的整數。要使用“嚴格”比較，請將 `true` 作為方法的第二個引數傳遞：
 
-    collect([2, 4, 6, 8])->search('4', $strict = true);
+```php
+collect([2, 4, 6, 8])->search('4', $strict = true);
 
-    // false
+// false
+```
 
-Alternatively, you may provide your own closure to search for the first item that passes a given truth test:
+或者，您可以提供自己的閉包來搜索通過給定真值測試的第一個項目：
 
-    collect([2, 4, 6, 8])->search(function (int $item, int $key) {
-        return $item > 5;
-    });
+```php
+collect([2, 4, 6, 8])->search(function (int $item, int $key) {
+    return $item > 5;
+});
 
-    // 2
+// 2
+```
 
 <a name="method-select"></a>
 #### `select()` {.collection-method}
 
-The `select` method selects the given keys from the collection, similar to an SQL `SELECT` statement:
+`select` 方法從集合中選擇給定的鍵，類似於 SQL 的 `SELECT` 陳述：
 
 ```php
 $users = collect([
@@ -2167,106 +2321,114 @@ $users->select(['name', 'role']);
 <a name="method-shift"></a>
 #### `shift()` {.collection-method}
 
-The `shift` method removes and returns the first item from the collection:
+`shift` 方法會移除並返回集合中的第一個項目：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->shift();
+$collection->shift();
 
-    // 1
+// 1
 
-    $collection->all();
+$collection->all();
 
-    // [2, 3, 4, 5]
+// [2, 3, 4, 5]
+```
 
-You may pass an integer to the `shift` method to remove and return multiple items from the beginning of a collection:
+您可以將整數傳遞給 `shift` 方法，以從集合開頭移除並返回多個項目：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
+```
 
-    $collection->shift(3);
-
-    // collect([1, 2, 3])
-
-    $collection->all();
-
-    // [4, 5]
 
 <a name="method-shuffle"></a>
 #### `shuffle()` {.collection-method}
 
-The `shuffle` method randomly shuffles the items in the collection:
+`shuffle` 方法會隨機重新排列集合中的項目：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $shuffled = $collection->shuffle();
+$shuffled = $collection->shuffle();
 
-    $shuffled->all();
+$shuffled->all();
 
-    // [3, 2, 5, 1, 4] - (generated randomly)
+// [3, 2, 5, 1, 4] -（隨機生成）
+```
 
 <a name="method-skip"></a>
 #### `skip()` {.collection-method}
 
-The `skip` method returns a new collection, with the given number of elements removed from the beginning of the collection:
+`skip` 方法會返回一個新的集合，從集合開頭移除指定數量的元素：
 
-    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+```php
+$collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
-    $collection = $collection->skip(4);
+$collection = $collection->skip(4);
 
-    $collection->all();
+$collection->all();
 
-    // [5, 6, 7, 8, 9, 10]
+// [5, 6, 7, 8, 9, 10]
+```
 
 <a name="method-skipuntil"></a>
 #### `skipUntil()` {.collection-method}
 
-The `skipUntil` method skips over items from the collection until the given callback returns `true` and then returns the remaining items in the collection as a new collection instance:
+`skipUntil` 方法會跳過集合中的項目，直到給定的回調函式返回 `true`，然後將剩餘的項目作為新的集合實例返回：
 
-    $collection = collect([1, 2, 3, 4]);
+```php
+$collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->skipUntil(function (int $item) {
-        return $item >= 3;
-    });
+$subset = $collection->skipUntil(function (int $item) {
+    return $item >= 3;
+});
 
-    $subset->all();
+$subset->all();
 
-    // [3, 4]
+// [3, 4]
+```
 
-You may also pass a simple value to the `skipUntil` method to skip all items until the given value is found:
+您也可以將一個簡單值傳遞給 `skipUntil` 方法，以跳過所有項目，直到找到指定的值：
 
-    $collection = collect([1, 2, 3, 4]);
+```php
+$collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->skipUntil(3);
+$subset = $collection->skipUntil(3);
 
-    $subset->all();
+$subset->all();
 
-    // [3, 4]
+// [3, 4]
+```
 
 > [!WARNING]  
-> If the given value is not found or the callback never returns `true`, the `skipUntil` method will return an empty collection.
+> 如果未找到指定的值或回調從未返回 `true`，`skipUntil` 方法將返回一個空集合。
 
 <a name="method-skipwhile"></a>
 #### `skipWhile()` {.collection-method}
 
-The `skipWhile` method skips over items from the collection while the given callback returns `true` and then returns the remaining items in the collection as a new collection:
+`skipWhile` 方法會在回調函式返回 `true` 的情況下跳過集合中的項目，然後將剩餘的項目作為新的集合返回：
 
-    $collection = collect([1, 2, 3, 4]);
+```php
+$collection = collect([1, 2, 3, 4]);
 
-    $subset = $collection->skipWhile(function (int $item) {
-        return $item <= 3;
-    });
+$subset = $collection->skipWhile(function (int $item) {
+    return $item <= 3;
+});
 
-    $subset->all();
+$subset->all();
 
-    // [4]
+// [4]
+```
 
 > [!WARNING]  
-> If the callback never returns `false`, the `skipWhile` method will return an empty collection.
+> 如果回調從未返回 `false`，`skipWhile` 方法將返回一個空集合。
+
 
 <a name="method-slice"></a>
 #### `slice()` {.collection-method}
 
-The `slice` method returns a slice of the collection starting at the given index:
+`slice` 方法返回從給定索引開始的集合切片：
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
@@ -2276,7 +2438,7 @@ The `slice` method returns a slice of the collection starting at the given index
 
     // [5, 6, 7, 8, 9, 10]
 
-If you would like to limit the size of the returned slice, pass the desired size as the second argument to the method:
+如果您想要限制返回切片的大小，可以將所需大小作為第二個引數傳遞給該方法：
 
     $slice = $collection->slice(4, 2);
 
@@ -2284,12 +2446,12 @@ If you would like to limit the size of the returned slice, pass the desired size
 
     // [5, 6]
 
-The returned slice will preserve keys by default. If you do not wish to preserve the original keys, you can use the [`values`](#method-values) method to reindex them.
+返回的切片將默認保留鍵。如果您不希望保留原始鍵，可以使用 [`values`](#method-values) 方法來重新索引它們。
 
 <a name="method-sliding"></a>
 #### `sliding()` {.collection-method}
 
-The `sliding` method returns a new collection of chunks representing a "sliding window" view of the items in the collection:
+`sliding` 方法返回表示集合中項目的“滑動窗口”視圖的新集合：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2299,13 +2461,13 @@ The `sliding` method returns a new collection of chunks representing a "sliding 
 
     // [[1, 2], [2, 3], [3, 4], [4, 5]]
 
-This is especially useful in conjunction with the [`eachSpread`](#method-eachspread) method:
+這在與 [`eachSpread`](#method-eachspread) 方法一起使用時尤其有用：
 
     $transactions->sliding(2)->eachSpread(function (Collection $previous, Collection $current) {
         $current->total = $previous->total + $current->amount;
     });
 
-You may optionally pass a second "step" value, which determines the distance between the first item of every chunk:
+您還可以選擇性地傳遞第二個“步驟”值，該值決定每個塊的第一個項目之間的距離：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2318,7 +2480,7 @@ You may optionally pass a second "step" value, which determines the distance bet
 <a name="method-sole"></a>
 #### `sole()` {.collection-method}
 
-The `sole` method returns the first element in the collection that passes a given truth test, but only if the truth test matches exactly one element:
+`sole` 方法返回通過給定真值測試的集合中的第一個元素，但僅當真值測試完全匹配一個元素時：
 
     collect([1, 2, 3, 4])->sole(function (int $value, int $key) {
         return $value === 2;
@@ -2326,219 +2488,218 @@ The `sole` method returns the first element in the collection that passes a give
 
     // 2
 
-You may also pass a key / value pair to the `sole` method, which will return the first element in the collection that matches the given pair, but only if it exactly one element matches:
+您還可以將一對鍵/值傳遞給 `sole` 方法，該方法將返回與給定對匹配的集合中的第一個元素，但僅當正好一個元素匹配時：
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
         ['product' => 'Chair', 'price' => 100],
     ]);
 
-    $collection->sole('product', 'Chair');
+```php
+$collection->sole('product', 'Chair');
 
-    // ['product' => 'Chair', 'price' => 100]
+// ['product' => 'Chair', 'price' => 100]
 
-Alternatively, you may also call the `sole` method with no argument to get the first element in the collection if there is only one element:
+或者，您也可以不帶引數調用 `sole` 方法，以獲取集合中的第一個元素，如果只有一個元素：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
-    ]);
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+]);
 
-    $collection->sole();
+$collection->sole();
 
-    // ['product' => 'Desk', 'price' => 200]
+// ['product' => 'Desk', 'price' => 200]
 
-If there are no elements in the collection that should be returned by the `sole` method, an `\Illuminate\Collections\ItemNotFoundException` exception will be thrown. If there is more than one element that should be returned, an `\Illuminate\Collections\MultipleItemsFoundException` will be thrown.
+如果集合中沒有應該由 `sole` 方法返回的元素，將拋出 `\Illuminate\Collections\ItemNotFoundException` 異常。如果應該返回多個元素，將拋出 `\Illuminate\Collections\MultipleItemsFoundException`。
 
 <a name="method-some"></a>
 #### `some()` {.collection-method}
 
-Alias for the [`contains`](#method-contains) method.
+[`contains`](#method-contains) 方法的別名。
 
 <a name="method-sort"></a>
 #### `sort()` {.collection-method}
 
-The `sort` method sorts the collection. The sorted collection keeps the original array keys, so in the following example we will use the [`values`](#method-values) method to reset the keys to consecutively numbered indexes:
+`sort` 方法對集合進行排序。排序後的集合保留原始陣列鍵，因此在下面的示例中，我們將使用 [`values`](#method-values) 方法將鍵重置為連續編號的索引：
 
-    $collection = collect([5, 3, 1, 2, 4]);
+$collection = collect([5, 3, 1, 2, 4]);
 
-    $sorted = $collection->sort();
+$sorted = $collection->sort();
 
-    $sorted->values()->all();
+$sorted->values()->all();
 
-    // [1, 2, 3, 4, 5]
+// [1, 2, 3, 4, 5]
 
-If your sorting needs are more advanced, you may pass a callback to `sort` with your own algorithm. Refer to the PHP documentation on [`uasort`](https://secure.php.net/manual/en/function.uasort.php#refsect1-function.uasort-parameters), which is what the collection's `sort` method calls utilizes internally.
+如果您的排序需求更複雜，您可以將回調函式傳遞給 `sort`，使用自己的算法。請參考 PHP 文檔中關於 [`uasort`](https://secure.php.net/manual/en/function.uasort.php#refsect1-function.uasort-parameters) 的部分，這是集合的 `sort` 方法內部使用的。
 
 > [!NOTE]  
-> If you need to sort a collection of nested arrays or objects, see the [`sortBy`](#method-sortby) and [`sortByDesc`](#method-sortbydesc) methods.
+> 如果您需要對嵌套陣列或對象的集合進行排序，請參見 [`sortBy`](#method-sortby) 和 [`sortByDesc`](#method-sortbydesc) 方法。
 
 <a name="method-sortby"></a>
 #### `sortBy()` {.collection-method}
 
-The `sortBy` method sorts the collection by the given key. The sorted collection keeps the original array keys, so in the following example we will use the [`values`](#method-values) method to reset the keys to consecutively numbered indexes:
+`sortBy` 方法按給定鍵對集合進行排序。排序後的集合保留原始陣列鍵，因此在下面的示例中，我們將使用 [`values`](#method-values) 方法將鍵重置為連續編號的索引：
 
-    $collection = collect([
-        ['name' => 'Desk', 'price' => 200],
+$collection = collect([
+    ['name' => 'Desk', 'price' => 200],
+    ['name' => 'Chair', 'price' => 100],
+    ['name' => 'Bookcase', 'price' => 150],
+]);
+```
+
+```php
+$sorted = $collection->sortBy('price');
+
+$sorted->values()->all();
+
+/*
+    [
         ['name' => 'Chair', 'price' => 100],
         ['name' => 'Bookcase', 'price' => 150],
-    ]);
+        ['name' => 'Desk', 'price' => 200],
+    ]
+*/
+```
 
-    $sorted = $collection->sortBy('price');
+`sortBy` 方法接受 [排序標誌](https://www.php.net/manual/en/function.sort.php) 作為第二個引數：
 
-    $sorted->values()->all();
+```php
+$collection = collect([
+    ['title' => 'Item 1'],
+    ['title' => 'Item 12'],
+    ['title' => 'Item 3'],
+]);
 
-    /*
-        [
-            ['name' => 'Chair', 'price' => 100],
-            ['name' => 'Bookcase', 'price' => 150],
-            ['name' => 'Desk', 'price' => 200],
-        ]
-    */
+$sorted = $collection->sortBy('title', SORT_NATURAL);
 
-The `sortBy` method accepts [sort flags](https://www.php.net/manual/en/function.sort.php) as its second argument:
+$sorted->values()->all();
 
-    $collection = collect([
+/*
+    [
         ['title' => 'Item 1'],
-        ['title' => 'Item 12'],
         ['title' => 'Item 3'],
-    ]);
+        ['title' => 'Item 12'],
+    ]
+*/
+```
 
-    $sorted = $collection->sortBy('title', SORT_NATURAL);
+或者，您可以傳遞自己的閉包來決定如何對集合的值進行排序：
 
-    $sorted->values()->all();
+```php
+$collection = collect([
+    ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
+    ['name' => 'Chair', 'colors' => ['Black']],
+    ['name' => 'Bookcase', 'colors' => ['Red', 'Beige', 'Brown']],
+]);
 
-    /*
-        [
-            ['title' => 'Item 1'],
-            ['title' => 'Item 3'],
-            ['title' => 'Item 12'],
-        ]
-    */
+$sorted = $collection->sortBy(function (array $product, int $key) {
+    return count($product['colors']);
+});
 
-Alternatively, you may pass your own closure to determine how to sort the collection's values:
+$sorted->values()->all();
 
-    $collection = collect([
-        ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
+/*
+    [
         ['name' => 'Chair', 'colors' => ['Black']],
+        ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
         ['name' => 'Bookcase', 'colors' => ['Red', 'Beige', 'Brown']],
-    ]);
+    ]
+*/
+```
 
-    $sorted = $collection->sortBy(function (array $product, int $key) {
-        return count($product['colors']);
-    });
+如果您想要按多個屬性對集合進行排序，您可以將排序操作的陣列傳遞給 `sortBy` 方法。每個排序操作應該是一個包含您希望按其排序的屬性和所需排序方向的陣列：
 
-    $sorted->values()->all();
+```php
+$collection = collect([
+    ['name' => 'Taylor Otwell', 'age' => 34],
+    ['name' => 'Abigail Otwell', 'age' => 30],
+    ['name' => 'Taylor Otwell', 'age' => 36],
+    ['name' => 'Abigail Otwell', 'age' => 32],
+]);
 
-    /*
-        [
-            ['name' => 'Chair', 'colors' => ['Black']],
-            ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
-            ['name' => 'Bookcase', 'colors' => ['Red', 'Beige', 'Brown']],
-        ]
-    */
+$sorted = $collection->sortBy([
+    ['name', 'asc'],
+    ['age', 'desc'],
+]);
 
-If you would like to sort your collection by multiple attributes, you may pass an array of sort operations to the `sortBy` method. Each sort operation should be an array consisting of the attribute that you wish to sort by and the direction of the desired sort:
+$sorted->values()->all();
+```
 
-    $collection = collect([
-        ['name' => 'Taylor Otwell', 'age' => 34],
-        ['name' => 'Abigail Otwell', 'age' => 30],
-        ['name' => 'Taylor Otwell', 'age' => 36],
-        ['name' => 'Abigail Otwell', 'age' => 32],
-    ]);
+當對集合按多個屬性進行排序時，您還可以提供定義每個排序操作的閉包：
 
-    $sorted = $collection->sortBy([
-        ['name', 'asc'],
-        ['age', 'desc'],
-    ]);
+```php
+$collection = collect([
+    ['name' => 'Taylor Otwell', 'age' => 34],
+    ['name' => 'Abigail Otwell', 'age' => 30],
+    ['name' => 'Taylor Otwell', 'age' => 36],
+    ['name' => 'Abigail Otwell', 'age' => 32],
+]);
 
-    $sorted->values()->all();
+$sorted = $collection->sortBy([
+    fn (array $a, array $b) => $a['name'] <=> $b['name'],
+    fn (array $a, array $b) => $b['age'] <=> $a['age'],
+]);
 
-    /*
-        [
-            ['name' => 'Abigail Otwell', 'age' => 32],
-            ['name' => 'Abigail Otwell', 'age' => 30],
-            ['name' => 'Taylor Otwell', 'age' => 36],
-            ['name' => 'Taylor Otwell', 'age' => 34],
-        ]
-    */
+$sorted->values()->all();
+```
 
-When sorting a collection by multiple attributes, you may also provide closures that define each sort operation:
-
-    $collection = collect([
-        ['name' => 'Taylor Otwell', 'age' => 34],
-        ['name' => 'Abigail Otwell', 'age' => 30],
-        ['name' => 'Taylor Otwell', 'age' => 36],
-        ['name' => 'Abigail Otwell', 'age' => 32],
-    ]);
-
-    $sorted = $collection->sortBy([
-        fn (array $a, array $b) => $a['name'] <=> $b['name'],
-        fn (array $a, array $b) => $b['age'] <=> $a['age'],
-    ]);
-
-    $sorted->values()->all();
-
-    /*
-        [
-            ['name' => 'Abigail Otwell', 'age' => 32],
-            ['name' => 'Abigail Otwell', 'age' => 30],
-            ['name' => 'Taylor Otwell', 'age' => 36],
-            ['name' => 'Taylor Otwell', 'age' => 34],
-        ]
-    */
+```php
+[
+    ['name' => 'Abigail Otwell', 'age' => 32],
+    ['name' => 'Abigail Otwell', 'age' => 30],
+    ['name' => 'Taylor Otwell', 'age' => 36],
+    ['name' => 'Taylor Otwell', 'age' => 34],
+]
+```
 
 <a name="method-sortbydesc"></a>
 #### `sortByDesc()` {.collection-method}
 
-This method has the same signature as the [`sortBy`](#method-sortby) method, but will sort the collection in the opposite order.
+此方法與 [`sortBy`](#method-sortby) 方法具有相同的簽名，但將按相反順序對集合進行排序。
 
 <a name="method-sortdesc"></a>
 #### `sortDesc()` {.collection-method}
 
-This method will sort the collection in the opposite order as the [`sort`](#method-sort) method:
+此方法將按與 [`sort`](#method-sort) 方法相反的順序對集合進行排序：
 
-    $collection = collect([5, 3, 1, 2, 4]);
+```php
+$collection = collect([5, 3, 1, 2, 4]);
 
-    $sorted = $collection->sortDesc();
+$sorted = $collection->sortDesc();
 
-    $sorted->values()->all();
+$sorted->values()->all();
 
-    // [5, 4, 3, 2, 1]
+// [5, 4, 3, 2, 1]
+```
 
-Unlike `sort`, you may not pass a closure to `sortDesc`. Instead, you should use the [`sort`](#method-sort) method and invert your comparison.
+與 `sort` 不同，您不能將閉包傳遞給 `sortDesc`。相反，您應該使用 [`sort`](#method-sort) 方法並反轉您的比較。
 
 <a name="method-sortkeys"></a>
 #### `sortKeys()` {.collection-method}
 
-The `sortKeys` method sorts the collection by the keys of the underlying associative array:
+`sortKeys` 方法按基礆關聯數組的鍵對集合進行排序：
 
-    $collection = collect([
-        'id' => 22345,
-        'first' => 'John',
-        'last' => 'Doe',
-    ]);
+```php
+$collection = collect([
+    'id' => 22345,
+    'first' => 'John',
+    'last' => 'Doe',
+]);
 
-    $sorted = $collection->sortKeys();
+$sorted = $collection->sortKeys();
 
-    $sorted->all();
-
-    /*
-        [
-            'first' => 'John',
-            'id' => 22345,
-            'last' => 'Doe',
-        ]
-    */
+$sorted->all();
+```
 
 <a name="method-sortkeysdesc"></a>
 #### `sortKeysDesc()` {.collection-method}
 
-This method has the same signature as the [`sortKeys`](#method-sortkeys) method, but will sort the collection in the opposite order.
+此方法與 [`sortKeys`](#method-sortkeys) 方法具有相同的簽名，但將以相反的順序對集合進行排序。
 
 <a name="method-sortkeysusing"></a>
 #### `sortKeysUsing()` {.collection-method}
 
-The `sortKeysUsing` method sorts the collection by the keys of the underlying associative array using a callback:
+`sortKeysUsing` 方法使用回調函數按照底層關聯陣列的鍵對集合進行排序：
 
     $collection = collect([
         'ID' => 22345,
@@ -2558,12 +2719,12 @@ The `sortKeysUsing` method sorts the collection by the keys of the underlying as
         ]
     */
 
-The callback must be a comparison function that returns an integer less than, equal to, or greater than zero. For more information, refer to the PHP documentation on [`uksort`](https://www.php.net/manual/en/function.uksort.php#refsect1-function.uksort-parameters), which is the PHP function that `sortKeysUsing` method utilizes internally.
+回調函數必須是一個返回小於、等於或大於零的整數的比較函數。有關更多信息，請參閱 PHP 文檔中關於 [`uksort`](https://www.php.net/manual/en/function.uksort.php#refsect1-function.uksort-parameters) 的部分，該函數是 `sortKeysUsing` 方法內部使用的 PHP 函數。
 
 <a name="method-splice"></a>
 #### `splice()` {.collection-method}
 
-The `splice` method removes and returns a slice of items starting at the specified index:
+`splice` 方法刪除並返回從指定索引開始的項目片段：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2577,7 +2738,7 @@ The `splice` method removes and returns a slice of items starting at the specifi
 
     // [1, 2]
 
-You may pass a second argument to limit the size of the resulting collection:
+您可以傳遞第二個引數以限制結果集合的大小：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2591,7 +2752,7 @@ You may pass a second argument to limit the size of the resulting collection:
 
     // [1, 2, 4, 5]
 
-In addition, you may pass a third argument containing the new items to replace the items removed from the collection:
+此外，您可以傳遞包含要替換從集合中刪除的項目的新項目的第三個引數：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2605,10 +2766,11 @@ In addition, you may pass a third argument containing the new items to replace t
 
     // [1, 2, 10, 11, 4, 5]
 
+
 <a name="method-split"></a>
 #### `split()` {.collection-method}
 
-The `split` method breaks a collection into the given number of groups:
+`split` 方法將集合分成指定數量的群組：
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2621,7 +2783,7 @@ The `split` method breaks a collection into the given number of groups:
 <a name="method-splitin"></a>
 #### `splitIn()` {.collection-method}
 
-The `splitIn` method breaks a collection into the given number of groups, filling non-terminal groups completely before allocating the remainder to the final group:
+`splitIn` 方法將集合分成指定數量的群組，將非終端群組完全填滿，然後將剩餘部分分配給最後一個群組：
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
@@ -2634,13 +2796,13 @@ The `splitIn` method breaks a collection into the given number of groups, fillin
 <a name="method-sum"></a>
 #### `sum()` {.collection-method}
 
-The `sum` method returns the sum of all items in the collection:
+`sum` 方法返回集合中所有項目的總和：
 
     collect([1, 2, 3, 4, 5])->sum();
 
     // 15
 
-If the collection contains nested arrays or objects, you should pass a key that will be used to determine which values to sum:
+如果集合包含嵌套的陣列或物件，您應該傳遞一個用於確定要加總哪些值的鍵：
 
     $collection = collect([
         ['name' => 'JavaScript: The Good Parts', 'pages' => 176],
@@ -2651,7 +2813,7 @@ If the collection contains nested arrays or objects, you should pass a key that 
 
     // 1272
 
-In addition, you may pass your own closure to determine which values of the collection to sum:
+此外，您可以傳遞自己的閉包來確定要加總集合中的哪些值：
 
     $collection = collect([
         ['name' => 'Chair', 'colors' => ['Black']],
@@ -2668,7 +2830,7 @@ In addition, you may pass your own closure to determine which values of the coll
 <a name="method-take"></a>
 #### `take()` {.collection-method}
 
-The `take` method returns a new collection with the specified number of items:
+`take` 方法返回具有指定數量項目的新集合：
 
     $collection = collect([0, 1, 2, 3, 4, 5]);
 
@@ -2678,10 +2840,11 @@ The `take` method returns a new collection with the specified number of items:
 
     // [0, 1, 2]
 
-You may also pass a negative integer to take the specified number of items from the end of the collection:
+您也可以傳遞負整數以從集合末尾取出指定數量的項目：
 
     $collection = collect([0, 1, 2, 3, 4, 5]);
 
+```markdown
     $chunk = $collection->take(-2);
 
     $chunk->all();
@@ -2691,7 +2854,7 @@ You may also pass a negative integer to take the specified number of items from 
 <a name="method-takeuntil"></a>
 #### `takeUntil()` {.collection-method}
 
-The `takeUntil` method returns items in the collection until the given callback returns `true`:
+`takeUntil` 方法會在給定的回呼函式返回 `true` 之前，返回集合中的項目：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2703,7 +2866,7 @@ The `takeUntil` method returns items in the collection until the given callback 
 
     // [1, 2]
 
-You may also pass a simple value to the `takeUntil` method to get the items until the given value is found:
+您也可以將一個簡單值傳遞給 `takeUntil` 方法，以獲取直到找到指定值的項目：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2714,12 +2877,12 @@ You may also pass a simple value to the `takeUntil` method to get the items unti
     // [1, 2]
 
 > [!WARNING]  
-> If the given value is not found or the callback never returns `true`, the `takeUntil` method will return all items in the collection.
+> 如果找不到指定值或回呼函式從未返回 `true`，`takeUntil` 方法將返回集合中的所有項目。
 
 <a name="method-takewhile"></a>
 #### `takeWhile()` {.collection-method}
 
-The `takeWhile` method returns items in the collection until the given callback returns `false`:
+`takeWhile` 方法會在給定的回呼函式返回 `false` 之前，返回集合中的項目：
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -2732,12 +2895,12 @@ The `takeWhile` method returns items in the collection until the given callback 
     // [1, 2]
 
 > [!WARNING]  
-> If the callback never returns `false`, the `takeWhile` method will return all items in the collection.
+> 如果回呼函式從未返回 `false`，`takeWhile` 方法將返回集合中的所有項目。
 
 <a name="method-tap"></a>
 #### `tap()` {.collection-method}
 
-The `tap` method passes the collection to the given callback, allowing you to "tap" into the collection at a specific point and do something with the items while not affecting the collection itself. The collection is then returned by the `tap` method:
+`tap` 方法將集合傳遞給給定的回呼函式，允許您在特定點“觸及”集合並對項目進行操作，而不影響集合本身。然後 `tap` 方法返回集合：
 
     collect([2, 4, 3, 1, 5])
         ->sort()
@@ -2751,221 +2914,247 @@ The `tap` method passes the collection to the given callback, allowing you to "t
 <a name="method-times"></a>
 #### `times()` {.collection-method}
 
-The static `times` method creates a new collection by invoking the given closure a specified number of times:
+靜態 `times` 方法通過調用給定的閉包指定次數來創建一個新的集合：
 
     $collection = Collection::times(10, function (int $number) {
         return $number * 9;
     });
+```
 
-    $collection->all();
+```php
+$collection->all();
 
-    // [9, 18, 27, 36, 45, 54, 63, 72, 81, 90]
+// [9, 18, 27, 36, 45, 54, 63, 72, 81, 90]
+```
 
 <a name="method-toarray"></a>
 #### `toArray()` {.collection-method}
 
-The `toArray` method converts the collection into a plain PHP `array`. If the collection's values are [Eloquent](/docs/{{version}}/eloquent) models, the models will also be converted to arrays:
+`toArray` 方法將集合轉換為普通的 PHP `array`。如果集合的值是[Eloquent](/docs/{{version}}/eloquent)模型，則這些模型也將被轉換為陣列：
 
-    $collection = collect(['name' => 'Desk', 'price' => 200]);
+```php
+$collection = collect(['name' => 'Desk', 'price' => 200]);
 
-    $collection->toArray();
+$collection->toArray();
 
-    /*
-        [
-            ['name' => 'Desk', 'price' => 200],
-        ]
-    */
+/*
+    [
+        ['name' => 'Desk', 'price' => 200],
+    ]
+*/
+```
 
 > [!WARNING]  
-> `toArray` also converts all of the collection's nested objects that are an instance of `Arrayable` to an array. If you want to get the raw array underlying the collection, use the [`all`](#method-all) method instead.
+> `toArray` 也將所有集合的嵌套物件（如果是 `Arrayable` 的實例）轉換為陣列。如果您想要獲取集合底層的原始陣列，請改用 [`all`](#method-all) 方法。
 
 <a name="method-tojson"></a>
 #### `toJson()` {.collection-method}
 
-The `toJson` method converts the collection into a JSON serialized string:
+`toJson` 方法將集合轉換為 JSON 序列化字串：
 
-    $collection = collect(['name' => 'Desk', 'price' => 200]);
+```php
+$collection = collect(['name' => 'Desk', 'price' => 200]);
 
-    $collection->toJson();
+$collection->toJson();
 
-    // '{"name":"Desk", "price":200}'
+// '{"name":"Desk", "price":200}'
+```
 
 <a name="method-transform"></a>
 #### `transform()` {.collection-method}
 
-The `transform` method iterates over the collection and calls the given callback with each item in the collection. The items in the collection will be replaced by the values returned by the callback:
+`transform` 方法遍歷集合並對集合中的每個項目調用給定的回呼函式。集合中的項目將被回呼函式返回的值替換：
 
-    $collection = collect([1, 2, 3, 4, 5]);
+```php
+$collection = collect([1, 2, 3, 4, 5]);
 
-    $collection->transform(function (int $item, int $key) {
-        return $item * 2;
-    });
+$collection->transform(function (int $item, int $key) {
+    return $item * 2;
+});
 
-    $collection->all();
+$collection->all();
 
-    // [2, 4, 6, 8, 10]
+// [2, 4, 6, 8, 10]
+```
 
 > [!WARNING]  
-> Unlike most other collection methods, `transform` modifies the collection itself. If you wish to create a new collection instead, use the [`map`](#method-map) method.
+> 與大多數其他集合方法不同，`transform` 會修改集合本身。如果您希望創建一個新的集合，請改用 [`map`](#method-map) 方法。
 
 <a name="method-undot"></a>
 #### `undot()` {.collection-method}
 
-The `undot` method expands a single-dimensional collection that uses "dot" notation into a multi-dimensional collection:
+`undot` 方法將使用「點」表示法的單維集合展開為多維集合：
 
-    $person = collect([
-        'name.first_name' => 'Marie',
-        'name.last_name' => 'Valentine',
-        'address.line_1' => '2992 Eagle Drive',
-        'address.line_2' => '',
-        'address.suburb' => 'Detroit',
-        'address.state' => 'MI',
-        'address.postcode' => '48219'
-    ]);
+```php
+$person = collect([
+    'name.first_name' => 'Marie',
+    'name.last_name' => 'Valentine',
+    'address.line_1' => '2992 Eagle Drive',
+    'address.line_2' => '',
+    'address.suburb' => 'Detroit',
+    'address.state' => 'MI',
+    'address.postcode' => '48219'
+]);
+```
 
-    $person = $person->undot();
+```php
+$person = $person->undot();
 
-    $person->toArray();
+$person->toArray();
 
-    /*
-        [
-            "name" => [
-                "first_name" => "Marie",
-                "last_name" => "Valentine",
-            ],
-            "address" => [
-                "line_1" => "2992 Eagle Drive",
-                "line_2" => "",
-                "suburb" => "Detroit",
-                "state" => "MI",
-                "postcode" => "48219",
-            ],
-        ]
-    */
+/*
+    [
+        "name" => [
+            "first_name" => "Marie",
+            "last_name" => "Valentine",
+        ],
+        "address" => [
+            "line_1" => "2992 Eagle Drive",
+            "line_2" => "",
+            "suburb" => "Detroit",
+            "state" => "MI",
+            "postcode" => "48219",
+        ],
+    ]
+*/
+```
 
 <a name="method-union"></a>
 #### `union()` {.collection-method}
 
-The `union` method adds the given array to the collection. If the given array contains keys that are already in the original collection, the original collection's values will be preferred:
+`union` 方法將給定的陣列添加到集合中。如果給定的陣列包含已經存在於原始集合中的鍵，則將優先使用原始集合的值：
 
-    $collection = collect([1 => ['a'], 2 => ['b']]);
+```php
+$collection = collect([1 => ['a'], 2 => ['b']]);
 
-    $union = $collection->union([3 => ['c'], 1 => ['d']]);
+$union = $collection->union([3 => ['c'], 1 => ['d']]);
 
-    $union->all();
+$union->all();
 
-    // [1 => ['a'], 2 => ['b'], 3 => ['c']]
+// [1 => ['a'], 2 => ['b'], 3 => ['c']]
+```
 
 <a name="method-unique"></a>
 #### `unique()` {.collection-method}
 
-The `unique` method returns all of the unique items in the collection. The returned collection keeps the original array keys, so in the following example we will use the [`values`](#method-values) method to reset the keys to consecutively numbered indexes:
+`unique` 方法返回集合中所有獨特的項目。返回的集合保留原始陣列鍵，因此在下面的示例中，我們將使用 [`values`](#method-values) 方法將鍵重置為連續編號的索引：
 
-    $collection = collect([1, 1, 2, 2, 3, 4, 2]);
+```php
+$collection = collect([1, 1, 2, 2, 3, 4, 2]);
 
-    $unique = $collection->unique();
+$unique = $collection->unique();
 
-    $unique->values()->all();
+$unique->values()->all();
 
-    // [1, 2, 3, 4]
+// [1, 2, 3, 4]
+```
 
-When dealing with nested arrays or objects, you may specify the key used to determine uniqueness:
+當處理嵌套的陣列或物件時，您可以指定用於確定唯一性的鍵：
 
-    $collection = collect([
+```php
+$collection = collect([
+    ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
+    ['name' => 'iPhone 5', 'brand' => 'Apple', 'type' => 'phone'],
+    ['name' => 'Apple Watch', 'brand' => 'Apple', 'type' => 'watch'],
+    ['name' => 'Galaxy S6', 'brand' => 'Samsung', 'type' => 'phone'],
+    ['name' => 'Galaxy Gear', 'brand' => 'Samsung', 'type' => 'watch'],
+]);
+
+$unique = $collection->unique('brand');
+
+$unique->values()->all();
+
+/*
+    [
         ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
-        ['name' => 'iPhone 5', 'brand' => 'Apple', 'type' => 'phone'],
+        ['name' => 'Galaxy S6', 'brand' => 'Samsung', 'type' => 'phone'],
+    ]
+*/
+```
+
+最後，您也可以將自己的閉包傳遞給 `unique` 方法，以指定哪個值應該確定項目的唯一性：
+
+```php
+$unique = $collection->unique(function (array $item) {
+    return $item['brand'].$item['type'];
+});
+
+$unique->values()->all();
+
+/*
+    [
+        ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
         ['name' => 'Apple Watch', 'brand' => 'Apple', 'type' => 'watch'],
         ['name' => 'Galaxy S6', 'brand' => 'Samsung', 'type' => 'phone'],
         ['name' => 'Galaxy Gear', 'brand' => 'Samsung', 'type' => 'watch'],
-    ]);
+    ]
+*/
+```
 
-    $unique = $collection->unique('brand');
-
-    $unique->values()->all();
-
-    /*
-        [
-            ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
-            ['name' => 'Galaxy S6', 'brand' => 'Samsung', 'type' => 'phone'],
-        ]
-    */
-
-Finally, you may also pass your own closure to the `unique` method to specify which value should determine an item's uniqueness:
-
-    $unique = $collection->unique(function (array $item) {
-        return $item['brand'].$item['type'];
-    });
-
-    $unique->values()->all();
-
-    /*
-        [
-            ['name' => 'iPhone 6', 'brand' => 'Apple', 'type' => 'phone'],
-            ['name' => 'Apple Watch', 'brand' => 'Apple', 'type' => 'watch'],
-            ['name' => 'Galaxy S6', 'brand' => 'Samsung', 'type' => 'phone'],
-            ['name' => 'Galaxy Gear', 'brand' => 'Samsung', 'type' => 'watch'],
-        ]
-    */
-
-The `unique` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the [`uniqueStrict`](#method-uniquestrict) method to filter using "strict" comparisons.
+`unique` 方法在檢查項目值時使用 "寬鬆" 比較，這意味著具有整數值的字符串將被視為等於具有相同值的整數。使用 [`uniqueStrict`](#method-uniquestrict) 方法使用 "嚴格" 比較進行篩選。
 
 > [!NOTE]  
-> This method's behavior is modified when using [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-unique).
+> 當使用 [Eloquent Collections](/docs/{{version}}/eloquent-collections#method-unique) 時，此方法的行為會有所修改。
 
 <a name="method-uniquestrict"></a>
 #### `uniqueStrict()` {.collection-method}
 
-This method has the same signature as the [`unique`](#method-unique) method; however, all values are compared using "strict" comparisons.
+此方法與 [`unique`](#method-unique) 方法具有相同的簽名；但是，所有值都使用 "嚴格" 比較進行比較。
 
 <a name="method-unless"></a>
 #### `unless()` {.collection-method}
 
-The `unless` method will execute the given callback unless the first argument given to the method evaluates to `true`:
+`unless` 方法將執行給定的回調，除非傳遞給該方法的第一個引數求值為 `true`：
 
-    $collection = collect([1, 2, 3]);
+```php
+$collection = collect([1, 2, 3]);
 
-    $collection->unless(true, function (Collection $collection) {
-        return $collection->push(4);
-    });
+$collection->unless(true, function (Collection $collection) {
+    return $collection->push(4);
+});
 
-    $collection->unless(false, function (Collection $collection) {
-        return $collection->push(5);
-    });
+$collection->unless(false, function (Collection $collection) {
+    return $collection->push(5);
+});
 
+$collection->all();
+
+// [1, 2, 3, 5]
+```
+
+可以將第二個回調傳遞給 `unless` 方法。當傳遞給 `unless` 方法的第一個引數求值為 `true` 時，將執行第二個回調：
+
+```php
+$collection = collect([1, 2, 3]);
+
+$collection->unless(true, function (Collection $collection) {
+    return $collection->push(4);
+}, function (Collection $collection) {
+    return $collection->push(5);
+});
+```
+
+```markdown
     $collection->all();
 
     // [1, 2, 3, 5]
 
-A second callback may be passed to the `unless` method. The second callback will be executed when the first argument given to the `unless` method evaluates to `true`:
-
-    $collection = collect([1, 2, 3]);
-
-    $collection->unless(true, function (Collection $collection) {
-        return $collection->push(4);
-    }, function (Collection $collection) {
-        return $collection->push(5);
-    });
-
-    $collection->all();
-
-    // [1, 2, 3, 5]
-
-For the inverse of `unless`, see the [`when`](#method-when) method.
+對於 `unless` 的反義詞，請參見 [`when`](#method-when) 方法。
 
 <a name="method-unlessempty"></a>
 #### `unlessEmpty()` {.collection-method}
 
-Alias for the [`whenNotEmpty`](#method-whennotempty) method.
+[`whenNotEmpty`](#method-whennotempty) 方法的別名。
 
 <a name="method-unlessnotempty"></a>
 #### `unlessNotEmpty()` {.collection-method}
 
-Alias for the [`whenEmpty`](#method-whenempty) method.
+[`whenEmpty`](#method-whenempty) 方法的別名。
 
 <a name="method-unwrap"></a>
 #### `unwrap()` {.collection-method}
 
-The static `unwrap` method returns the collection's underlying items from the given value when applicable:
+靜態 `unwrap` 方法在適用時從給定值返回集合的基礎項目：
 
     Collection::unwrap(collect('John Doe'));
 
@@ -2982,7 +3171,7 @@ The static `unwrap` method returns the collection's underlying items from the gi
 <a name="method-value"></a>
 #### `value()` {.collection-method}
 
-The `value` method retrieves a given value from the first element of the collection:
+`value` 方法從集合的第一個元素擷取給定值：
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2996,7 +3185,7 @@ The `value` method retrieves a given value from the first element of the collect
 <a name="method-values"></a>
 #### `values()` {.collection-method}
 
-The `values` method returns a new collection with the keys reset to consecutive integers:
+`values` 方法返回一個將鍵重置為連續整數的新集合：
 
     $collection = collect([
         10 => ['product' => 'Desk', 'price' => 200],
@@ -3017,7 +3206,7 @@ The `values` method returns a new collection with the keys reset to consecutive 
 <a name="method-when"></a>
 #### `when()` {.collection-method}
 
-The `when` method will execute the given callback when the first argument given to the method evaluates to `true`. The collection instance and the first argument given to the `when` method will be provided to the closure:
+`when` 方法將在傳遞給該方法的第一個引數評估為 `true` 時執行給定的回呼函式。將提供集合實例和傳遞給 `when` 方法的第一個引數給閉包：
 
     $collection = collect([1, 2, 3]);
 
@@ -3028,12 +3217,14 @@ The `when` method will execute the given callback when the first argument given 
     $collection->when(false, function (Collection $collection, int $value) {
         return $collection->push(5);
     });
+```
 
+```markdown
     $collection->all();
 
     // [1, 2, 3, 4]
 
-A second callback may be passed to the `when` method. The second callback will be executed when the first argument given to the `when` method evaluates to `false`:
+`when` 方法可以傳遞第二個回呼函式。當傳遞給 `when` 方法的第一個引數評估為 `false` 時，將執行第二個回呼函式：
 
     $collection = collect([1, 2, 3]);
 
@@ -3047,12 +3238,12 @@ A second callback may be passed to the `when` method. The second callback will b
 
     // [1, 2, 3, 5]
 
-For the inverse of `when`, see the [`unless`](#method-unless) method.
+若要取得 `when` 的相反效果，請參閱 [`unless`](#method-unless) 方法。
 
 <a name="method-whenempty"></a>
 #### `whenEmpty()` {.collection-method}
 
-The `whenEmpty` method will execute the given callback when the collection is empty:
+當集合為空時，`whenEmpty` 方法將執行給定的回呼函式：
 
     $collection = collect(['Michael', 'Tom']);
 
@@ -3075,7 +3266,7 @@ The `whenEmpty` method will execute the given callback when the collection is em
 
     // ['Adam']
 
-A second closure may be passed to the `whenEmpty` method that will be executed when the collection is not empty:
+`whenEmpty` 方法可以傳遞第二個閉包，當集合不為空時將執行該閉包：
 
     $collection = collect(['Michael', 'Tom']);
 
@@ -3089,12 +3280,12 @@ A second closure may be passed to the `whenEmpty` method that will be executed w
 
     // ['Michael', 'Tom', 'Taylor']
 
-For the inverse of `whenEmpty`, see the [`whenNotEmpty`](#method-whennotempty) method.
+若要取得 `whenEmpty` 的相反效果，請參閱 [`whenNotEmpty`](#method-whennotempty) 方法。
 
 <a name="method-whennotempty"></a>
 #### `whenNotEmpty()` {.collection-method}
 
-The `whenNotEmpty` method will execute the given callback when the collection is not empty:
+當集合不為空時，`whenNotEmpty` 方法將執行給定的回呼函式：
 
     $collection = collect(['michael', 'tom']);
 
@@ -3108,84 +3299,88 @@ The `whenNotEmpty` method will execute the given callback when the collection is
 
 
     $collection = collect();
+```  
 
-    $collection->whenNotEmpty(function (Collection $collection) {
-        return $collection->push('adam');
-    });
+```php
+$collection->whenNotEmpty(function (Collection $collection) {
+    return $collection->push('adam');
+});
 
-    $collection->all();
+$collection->all();
 
-    // []
+// []
 
-A second closure may be passed to the `whenNotEmpty` method that will be executed when the collection is empty:
+當集合不為空時，可以傳遞第二個閉包給 `whenNotEmpty` 方法，該閉包將在集合為空時執行：
 
-    $collection = collect();
+$collection = collect();
 
-    $collection->whenNotEmpty(function (Collection $collection) {
-        return $collection->push('adam');
-    }, function (Collection $collection) {
-        return $collection->push('taylor');
-    });
+$collection->whenNotEmpty(function (Collection $collection) {
+    return $collection->push('adam');
+}, function (Collection $collection) {
+    return $collection->push('taylor');
+});
 
-    $collection->all();
+$collection->all();
 
-    // ['taylor']
+// ['taylor']
 
-For the inverse of `whenNotEmpty`, see the [`whenEmpty`](#method-whenempty) method.
+對於 `whenNotEmpty` 的相反操作，請參見 [`whenEmpty`](#method-whenempty) 方法。
 
 <a name="method-where"></a>
 #### `where()` {.collection-method}
 
-The `where` method filters the collection by a given key / value pair:
+`where` 方法根據給定的鍵 / 值對對集合進行篩選：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+    ['product' => 'Bookcase', 'price' => 150],
+    ['product' => 'Door', 'price' => 100],
+]);
+
+$filtered = $collection->where('price', 100);
+
+$filtered->all();
+
+/*
+    [
         ['product' => 'Chair', 'price' => 100],
-        ['product' => 'Bookcase', 'price' => 150],
         ['product' => 'Door', 'price' => 100],
-    ]);
+    ]
+*/
 
-    $filtered = $collection->where('price', 100);
+`where` 方法在檢查項目值時使用 "鬆散" 比較，這意味著具有整數值的字符串將被視為與相同值的整數相等。使用 [`whereStrict`](#method-wherestrict) 方法以使用 "嚴格" 比較進行篩選。
 
-    $filtered->all();
+此外，您可以將比較運算子作為第二個參數傳遞。支持的運算子有：'===', '!==', '!=', '==', '=', '<>', '>', '<', '>=' 和 '<='：
 
-    /*
-        [
-            ['product' => 'Chair', 'price' => 100],
-            ['product' => 'Door', 'price' => 100],
-        ]
-    */
+$collection = collect([
+    ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
+    ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
+    ['name' => 'Sue', 'deleted_at' => null],
+]);
 
-The `where` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the [`whereStrict`](#method-wherestrict) method to filter using "strict" comparisons.
+$filtered = $collection->where('deleted_at', '!=', null);
 
-Optionally, you may pass a comparison operator as the second parameter. Supported operators are: '===', '!==', '!=', '==', '=', '<>', '>', '<', '>=', and '<=':
+$filtered->all();
 
-    $collection = collect([
+/*
+    [
         ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
         ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
-        ['name' => 'Sue', 'deleted_at' => null],
-    ]);
+    ]
+*/
+```
 
-    $filtered = $collection->where('deleted_at', '!=', null);
-
-    $filtered->all();
-
-    /*
-        [
-            ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
-            ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
-        ]
-    */
 
 <a name="method-wherestrict"></a>
 #### `whereStrict()` {.collection-method}
 
-This method has the same signature as the [`where`](#method-where) method; however, all values are compared using "strict" comparisons.
+此方法與 [`where`](#method-where) 方法具有相同的簽名; 但是，所有值都是使用"嚴格"比較來進行比較。
 
 <a name="method-wherebetween"></a>
 #### `whereBetween()` {.collection-method}
 
-The `whereBetween` method filters the collection by determining if a specified item value is within a given range:
+`whereBetween` 方法通過確定指定項目值是否在給定範圍內來過濾集合：
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -3210,7 +3405,7 @@ The `whereBetween` method filters the collection by determining if a specified i
 <a name="method-wherein"></a>
 #### `whereIn()` {.collection-method}
 
-The `whereIn` method removes elements from the collection that do not have a specified item value that is contained within the given array:
+`whereIn` 方法從集合中刪除沒有包含在給定陣列中的指定項目值的元素：
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -3230,91 +3425,99 @@ The `whereIn` method removes elements from the collection that do not have a spe
         ]
     */
 
-The `whereIn` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the [`whereInStrict`](#method-whereinstrict) method to filter using "strict" comparisons.
+`whereIn` 方法在檢查項目值時使用"鬆散"比較，這意味著具有整數值的字串將被視為等於具有相同值的整數。使用 [`whereInStrict`](#method-whereinstrict) 方法使用"嚴格"比較進行過濾。
 
 <a name="method-whereinstrict"></a>
 #### `whereInStrict()` {.collection-method}
 
-This method has the same signature as the [`whereIn`](#method-wherein) method; however, all values are compared using "strict" comparisons.
+此方法與 [`whereIn`](#method-wherein) 方法具有相同的簽名; 但是，所有值都是使用"嚴格"比較來進行比較。
+
 
 <a name="method-whereinstanceof"></a>
 #### `whereInstanceOf()` {.collection-method}
 
-The `whereInstanceOf` method filters the collection by a given class type:
+`whereInstanceOf` 方法根據給定的類型篩選集合：
 
-    use App\Models\User;
-    use App\Models\Post;
+```php
+use App\Models\User;
+use App\Models\Post;
 
-    $collection = collect([
-        new User,
-        new User,
-        new Post,
-    ]);
+$collection = collect([
+    new User,
+    new User,
+    new Post,
+]);
 
-    $filtered = $collection->whereInstanceOf(User::class);
+$filtered = $collection->whereInstanceOf(User::class);
 
-    $filtered->all();
+$filtered->all();
 
-    // [App\Models\User, App\Models\User]
+// [App\Models\User, App\Models\User]
+```
 
 <a name="method-wherenotbetween"></a>
 #### `whereNotBetween()` {.collection-method}
 
-The `whereNotBetween` method filters the collection by determining if a specified item value is outside of a given range:
+`whereNotBetween` 方法根據確定指定項目值是否在給定範圍之外來篩選集合：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
+```php
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 80],
+    ['product' => 'Bookcase', 'price' => 150],
+    ['product' => 'Pencil', 'price' => 30],
+    ['product' => 'Door', 'price' => 100],
+]);
+
+$filtered = $collection->whereNotBetween('price', [100, 200]);
+
+$filtered->all();
+
+/*
+    [
         ['product' => 'Chair', 'price' => 80],
-        ['product' => 'Bookcase', 'price' => 150],
         ['product' => 'Pencil', 'price' => 30],
-        ['product' => 'Door', 'price' => 100],
-    ]);
-
-    $filtered = $collection->whereNotBetween('price', [100, 200]);
-
-    $filtered->all();
-
-    /*
-        [
-            ['product' => 'Chair', 'price' => 80],
-            ['product' => 'Pencil', 'price' => 30],
-        ]
-    */
+    ]
+*/
+```
 
 <a name="method-wherenotin"></a>
 #### `whereNotIn()` {.collection-method}
 
-The `whereNotIn` method removes elements from the collection that have a specified item value that is contained within the given array:
+`whereNotIn` 方法從集合中移除具有包含在給定陣列中的指定項目值的元素：
 
-    $collection = collect([
-        ['product' => 'Desk', 'price' => 200],
+```php
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+    ['product' => 'Bookcase', 'price' => 150],
+    ['product' => 'Door', 'price' => 100],
+]);
+
+$filtered = $collection->whereNotIn('price', [150, 200]);
+
+$filtered->all();
+
+/*
+    [
         ['product' => 'Chair', 'price' => 100],
-        ['product' => 'Bookcase', 'price' => 150],
         ['product' => 'Door', 'price' => 100],
-    ]);
+    ]
+*/
+```
 
-    $filtered = $collection->whereNotIn('price', [150, 200]);
+`whereNotIn` 方法在檢查項目值時使用「寬鬆」比較，這意味著具有整數值的字串將被視為與相同值的整數相等。使用 [`whereNotInStrict`](#method-wherenotinstrict) 方法以使用「嚴格」比較進行篩選。
 
-    $filtered->all();
-
-    /*
-        [
-            ['product' => 'Chair', 'price' => 100],
-            ['product' => 'Door', 'price' => 100],
-        ]
-    */
-
-The `whereNotIn` method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the [`whereNotInStrict`](#method-wherenotinstrict) method to filter using "strict" comparisons.
 
 <a name="method-wherenotinstrict"></a>
 #### `whereNotInStrict()` {.collection-method}
 
-This method has the same signature as the [`whereNotIn`](#method-wherenotin) method; however, all values are compared using "strict" comparisons.
+此方法與 [`whereNotIn`](#method-wherenotin) 方法具有相同的簽名；但是，所有值都使用 "嚴格" 比較。
 
 <a name="method-wherenotnull"></a>
 #### `whereNotNull()` {.collection-method}
 
-The `whereNotNull` method returns items from the collection where the given key is not `null`:
+`whereNotNull` 方法返回集合中給定鍵不為 `null` 的項目：
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -3336,7 +3539,7 @@ The `whereNotNull` method returns items from the collection where the given key 
 <a name="method-wherenull"></a>
 #### `whereNull()` {.collection-method}
 
-The `whereNull` method returns items from the collection where the given key is `null`:
+`whereNull` 方法返回集合中給定鍵為 `null` 的項目：
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -3358,7 +3561,7 @@ The `whereNull` method returns items from the collection where the given key is 
 <a name="method-wrap"></a>
 #### `wrap()` {.collection-method}
 
-The static `wrap` method wraps the given value in a collection when applicable:
+靜態 `wrap` 方法在適用時將給定值包裹在集合中：
 
     use Illuminate\Support\Collection;
 
@@ -3383,7 +3586,7 @@ The static `wrap` method wraps the given value in a collection when applicable:
 <a name="method-zip"></a>
 #### `zip()` {.collection-method}
 
-The `zip` method merges together the values of the given array with the values of the original collection at their corresponding index:
+`zip` 方法將給定陣列的值與原始集合的值在對應的索引處合併在一起：
 
     $collection = collect(['Chair', 'Desk']);
 
@@ -3394,91 +3597,101 @@ The `zip` method merges together the values of the given array with the values o
     // [['Chair', 100], ['Desk', 200]]
 
 <a name="higher-order-messages"></a>
-## Higher Order Messages
+## 高階訊息
 
-Collections also provide support for "higher order messages", which are short-cuts for performing common actions on collections. The collection methods that provide higher order messages are: [`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`skipUntil`](#method-skipuntil), [`skipWhile`](#method-skipwhile), [`some`](#method-some), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), [`takeUntil`](#method-takeuntil), [`takeWhile`](#method-takewhile), and [`unique`](#method-unique).
+集合還提供對 "高階訊息" 的支援，這些是對集合執行常見操作的快捷方式。提供高階訊息的集合方法包括：[`average`](#method-average), [`avg`](#method-avg), [`contains`](#method-contains), [`each`](#method-each), [`every`](#method-every), [`filter`](#method-filter), [`first`](#method-first), [`flatMap`](#method-flatmap), [`groupBy`](#method-groupby), [`keyBy`](#method-keyby), [`map`](#method-map), [`max`](#method-max), [`min`](#method-min), [`partition`](#method-partition), [`reject`](#method-reject), [`skipUntil`](#method-skipuntil), [`skipWhile`](#method-skipwhile), [`some`](#method-some), [`sortBy`](#method-sortby), [`sortByDesc`](#method-sortbydesc), [`sum`](#method-sum), [`takeUntil`](#method-takeuntil), [`takeWhile`](#method-takewhile), 和 [`unique`](#method-unique)。
 
-Each higher order message can be accessed as a dynamic property on a collection instance. For instance, let's use the `each` higher order message to call a method on each object within a collection:
+每個高階訊息都可以作為集合實例上的動態屬性來存取。例如，讓我們使用 `each` 高階訊息來呼叫集合中每個物件的方法：
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $users = User::where('votes', '>', 500)->get();
+$users = User::where('votes', '>', 500)->get();
 
-    $users->each->markAsVip();
+$users->each->markAsVip();
+```
 
-Likewise, we can use the `sum` higher order message to gather the total number of "votes" for a collection of users:
+同樣地，我們可以使用 `sum` 高階訊息來收集使用者集合中所有 "votes" 的總數：
 
-    $users = User::where('group', 'Development')->get();
+```php
+$users = User::where('group', 'Development')->get();
 
-    return $users->sum->votes;
+return $users->sum->votes;
+```
 
-<a name="lazy-collections"></a>
-## Lazy Collections
+## 懶惰集合
 
-<a name="lazy-collection-introduction"></a>
-### Introduction
+### 簡介
 
 > [!WARNING]  
-> Before learning more about Laravel's lazy collections, take some time to familiarize yourself with [PHP generators](https://www.php.net/manual/en/language.generators.overview.php).
+> 在深入瞭解 Laravel 的懶惰集合之前，請花些時間熟悉 [PHP 生成器](https://www.php.net/manual/en/language.generators.overview.php)。
 
-To supplement the already powerful `Collection` class, the `LazyCollection` class leverages PHP's [generators](https://www.php.net/manual/en/language.generators.overview.php) to allow you to work with very large datasets while keeping memory usage low.
+為了補充已經強大的 `Collection` 類別，`LazyCollection` 類別利用 PHP 的 [生成器](https://www.php.net/manual/en/language.generators.overview.php) 讓您能夠處理非常大的資料集，同時保持低記憶體使用量。
 
-For example, imagine your application needs to process a multi-gigabyte log file while taking advantage of Laravel's collection methods to parse the logs. Instead of reading the entire file into memory at once, lazy collections may be used to keep only a small part of the file in memory at a given time:
+舉例來說，假設您的應用程式需要處理一個多 GB 的日誌檔案，同時利用 Laravel 的集合方法來解析這些日誌。與其一次性將整個檔案讀入記憶體，您可以使用懶惰集合來一次只保留檔案的一小部分在記憶體中：
 
-    use App\Models\LogEntry;
-    use Illuminate\Support\LazyCollection;
+```php
+use App\Models\LogEntry;
+use Illuminate\Support\LazyCollection;
 
-    LazyCollection::make(function () {
-        $handle = fopen('log.txt', 'r');
+LazyCollection::make(function () {
+    $handle = fopen('log.txt', 'r');
 
-        while (($line = fgets($handle)) !== false) {
-            yield $line;
-        }
-    })->chunk(4)->map(function (array $lines) {
-        return LogEntry::fromLines($lines);
-    })->each(function (LogEntry $logEntry) {
-        // Process the log entry...
-    });
-
-Or, imagine you need to iterate through 10,000 Eloquent models. When using traditional Laravel collections, all 10,000 Eloquent models must be loaded into memory at the same time:
-
-    use App\Models\User;
-
-    $users = User::all()->filter(function (User $user) {
-        return $user->id > 500;
-    });
-
-However, the query builder's `cursor` method returns a `LazyCollection` instance. This allows you to still only run a single query against the database but also only keep one Eloquent model loaded in memory at a time. In this example, the `filter` callback is not executed until we actually iterate over each user individually, allowing for a drastic reduction in memory usage:
-
-    use App\Models\User;
-
-    $users = User::cursor()->filter(function (User $user) {
-        return $user->id > 500;
-    });
-
-    foreach ($users as $user) {
-        echo $user->id;
+    while (($line = fgets($handle)) !== false) {
+        yield $line;
     }
+})->chunk(4)->map(function (array $lines) {
+    return LogEntry::fromLines($lines);
+})->each(function (LogEntry $logEntry) {
+    // 處理日誌項目...
+});
+```
+
+或者，假設您需要迭代處理 10,000 個 Eloquent 模型。當使用傳統的 Laravel 集合時，所有 10,000 個 Eloquent 模型必須同時加載到記憶體中：
+
+```php
+use App\Models\User;
+
+$users = User::all()->filter(function (User $user) {
+    return $user->id > 500;
+});
+```
+
+然而，查詢生成器的 `cursor` 方法會返回一個 `LazyCollection` 實例。這使您仍然只需對數據庫運行一次查詢，但同時只保留一個 Eloquent 模型在內存中。在這個例子中，只有在我們實際遍歷每個用戶時，`filter` 回調才會被執行，從而大幅減少內存使用量：
+
+```php
+use App\Models\User;
+
+$users = User::cursor()->filter(function (User $user) {
+    return $user->id > 500;
+});
+
+foreach ($users as $user) {
+    echo $user->id;
+}
+```
 
 <a name="creating-lazy-collections"></a>
-### Creating Lazy Collections
+### 創建延遲集合
 
-To create a lazy collection instance, you should pass a PHP generator function to the collection's `make` method:
+要創建一個延遲集合實例，您應該將 PHP 生成器函數傳遞給集合的 `make` 方法：
 
-    use Illuminate\Support\LazyCollection;
+```php
+use Illuminate\Support\LazyCollection;
 
-    LazyCollection::make(function () {
-        $handle = fopen('log.txt', 'r');
+LazyCollection::make(function () {
+    $handle = fopen('log.txt', 'r');
 
-        while (($line = fgets($handle)) !== false) {
-            yield $line;
-        }
-    });
+    while (($line = fgets($handle)) !== false) {
+        yield $line;
+    }
+});
+```
 
 <a name="the-enumerable-contract"></a>
-### The Enumerable Contract
+### 可枚舉合同
 
-Almost all methods available on the `Collection` class are also available on the `LazyCollection` class. Both of these classes implement the `Illuminate\Support\Enumerable` contract, which defines the following methods:
+`Collection` 類上幾乎所有可用的方法也都可以在 `LazyCollection` 類上使用。這兩個類都實現了 `Illuminate\Support\Enumerable` 合同，該合同定義了以下方法：
 
 <style>
     .collection-method-list > p {
@@ -3610,17 +3823,17 @@ Almost all methods available on the `Collection` class are also available on the
 </div>
 
 > [!WARNING]  
-> Methods that mutate the collection (such as `shift`, `pop`, `prepend` etc.) are **not** available on the `LazyCollection` class.
+> 會改變集合的方法（例如 `shift`、`pop`、`prepend` 等）**不**適用於 `LazyCollection` 類別。
 
 <a name="lazy-collection-methods"></a>
-### Lazy Collection Methods
+### 惰性集合方法
 
-In addition to the methods defined in the `Enumerable` contract, the `LazyCollection` class contains the following methods:
+除了 `Enumerable` 合約中定義的方法外，`LazyCollection` 類別還包含以下方法：
 
 <a name="method-takeUntilTimeout"></a>
 #### `takeUntilTimeout()` {.collection-method}
 
-The `takeUntilTimeout` method returns a new lazy collection that will enumerate values until the specified time. After that time, the collection will then stop enumerating:
+`takeUntilTimeout` 方法會返回一個新的惰性集合，該集合將列舉值直到指定的時間。在那之後，集合將停止列舉：
 
     $lazyCollection = LazyCollection::times(INF)
         ->takeUntilTimeout(now()->addMinute());
@@ -3637,7 +3850,7 @@ The `takeUntilTimeout` method returns a new lazy collection that will enumerate 
     // 58
     // 59
 
-To illustrate the usage of this method, imagine an application that submits invoices from the database using a cursor. You could define a [scheduled task](/docs/{{version}}/scheduling) that runs every 15 minutes and only processes invoices for a maximum of 14 minutes:
+為了說明此方法的使用方式，想像一個應用程式從資料庫使用游標提交發票。您可以定義一個[排程任務](/docs/{{version}}/scheduling)，每 15 分鐘運行一次，並且僅處理最多 14 分鐘的發票：
 
     use App\Models\Invoice;
     use Illuminate\Support\Carbon;
@@ -3651,14 +3864,14 @@ To illustrate the usage of this method, imagine an application that submits invo
 <a name="method-tapEach"></a>
 #### `tapEach()` {.collection-method}
 
-While the `each` method calls the given callback for each item in the collection right away, the `tapEach` method only calls the given callback as the items are being pulled out of the list one by one:
+`each` 方法會立即為集合中的每個項目調用給定的回呼函式，而 `tapEach` 方法則只在逐一從列表中取出項目時調用給定的回呼函式：
 
-    // Nothing has been dumped so far...
+    // 到目前為止還沒有任何內容被輸出...
     $lazyCollection = LazyCollection::times(INF)->tapEach(function (int $value) {
         dump($value);
     });
 
-    // Three items are dumped...
+    // 三個項目被輸出...
     $array = $lazyCollection->take(3)->all();
 
     // 1
@@ -3668,15 +3881,17 @@ While the `each` method calls the given callback for each item in the collection
 <a name="method-remember"></a>
 #### `remember()` {.collection-method}
 
-The `remember` method returns a new lazy collection that will remember any values that have already been enumerated and will not retrieve them again on subsequent collection enumerations:
+`remember` 方法會返回一個新的惰性集合，該集合將記住已經列舉過的任何值，並且在後續的集合列舉中不會再檢索它們：
 
-    // No query has been executed yet...
-    $users = User::cursor()->remember();
+```php
+// 尚未執行任何查詢...
+$users = User::cursor()->remember();
 
-    // The query is executed...
-    // The first 5 users are hydrated from the database...
-    $users->take(5)->all();
+// 查詢已執行...
+// 從資料庫中取得前 5 個使用者...
+$users->take(5)->all();
 
-    // First 5 users come from the collection's cache...
-    // The rest are hydrated from the database...
-    $users->take(20)->all();
+// 前 5 個使用者來自集合的快取...
+// 其餘從資料庫中取得...
+$users->take(20)->all();
+```

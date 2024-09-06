@@ -1,83 +1,83 @@
-- ## Prologue
-    - [Release Notes](/docs/{{version}}/releases)
-    - [Upgrade Guide](/docs/{{version}}/upgrade)
-    - [Contribution Guide](/docs/{{version}}/contributions)
-- ## Getting Started
-    - [Installation](/docs/{{version}}/installation)
-    - [Configuration](/docs/{{version}}/configuration)
-    - [Directory Structure](/docs/{{version}}/structure)
-    - [Frontend](/docs/{{version}}/frontend)
-    - [Starter Kits](/docs/{{version}}/starter-kits)
-    - [Deployment](/docs/{{version}}/deployment)
-- ## Architecture Concepts
-    - [Request Lifecycle](/docs/{{version}}/lifecycle)
-    - [Service Container](/docs/{{version}}/container)
-    - [Service Providers](/docs/{{version}}/providers)
+- ## 序言
+    - [發行說明](/docs/{{version}}/releases)
+    - [升級指南](/docs/{{version}}/upgrade)
+    - [貢獻指南](/docs/{{version}}/contributions)
+- ## 入門指南
+    - [安裝](/docs/{{version}}/installation)
+    - [配置](/docs/{{version}}/configuration)
+    - [目錄結構](/docs/{{version}}/structure)
+    - [前端](/docs/{{version}}/frontend)
+    - [入門套件](/docs/{{version}}/starter-kits)
+    - [部署](/docs/{{version}}/deployment)
+- ## 架構概念
+    - [請求生命週期](/docs/{{version}}/lifecycle)
+    - [服務容器](/docs/{{version}}/container)
+    - [服務提供者](/docs/{{version}}/providers)
     - [Facades](/docs/{{version}}/facades)
-- ## The Basics
-    - [Routing](/docs/{{version}}/routing)
-    - [Middleware](/docs/{{version}}/middleware)
-    - [CSRF Protection](/docs/{{version}}/csrf)
-    - [Controllers](/docs/{{version}}/controllers)
-    - [Requests](/docs/{{version}}/requests)
-    - [Responses](/docs/{{version}}/responses)
-    - [Views](/docs/{{version}}/views)
-    - [Blade Templates](/docs/{{version}}/blade)
-    - [Asset Bundling](/docs/{{version}}/vite)
-    - [URL Generation](/docs/{{version}}/urls)
+- ## 基礎知識
+    - [路由](/docs/{{version}}/routing)
+    - [中介層](/docs/{{version}}/middleware)
+    - [CSRF 保護](/docs/{{version}}/csrf)
+    - [控制器](/docs/{{version}}/controllers)
+    - [請求](/docs/{{version}}/requests)
+    - [回應](/docs/{{version}}/responses)
+    - [視圖](/docs/{{version}}/views)
+    - [Blade 模板](/docs/{{version}}/blade)
+    - [資源檔捆綁](/docs/{{version}}/vite)
+    - [URL 生成](/docs/{{version}}/urls)
     - [Session](/docs/{{version}}/session)
-    - [Validation](/docs/{{version}}/validation)
-    - [Error Handling](/docs/{{version}}/errors)
-    - [Logging](/docs/{{version}}/logging)
-- ## Digging Deeper
-    - [Artisan Console](/docs/{{version}}/artisan)
-    - [Broadcasting](/docs/{{version}}/broadcasting)
-    - [Cache](/docs/{{version}}/cache)
-    - [Collections](/docs/{{version}}/collections)
-    - [Contracts](/docs/{{version}}/contracts)
-    - [Events](/docs/{{version}}/events)
-    - [File Storage](/docs/{{version}}/filesystem)
-    - [Helpers](/docs/{{version}}/helpers)
-    - [HTTP Client](/docs/{{version}}/http-client)
-    - [Localization](/docs/{{version}}/localization)
-    - [Mail](/docs/{{version}}/mail)
-    - [Notifications](/docs/{{version}}/notifications)
-    - [Package Development](/docs/{{version}}/packages)
-    - [Processes](/docs/{{version}}/processes)
-    - [Queues](/docs/{{version}}/queues)
-    - [Rate Limiting](/docs/{{version}}/rate-limiting)
-    - [Strings](/docs/{{version}}/strings)
-    - [Task Scheduling](/docs/{{version}}/scheduling)
-- ## Security
-    - [Authentication](/docs/{{version}}/authentication)
-    - [Authorization](/docs/{{version}}/authorization)
-    - [Email Verification](/docs/{{version}}/verification)
-    - [Encryption](/docs/{{version}}/encryption)
-    - [Hashing](/docs/{{version}}/hashing)
-    - [Password Reset](/docs/{{version}}/passwords)
-- ## Database
-    - [Getting Started](/docs/{{version}}/database)
-    - [Query Builder](/docs/{{version}}/queries)
-    - [Pagination](/docs/{{version}}/pagination)
-    - [Migrations](/docs/{{version}}/migrations)
-    - [Seeding](/docs/{{version}}/seeding)
+    - [確認](/docs/{{version}}/validation)
+    - [錯誤處理](/docs/{{version}}/errors)
+    - [記錄](/docs/{{version}}/logging)
+- ## 深入探討
+    - [Artisan 指令列](/docs/{{version}}/artisan)
+    - [廣播](/docs/{{version}}/broadcasting)
+    - [快取](/docs/{{version}}/cache)
+    - [集合](/docs/{{version}}/collections)
+    - [合約](/docs/{{version}}/contracts)
+    - [事件](/docs/{{version}}/events)
+    - [檔案儲存](/docs/{{version}}/filesystem)
+    - [輔助函式](/docs/{{version}}/helpers)
+    - [HTTP 客戶端](/docs/{{version}}/http-client)
+    - [本地化](/docs/{{version}}/localization)
+    - [郵件](/docs/{{version}}/mail)
+    - [通知](/docs/{{version}}/notifications)
+    - [套件開發](/docs/{{version}}/packages)
+    - [進程](/docs/{{version}}/processes)
+    - [佇列](/docs/{{version}}/queues)
+    - [速率限制](/docs/{{version}}/rate-limiting)
+    - [字串](/docs/{{version}}/strings)
+    - [任務排程](/docs/{{version}}/scheduling)
+- ## 安全性
+    - [認證](/docs/{{version}}/authentication)
+    - [授權](/docs/{{version}}/authorization)
+    - [電子郵件驗證](/docs/{{version}}/verification)
+    - [加密](/docs/{{version}}/encryption)
+    - [雜湊](/docs/{{version}}/hashing)
+    - [重設密碼](/docs/{{version}}/passwords)
+- ## 資料庫
+    - [入門指南](/docs/{{version}}/database)
+    - [查詢產生器](/docs/{{version}}/queries)
+    - [分頁](/docs/{{version}}/pagination)
+    - [遷移](/docs/{{version}}/migrations)
+    - [資料填充](/docs/{{version}}/seeding)
     - [Redis](/docs/{{version}}/redis)
 - ## Eloquent ORM
-    - [Getting Started](/docs/{{version}}/eloquent)
-    - [Relationships](/docs/{{version}}/eloquent-relationships)
-    - [Collections](/docs/{{version}}/eloquent-collections)
-    - [Mutators / Casts](/docs/{{version}}/eloquent-mutators)
-    - [API Resources](/docs/{{version}}/eloquent-resources)
-    - [Serialization](/docs/{{version}}/eloquent-serialization)
-    - [Factories](/docs/{{version}}/eloquent-factories)
-- ## Testing
-    - [Getting Started](/docs/{{version}}/testing)
-    - [HTTP Tests](/docs/{{version}}/http-tests)
-    - [Console Tests](/docs/{{version}}/console-tests)
-    - [Browser Tests](/docs/{{version}}/dusk)
-    - [Database](/docs/{{version}}/database-testing)
-    - [Mocking](/docs/{{version}}/mocking)
-- ## Packages
+    - [入門指南](/docs/{{version}}/eloquent)
+    - [關聯](/docs/{{version}}/eloquent-relationships)
+    - [集合](/docs/{{version}}/eloquent-collections)
+    - [賦值器 / 轉換器](/docs/{{version}}/eloquent-mutators)
+    - [API 資源](/docs/{{version}}/eloquent-resources)
+    - [序列化](/docs/{{version}}/eloquent-serialization)
+    - [工廠](/docs/{{version}}/eloquent-factories)
+- ## 測試
+    - [入門指南](/docs/{{version}}/testing)
+    - [HTTP 測試](/docs/{{version}}/http-tests)
+    - [指令列測試](/docs/{{version}}/console-tests)
+    - [瀏覽器測試](/docs/{{version}}/dusk)
+    - [資料庫](/docs/{{version}}/database-testing)
+    - [模擬](/docs/{{version}}/mocking)
+- ## 套件
     - [Breeze](/docs/{{version}}/starter-kits#laravel-breeze)
     - [Cashier (Stripe)](/docs/{{version}}/billing)
     - [Cashier (Paddle)](/docs/{{version}}/cashier-paddle)
@@ -103,4 +103,48 @@
     - [Socialite](/docs/{{version}}/socialite)
     - [Telescope](/docs/{{version}}/telescope)
     - [Valet](/docs/{{version}}/valet)
-- [API Documentation](/api/10.x)
+- [API 文件](/api/10.x)
+
+```markdown
+# Laravel Authentication
+
+Laravel provides a simple way to authenticate users with the built-in authentication system. To get started, you need to configure the authentication services and controllers.
+
+## Configuration
+
+The authentication configuration file is located at `config/auth.php`. This file allows you to configure multiple authentication "guards" and each guard represents a way that users can authenticate with your application.
+
+### Guards
+
+Guards define how users are authenticated for each request. By default, Laravel provides a `web` guard which uses session authentication and a `api` guard for token authentication.
+
+#### Web Guard
+
+The `web` guard is used for web-based authentication. It maintains the state of the user between HTTP requests using sessions.
+
+#### API Guard
+
+The `api` guard is used for API token authentication. This guard is stateless, meaning each request to the application must include a token.
+
+## Controllers
+
+Laravel includes several controllers that handle user authentication. These controllers are located in the `App\Http\Controllers\Auth` namespace.
+
+### LoginController
+
+The `LoginController` handles user authentication and includes methods for login and logout.
+
+### RegisterController
+
+The `RegisterController` handles user registration and includes methods for creating and validating new users.
+
+### ForgotPasswordController
+
+The `ForgotPasswordController` handles password reset emails and includes methods for sending password reset emails.
+
+```
+
+<Notes>
+- Source: [Laravel Documentation](https://laravel.com/docs/authentication)
+- Permalink: [Laravel Authentication](https://laravel.com/docs/authentication)
+```

@@ -1,219 +1,246 @@
 # Laravel Socialite
 
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Upgrading Socialite](#upgrading-socialite)
-- [Configuration](#configuration)
-- [Authentication](#authentication)
-    - [Routing](#routing)
-    - [Authentication and Storage](#authentication-and-storage)
-    - [Access Scopes](#access-scopes)
-    - [Slack Bot Scopes](#slack-bot-scopes)
-    - [Optional Parameters](#optional-parameters)
-- [Retrieving User Details](#retrieving-user-details)
+- [簡介](#introduction)
+- [安裝](#installation)
+- [升級 Socialite](#upgrading-socialite)
+- [組態設定](#configuration)
+- [認證](#authentication)
+    - [路由](#routing)
+    - [認證與儲存](#authentication-and-storage)
+    - [存取範圍](#access-scopes)
+    - [Slack 機器人範圍](#slack-bot-scopes)
+    - [選用參數](#optional-parameters)
+- [取得使用者詳細資訊](#retrieving-user-details)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-In addition to typical, form based authentication, Laravel also provides a simple, convenient way to authenticate with OAuth providers using [Laravel Socialite](https://github.com/laravel/socialite). Socialite currently supports authentication via Facebook, Twitter, LinkedIn, Google, GitHub, GitLab, Bitbucket, and Slack.
+除了典型的基於表單的認證外，Laravel 還提供了一種簡單、方便的方法，使用 [Laravel Socialite](https://github.com/laravel/socialite) 與 OAuth 提供者進行認證。Socialite 目前支援通過 Facebook、Twitter、LinkedIn、Google、GitHub、GitLab、Bitbucket 和 Slack 進行認證。
 
 > [!NOTE]  
-> Adapters for other platforms are available via the community driven [Socialite Providers](https://socialiteproviders.com/) website.
+> 其他平台的配接器可通過社區驅動的 [Socialite Providers](https://socialiteproviders.com/) 網站獲得。
 
 <a name="installation"></a>
-## Installation
+## 安裝
 
-To get started with Socialite, use the Composer package manager to add the package to your project's dependencies:
+要開始使用 Socialite，請使用 Composer 套件管理器將套件添加到您專案的相依性中：
 
 ```shell
 composer require laravel/socialite
 ```
 
 <a name="upgrading-socialite"></a>
-## Upgrading Socialite
+## 升級 Socialite
 
-When upgrading to a new major version of Socialite, it's important that you carefully review [the upgrade guide](https://github.com/laravel/socialite/blob/master/UPGRADE.md).
+升級到 Socialite 的新主要版本時，重要的是仔細查看 [升級指南](https://github.com/laravel/socialite/blob/master/UPGRADE.md)。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
-Before using Socialite, you will need to add credentials for the OAuth providers your application utilizes. Typically, these credentials may be retrieved by creating a "developer application" within the dashboard of the service you will be authenticating with.
+在使用 Socialite 之前，您需要為應用程式使用的 OAuth 提供者添加憑證。通常，這些憑證可以通過在您將要進行認證的服務的儀表板中創建一個「開發人員應用程式」來檢索。
 
-These credentials should be placed in your application's `config/services.php` configuration file, and should use the key `facebook`, `twitter` (OAuth 1.0), `twitter-oauth-2` (OAuth 2.0), `linkedin-openid`, `google`, `github`, `gitlab`, `bitbucket`, or `slack`, depending on the providers your application requires:
+這些憑證應該放在您應用程式的 `config/services.php` 組態檔中，並應使用 `facebook`、`twitter`（OAuth 1.0）、`twitter-oauth-2`（OAuth 2.0）、`linkedin-openid`、`google`、`github`、`gitlab`、`bitbucket` 或 `slack` 作為鍵，具體取決於您的應用程式所需的提供者：
 
-    'github' => [
-        'client_id' => env('GITHUB_CLIENT_ID'),
-        'client_secret' => env('GITHUB_CLIENT_SECRET'),
-        'redirect' => 'http://example.com/callback-url',
-    ],
+```php
+'github' => [
+    'client_id' => env('GITHUB_CLIENT_ID'),
+    'client_secret' => env('GITHUB_CLIENT_SECRET'),
+    'redirect' => 'http://example.com/callback-url',
+],
+```
 
 > [!NOTE]  
-> If the `redirect` option contains a relative path, it will automatically be resolved to a fully qualified URL.
+> 如果 `redirect` 選項包含相對路徑，它將自動解析為完全合格的 URL。
 
 <a name="authentication"></a>
-## Authentication
+## 認證
 
 <a name="routing"></a>
-### Routing
+### 路由
 
-To authenticate users using an OAuth provider, you will need two routes: one for redirecting the user to the OAuth provider, and another for receiving the callback from the provider after authentication. The example routes below demonstrate the implementation of both routes:
+要使用 OAuth 提供者對用戶進行身份驗證，您將需要兩個路由：一個用於將用戶重定向到 OAuth 提供者，另一個用於在身份驗證後從提供者接收回調。下面的示例路由演示了這兩個路由的實現：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    Route::get('/auth/redirect', function () {
-        return Socialite::driver('github')->redirect();
-    });
+Route::get('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+});
 
-    Route::get('/auth/callback', function () {
-        $user = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $user = Socialite::driver('github')->user();
 
-        // $user->token
-    });
+    // $user->token
+});
+```
 
-The `redirect` method provided by the `Socialite` facade takes care of redirecting the user to the OAuth provider, while the `user` method will examine the incoming request and retrieve the user's information from the provider after they have approved the authentication request.
+`Socialite` 面向的 `redirect` 方法負責將用戶重定向到 OAuth 提供者，而 `user` 方法將檢查傳入的請求並從提供者檢索用戶的信息，用戶在批准身份驗證請求後。
 
 <a name="authentication-and-storage"></a>
-### Authentication and Storage
+### 認證和存儲
 
-Once the user has been retrieved from the OAuth provider, you may determine if the user exists in your application's database and [authenticate the user](/docs/{{version}}/authentication#authenticate-a-user-instance). If the user does not exist in your application's database, you will typically create a new record in your database to represent the user:
+一旦從 OAuth 提供者檢索到用戶，您可以確定用戶是否存在於應用程序的數據庫中並[對用戶進行身份驗證](/docs/{{version}}/authentication#authenticate-a-user-instance)。如果用戶不存在於應用程序的數據庫中，通常會在數據庫中創建一條新記錄來表示該用戶：
 
-    use App\Models\User;
-    use Illuminate\Support\Facades\Auth;
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 
-    Route::get('/auth/callback', function () {
-        $githubUser = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $githubUser = Socialite::driver('github')->user();
 
-        $user = User::updateOrCreate([
-            'github_id' => $githubUser->id,
-        ], [
-            'name' => $githubUser->name,
-            'email' => $githubUser->email,
-            'github_token' => $githubUser->token,
-            'github_refresh_token' => $githubUser->refreshToken,
-        ]);
+    $user = User::updateOrCreate([
+        'github_id' => $githubUser->id,
+    ], [
+        'name' => $githubUser->name,
+        'email' => $githubUser->email,
+        'github_token' => $githubUser->token,
+        'github_refresh_token' => $githubUser->refreshToken,
+    ]);
+```
 
-        Auth::login($user);
+```php
+Auth::login($user);
 
-        return redirect('/dashboard');
-    });
+return redirect('/dashboard');
+});
+```
 
 > [!NOTE]  
-> For more information regarding what user information is available from specific OAuth providers, please consult the documentation on [retrieving user details](#retrieving-user-details).
+> 有關從特定 OAuth 提供者檢索用戶資訊的更多信息，請參閱[檢索用戶詳細資料](#retrieving-user-details)上的文件。
+
 
 <a name="access-scopes"></a>
-### Access Scopes
+### 存取範圍
 
-Before redirecting the user, you may use the `scopes` method to specify the "scopes" that should be included in the authentication request. This method will merge all previously specified scopes with the scopes that you specify:
+在將用戶重新導向之前，您可以使用 `scopes` 方法來指定應包含在認證請求中的 "範圍"。此方法將所有先前指定的範圍與您指定的範圍合併：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    return Socialite::driver('github')
-        ->scopes(['read:user', 'public_repo'])
-        ->redirect();
+return Socialite::driver('github')
+    ->scopes(['read:user', 'public_repo'])
+    ->redirect();
+```
 
-You can overwrite all existing scopes on the authentication request using the `setScopes` method:
+您可以使用 `setScopes` 方法覆蓋認證請求上的所有現有範圍：
 
-    return Socialite::driver('github')
-        ->setScopes(['read:user', 'public_repo'])
-        ->redirect();
+```php
+return Socialite::driver('github')
+    ->setScopes(['read:user', 'public_repo'])
+    ->redirect();
+```
 
 <a name="slack-bot-scopes"></a>
-### Slack Bot Scopes
+### Slack 機器人範圍
 
-Slack's API provides [different types of access tokens](https://api.slack.com/authentication/token-types), each with their own set of [permission scopes](https://api.slack.com/scopes). Socialite is compatible with both of the following Slack access tokens types:
+Slack 的 API 提供[不同類型的存取權杖](https://api.slack.com/authentication/token-types)，每種類型都有其自己的[權限範圍](https://api.slack.com/scopes)。Socialite 與以下兩種 Slack 存取權杖類型兼容：
 
 <div class="content-list" markdown="1">
 
-- Bot (prefixed with `xoxb-`)
-- User (prefixed with `xoxp-`)
+- 機器人（以 `xoxb-` 為前綴）
+- 用戶（以 `xoxp-` 為前綴）
 
 </div>
 
-By default, the `slack` driver will generate a `user` token and invoking the driver's `user` method will return the user's details.
+默認情況下，`slack` 驅動程式將生成一個 `user` 權杖，並在調用驅動程式的 `user` 方法後返回用戶詳細資訊。
 
-Bot tokens are primarily useful if your application will be sending notifications to external Slack workspaces that are owned by your application's users. To generate a bot token, invoke the `asBotUser` method before redirecting the user to Slack for authentication:
+如果您的應用程序將向由您應用程序的用戶擁有的外部 Slack 工作區發送通知，則機器人權杖主要有用。要生成機器人權杖，請在將用戶重新導向到 Slack 進行認證之前調用 `asBotUser` 方法：
 
-    return Socialite::driver('slack')
-        ->asBotUser()
-        ->setScopes(['chat:write', 'chat:write.public', 'chat:write.customize'])
-        ->redirect();
+```php
+return Socialite::driver('slack')
+    ->asBotUser()
+    ->setScopes(['chat:write', 'chat:write.public', 'chat:write.customize'])
+    ->redirect();
+```
 
-In addition, you must invoke the `asBotUser` method before invoking the `user` method after Slack redirects the user back to your application after authentication:
+此外，在 Slack 將用戶重新導向回您的應用程序進行認證後，在調用 `user` 方法之前，您必須先調用 `asBotUser` 方法：
 
-    $user = Socialite::driver('slack')->asBotUser()->user();
+```php
+$user = Socialite::driver('slack')->asBotUser()->user();
+```
 
-When generating a bot token, the `user` method will still return a `Laravel\Socialite\Two\User` instance; however, only the `token` property will be hydrated. This token may be stored in order to [send notifications to the authenticated user's Slack workspaces](/docs/{{version}}/notifications#notifying-external-slack-workspaces).
+在生成機器人令牌時，`user` 方法仍將返回一個 `Laravel\Socialite\Two\User` 實例；但只會填充 `token` 屬性。可以將此令牌存儲以便[向已驗證用戶的 Slack 工作區發送通知](/docs/{{version}}/notifications#notifying-external-slack-workspaces)。
 
 <a name="optional-parameters"></a>
-### Optional Parameters
+### 可選參數
 
-A number of OAuth providers support other optional parameters on the redirect request. To include any optional parameters in the request, call the `with` method with an associative array:
+許多 OAuth 提供者支持在重定向請求中使用其他可選參數。要在請求中包含任何可選參數，請使用帶有關聯數組的 `with` 方法：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    return Socialite::driver('google')
-        ->with(['hd' => 'example.com'])
-        ->redirect();
+return Socialite::driver('google')
+    ->with(['hd' => 'example.com'])
+    ->redirect();
+```
 
 > [!WARNING]  
-> When using the `with` method, be careful not to pass any reserved keywords such as `state` or `response_type`.
+> 使用 `with` 方法時，請務必不要傳遞任何保留關鍵字，如 `state` 或 `response_type`。
 
 <a name="retrieving-user-details"></a>
-## Retrieving User Details
+## 獲取用戶詳細信息
 
-After the user is redirected back to your application's authentication callback route, you may retrieve the user's details using Socialite's `user` method. The user object returned by the `user` method provides a variety of properties and methods you may use to store information about the user in your own database.
+當用戶被重定向回您應用程序的身份驗證回調路由時，可以使用 Socialite 的 `user` 方法檢索用戶的詳細信息。`user` 方法返回的用戶對象提供了各種屬性和方法，可用於將有關用戶的信息存儲在您自己的數據庫中。
 
-Differing properties and methods may be available on this object depending on whether the OAuth provider you are authenticating with supports OAuth 1.0 or OAuth 2.0:
+根據您正在進行身份驗證的 OAuth 提供者是否支持 OAuth 1.0 或 OAuth 2.0，此對象上可能提供不同的屬性和方法：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    Route::get('/auth/callback', function () {
-        $user = Socialite::driver('github')->user();
+Route::get('/auth/callback', function () {
+    $user = Socialite::driver('github')->user();
 
-        // OAuth 2.0 providers...
-        $token = $user->token;
-        $refreshToken = $user->refreshToken;
-        $expiresIn = $user->expiresIn;
+    // OAuth 2.0 提供者...
+    $token = $user->token;
+    $refreshToken = $user->refreshToken;
+    $expiresIn = $user->expiresIn;
 
-        // OAuth 1.0 providers...
-        $token = $user->token;
-        $tokenSecret = $user->tokenSecret;
+    // OAuth 1.0 提供者...
+    $token = $user->token;
+    $tokenSecret = $user->tokenSecret;
 
-        // All providers...
-        $user->getId();
-        $user->getNickname();
-        $user->getName();
-        $user->getEmail();
-        $user->getAvatar();
-    });
+    // 所有提供者...
+    $user->getId();
+    $user->getNickname();
+    $user->getName();
+    $user->getEmail();
+    $user->getAvatar();
+});
+```
+
 
 <a name="retrieving-user-details-from-a-token-oauth2"></a>
-#### Retrieving User Details From a Token (OAuth2)
+#### 從令牌檢索使用者詳細資訊（OAuth2）
 
-If you already have a valid access token for a user, you can retrieve their user details using Socialite's `userFromToken` method:
+如果您已經有一個用戶的有效存取令牌，您可以使用 Socialite 的 `userFromToken` 方法來檢索他們的使用者詳細資訊：
 
     use Laravel\Socialite\Facades\Socialite;
 
     $user = Socialite::driver('github')->userFromToken($token);
 
 <a name="retrieving-user-details-from-a-token-and-secret-oauth1"></a>
-#### Retrieving User Details From a Token and Secret (OAuth1)
+#### 從令牌和密鑰檢索使用者詳細資訊（OAuth1）
 
-If you already have a valid token and secret for a user, you can retrieve their user details using Socialite's `userFromTokenAndSecret` method:
+如果您已經有一個用戶的有效令牌和密鑰，您可以使用 Socialite 的 `userFromTokenAndSecret` 方法來檢索他們的使用者詳細資訊：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    $user = Socialite::driver('twitter')->userFromTokenAndSecret($token, $secret);
+$user = Socialite::driver('twitter')->userFromTokenAndSecret($token, $secret);
+```
 
 <a name="stateless-authentication"></a>
-#### Stateless Authentication
+#### 無狀態驗證
 
-The `stateless` method may be used to disable session state verification. This is useful when adding social authentication to a stateless API that does not utilize cookie based sessions:
+`stateless` 方法可用於停用會話狀態驗證。當將社交驗證添加到不使用基於 Cookie 的會話的無狀態 API 時，這很有用：
 
-    use Laravel\Socialite\Facades\Socialite;
+```php
+use Laravel\Socialite\Facades\Socialite;
 
-    return Socialite::driver('google')->stateless()->user();
+return Socialite::driver('google')->stateless()->user();
+```
 
 > [!WARNING]  
-> Stateless authentication is not available for the Twitter OAuth 1.0 driver.
+> 無狀態驗證對於 Twitter OAuth 1.0 驅動程式不可用。
+```

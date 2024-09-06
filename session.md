@@ -1,54 +1,54 @@
-# HTTP Session
+# HTTP 會話
 
-- [Introduction](#introduction)
-    - [Configuration](#configuration)
-    - [Driver Prerequisites](#driver-prerequisites)
-- [Interacting With the Session](#interacting-with-the-session)
-    - [Retrieving Data](#retrieving-data)
-    - [Storing Data](#storing-data)
-    - [Flash Data](#flash-data)
-    - [Deleting Data](#deleting-data)
-    - [Regenerating the Session ID](#regenerating-the-session-id)
-- [Session Blocking](#session-blocking)
-- [Adding Custom Session Drivers](#adding-custom-session-drivers)
-    - [Implementing the Driver](#implementing-the-driver)
-    - [Registering the Driver](#registering-the-driver)
+- [簡介](#introduction)
+    - [組態設定](#configuration)
+    - [驅動程式先決條件](#driver-prerequisites)
+- [與會話互動](#interacting-with-the-session)
+    - [檢索資料](#retrieving-data)
+    - [儲存資料](#storing-data)
+    - [快閃資料](#flash-data)
+    - [刪除資料](#deleting-data)
+    - [重新生成會話 ID](#regenerating-the-session-id)
+- [會話阻塞](#session-blocking)
+- [新增自訂會話驅動程式](#adding-custom-session-drivers)
+    - [實作驅動程式](#implementing-the-driver)
+    - [註冊驅動程式](#registering-the-driver)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Since HTTP driven applications are stateless, sessions provide a way to store information about the user across multiple requests. That user information is typically placed in a persistent store / backend that can be accessed from subsequent requests.
+由於基於 HTTP 的應用程式是無狀態的，會話提供了一種方式來跨多個請求存儲有關使用者的資訊。該使用者資訊通常放在一個持久性存儲/後端中，可以從後續請求中訪問。
 
-Laravel ships with a variety of session backends that are accessed through an expressive, unified API. Support for popular backends such as [Memcached](https://memcached.org), [Redis](https://redis.io), and databases is included.
+Laravel 隨附多種會話後端，通過一個表達性統一的 API 來訪問。支援流行的後端，如 [Memcached](https://memcached.org)、[Redis](https://redis.io) 和數據庫。
 
 <a name="configuration"></a>
-### Configuration
+### 組態設定
 
-Your application's session configuration file is stored at `config/session.php`. Be sure to review the options available to you in this file. By default, Laravel is configured to use the `file` session driver, which will work well for many applications. If your application will be load balanced across multiple web servers, you should choose a centralized store that all servers can access, such as Redis or a database.
+您應用程式的會話組態檔存儲在 `config/session.php`。請務必查看此檔中可用的選項。默認情況下，Laravel 配置為使用 `file` 會話驅動程式，這對許多應用程式都適用。如果您的應用程式將在多個 Web 伺服器之間進行負載平衡，您應該選擇一個所有伺服器都可以訪問的集中式存儲，例如 Redis 或數據庫。
 
-The session `driver` configuration option defines where session data will be stored for each request. Laravel ships with several great drivers out of the box:
+會話 `driver` 組態選項定義每個請求的會話資料將存儲在何處。Laravel 預設提供了幾個優秀的驅動程式：
 
 <div class="content-list" markdown="1">
 
-- `file` - sessions are stored in `storage/framework/sessions`.
-- `cookie` - sessions are stored in secure, encrypted cookies.
-- `database` - sessions are stored in a relational database.
-- `memcached` / `redis` - sessions are stored in one of these fast, cache based stores.
-- `dynamodb` - sessions are stored in AWS DynamoDB.
-- `array` - sessions are stored in a PHP array and will not be persisted.
+- `file` - 會話存儲在 `storage/framework/sessions`。
+- `cookie` - 會話存儲在安全的加密 cookie 中。
+- `database` - 會話存儲在關聯式資料庫中。
+- `memcached` / `redis` - 會話存儲在這兩個快速的基於快取的存儲中之一。
+- `dynamodb` - 會話存儲在 AWS DynamoDB 中。
+- `array` - 會話存儲在 PHP 陣列中，不會持久化。
 
 </div>
 
 > [!NOTE]  
-> The array driver is primarily used during [testing](/docs/{{version}}/testing) and prevents the data stored in the session from being persisted.
+> 陣列驅動程式主要用於[測試](/docs/{{version}}/testing)，並防止在會話中存儲的數據被持久化。
 
 <a name="driver-prerequisites"></a>
-### Driver Prerequisites
+### 驅動程式先決條件
 
 <a name="database"></a>
-#### Database
+#### 資料庫
 
-When using the `database` session driver, you will need to create a table to contain the session records. An example `Schema` declaration for the table may be found below:
+當使用 `database` 會話驅動程式時，您需要創建一個包含會話記錄的表格。以下是表格的示例 `Schema` 声明：
 
     use Illuminate\Database\Schema\Blueprint;
     use Illuminate\Support\Facades\Schema;
@@ -62,7 +62,7 @@ When using the `database` session driver, you will need to create a table to con
         $table->integer('last_activity')->index();
     });
 
-You may use the `session:table` Artisan command to generate this migration. To learn more about database migrations, you may consult the complete [migration documentation](/docs/{{version}}/migrations):
+您可以使用 `session:table` Artisan 命令來生成此遷移。要了解有關資料庫遷移的更多信息，您可以查閱完整的[遷移文件](/docs/{{version}}/migrations)：
 
 ```shell
 php artisan session:table
@@ -70,139 +70,146 @@ php artisan session:table
 php artisan migrate
 ```
 
+
 <a name="redis"></a>
 #### Redis
 
-Before using Redis sessions with Laravel, you will need to either install the PhpRedis PHP extension via PECL or install the `predis/predis` package (~1.0) via Composer. For more information on configuring Redis, consult Laravel's [Redis documentation](/docs/{{version}}/redis#configuration).
+在使用 Laravel 的 Redis 會話之前，您需要通過 PECL 安裝 PhpRedis PHP 擴展或通過 Composer 安裝 `predis/predis` 套件（~1.0）。有關配置 Redis 的更多信息，請查閱 Laravel 的[Redis 文件](/docs/{{version}}/redis#configuration)。
 
 > [!NOTE]  
-> In the `session` configuration file, the `connection` option may be used to specify which Redis connection is used by the session.
+> 在 `session` 配置文件中，`connection` 選項可用於指定會話使用的 Redis 連接。
 
 <a name="interacting-with-the-session"></a>
-## Interacting With the Session
+## 與會話互動
 
 <a name="retrieving-data"></a>
-### Retrieving Data
+### 檢索數據
 
-There are two primary ways of working with session data in Laravel: the global `session` helper and via a `Request` instance. First, let's look at accessing the session via a `Request` instance, which can be type-hinted on a route closure or controller method. Remember, controller method dependencies are automatically injected via the Laravel [service container](/docs/{{version}}/container):
+在 Laravel 中，有兩種主要方法可以處理會話數據：全局 `session` 輔助函式和通過 `Request` 實例。首先，讓我們看一下通過 `Request` 實例訪問會話的方式，可以在路由閉包或控制器方法上對其進行類型提示。請記住，控制器方法依賴項會通過 Laravel的[服務容器](/docs/{{version}}/container)自動注入：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
-    use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * 顯示給定使用者的個人資料。
+     */
+    public function show(Request $request, string $id): View
     {
-        /**
-         * Show the profile for the given user.
-         */
-        public function show(Request $request, string $id): View
-        {
-            $value = $request->session()->get('key');
+        $value = $request->session()->get('key');
 
-            // ...
+        // ...
 
-            $user = $this->users->find($id);
+        $user = $this->users->find($id);
 
-            return view('user.profile', ['user' => $user]);
-        }
+        return view('user.profile', ['user' => $user]);
     }
+}
+```
 
-When you retrieve an item from the session, you may also pass a default value as the second argument to the `get` method. This default value will be returned if the specified key does not exist in the session. If you pass a closure as the default value to the `get` method and the requested key does not exist, the closure will be executed and its result returned:
+當您從會話中檢索項目時，您也可以將默認值作為第二個引數傳遞給 `get` 方法。如果指定的鍵在會話中不存在，將返回此默認值。如果您將閉包作為 `get` 方法的默認值並且請求的鍵不存在，則將執行該閉包並返回其結果：
 
-    $value = $request->session()->get('key', 'default');
+```php
+$value = $request->session()->get('key', 'default');
 
-    $value = $request->session()->get('key', function () {
-        return 'default';
-    });
+$value = $request->session()->get('key', function () {
+    return 'default';
+});
+```
 
 <a name="the-global-session-helper"></a>
-#### The Global Session Helper
+#### 全局會話輔助器
 
-You may also use the global `session` PHP function to retrieve and store data in the session. When the `session` helper is called with a single, string argument, it will return the value of that session key. When the helper is called with an array of key / value pairs, those values will be stored in the session:
+您也可以使用全局的 `session` PHP 函數來檢索和存儲會話中的數據。當使用單個字符串參數調用 `session` 輔助器時，它將返回該會話鍵的值。當使用鍵/值對數組調用輔助器時，這些值將存儲在會話中：
 
-    Route::get('/home', function () {
-        // Retrieve a piece of data from the session...
-        $value = session('key');
+```php
+Route::get('/home', function () {
+    // 從會話中檢索數據...
+    $value = session('key');
 
-        // Specifying a default value...
-        $value = session('key', 'default');
+    // 指定默認值...
+    $value = session('key', 'default');
 
-        // Store a piece of data in the session...
-        session(['key' => 'value']);
-    });
+    // 在會話中存儲數據...
+    session(['key' => 'value']);
+});
+```
 
 > [!NOTE]  
-> There is little practical difference between using the session via an HTTP request instance versus using the global `session` helper. Both methods are [testable](/docs/{{version}}/testing) via the `assertSessionHas` method which is available in all of your test cases.
+> 通過 HTTP 請求實例使用會話與使用全局 `session` 輔助器之間幾乎沒有實際區別。這兩種方法都可以通過 `assertSessionHas` 方法進行[測試](/docs/{{version}}/testing)，該方法在所有測試案例中都可用。
 
 <a name="retrieving-all-session-data"></a>
-#### Retrieving All Session Data
+#### 檢索所有會話數據
 
-If you would like to retrieve all the data in the session, you may use the `all` method:
+如果您想檢索會話中的所有資料，您可以使用 `all` 方法：
 
     $data = $request->session()->all();
 
 <a name="retrieving-a-portion-of-the-session-data"></a>
-#### Retrieving a Portion of the Session Data
+#### 檢索會話資料的一部分
 
-The `only` and `except` methods may be used to retrieve a subset of the session data:
+`only` 和 `except` 方法可用於檢索會話資料的子集：
 
     $data = $request->session()->only(['username', 'email']);
 
     $data = $request->session()->except(['username', 'email']);
 
 <a name="determining-if-an-item-exists-in-the-session"></a>
-#### Determining if an Item Exists in the Session
+#### 確定項目是否存在於會話中
 
-To determine if an item is present in the session, you may use the `has` method. The `has` method returns `true` if the item is present and is not `null`:
+要確定項目是否存在於會話中，您可以使用 `has` 方法。如果項目存在且不為 `null`，`has` 方法將返回 `true`：
 
     if ($request->session()->has('users')) {
         // ...
     }
 
-To determine if an item is present in the session, even if its value is `null`, you may use the `exists` method:
+要確定項目是否存在於會話中，即使其值為 `null`，您可以使用 `exists` 方法：
 
     if ($request->session()->exists('users')) {
         // ...
     }
 
-To determine if an item is not present in the session, you may use the `missing` method. The `missing` method returns `true` if the item is not present:
+要確定項目是否不存在於會話中，您可以使用 `missing` 方法。如果項目不存在，`missing` 方法將返回 `true`：
 
     if ($request->session()->missing('users')) {
         // ...
     }
 
 <a name="storing-data"></a>
-### Storing Data
+### 儲存資料
 
-To store data in the session, you will typically use the request instance's `put` method or the global `session` helper:
+要將資料儲存在會話中，通常會使用請求實例的 `put` 方法或全域 `session` 助手：
 
-    // Via a request instance...
+    // 透過請求實例...
     $request->session()->put('key', 'value');
 
-    // Via the global "session" helper...
+```markdown
+    // 透過全域 "session" 助手...
     session(['key' => 'value']);
 
 <a name="pushing-to-array-session-values"></a>
-#### Pushing to Array Session Values
+#### 推送至陣列會話值
 
-The `push` method may be used to push a new value onto a session value that is an array. For example, if the `user.teams` key contains an array of team names, you may push a new value onto the array like so:
+`push` 方法可用於將新值推送到陣列的會話值中。例如，如果 `user.teams` 鍵包含一組團隊名稱的陣列，您可以像這樣將新值推送到陣列中：
 
     $request->session()->push('user.teams', 'developers');
 
 <a name="retrieving-deleting-an-item"></a>
-#### Retrieving and Deleting an Item
+#### 檢索並刪除項目
 
-The `pull` method will retrieve and delete an item from the session in a single statement:
+`pull` 方法將在單個語句中檢索並刪除會話中的項目：
 
     $value = $request->session()->pull('key', 'default');
 
-<a name="incrementing-and-decrementing-session-values"></a>
-#### Incrementing and Decrementing Session Values
+#### 增加和減少 Session 值
 
-If your session data contains an integer you wish to increment or decrement, you may use the `increment` and `decrement` methods:
+如果您的 Session 資料包含一個您希望增加或減少的整數，您可以使用 `increment` 和 `decrement` 方法：
 
     $request->session()->increment('count');
 
@@ -212,58 +219,56 @@ If your session data contains an integer you wish to increment or decrement, you
 
     $request->session()->decrement('count', $decrementBy = 2);
 
-<a name="flash-data"></a>
-### Flash Data
+#### 閃存資料
 
-Sometimes you may wish to store items in the session for the next request. You may do so using the `flash` method. Data stored in the session using this method will be available immediately and during the subsequent HTTP request. After the subsequent HTTP request, the flashed data will be deleted. Flash data is primarily useful for short-lived status messages:
+有時您可能希望將項目存儲在 Session 中以供下一個請求使用。您可以使用 `flash` 方法來實現這一點。使用此方法在 Session 中存儲的資料將立即可用，並在後續的 HTTP 請求期間保持有效。在後續的 HTTP 請求之後，閃存的資料將被刪除。閃存資料主要用於短暫的狀態訊息：
 
-    $request->session()->flash('status', 'Task was successful!');
+    $request->session()->flash('status', '任務成功完成！');
 
-If you need to persist your flash data for several requests, you may use the `reflash` method, which will keep all of the flash data for an additional request. If you only need to keep specific flash data, you may use the `keep` method:
+如果您需要將閃存資料持久保存多個請求，您可以使用 `reflash` 方法，該方法將保留所有閃存資料供額外的請求使用。如果您只需要保留特定的閃存資料，您可以使用 `keep` 方法：
 
     $request->session()->reflash();
 
     $request->session()->keep(['username', 'email']);
 
-To persist your flash data only for the current request, you may use the `now` method:
+為了僅在當前請求中保留您的閃存資料，您可以使用 `now` 方法：
 
-    $request->session()->now('status', 'Task was successful!');
+    $request->session()->now('status', '任務成功完成！');
 
-<a name="deleting-data"></a>
-### Deleting Data
+#### 刪除資料
 
-The `forget` method will remove a piece of data from the session. If you would like to remove all data from the session, you may use the `flush` method:
+`forget` 方法將從 Session 中刪除一個資料。如果您想要從 Session 中刪除所有資料，您可以使用 `flush` 方法：
 
-    // Forget a single key...
+    // 刪除單個鍵...
     $request->session()->forget('name');
 
-    // Forget multiple keys...
+    // 刪除多個鍵...
     $request->session()->forget(['name', 'status']);
 
     $request->session()->flush();
 
-<a name="regenerating-the-session-id"></a>
-### Regenerating the Session ID
+#### 重新生成 Session ID
 
-Regenerating the session ID is often done in order to prevent malicious users from exploiting a [session fixation](https://owasp.org/www-community/attacks/Session_fixation) attack on your application.
+重新生成 Session ID 經常用於防止惡意使用者利用您的應用程式進行 [Session Fixation](https://owasp.org/www-community/attacks/Session_fixation) 攻擊。
 
-Laravel automatically regenerates the session ID during authentication if you are using one of the Laravel [application starter kits](/docs/{{version}}/starter-kits) or [Laravel Fortify](/docs/{{version}}/fortify); however, if you need to manually regenerate the session ID, you may use the `regenerate` method:
+Laravel 在認證期間會自動重新生成會話 ID，如果您使用 Laravel [應用程式起始套件](/docs/{{version}}/starter-kits) 或 [Laravel Fortify](/docs/{{version}}/fortify) 中的一個；但是，如果您需要手動重新生成會話 ID，您可以使用 `regenerate` 方法：
 
     $request->session()->regenerate();
 
-If you need to regenerate the session ID and remove all data from the session in a single statement, you may use the `invalidate` method:
+如果您需要重新生成會話 ID 並在一個語句中刪除會話中的所有資料，您可以使用 `invalidate` 方法：
 
     $request->session()->invalidate();
 
 <a name="session-blocking"></a>
-## Session Blocking
+## 會話阻塞
 
 > [!WARNING]  
-> To utilize session blocking, your application must be using a cache driver that supports [atomic locks](/docs/{{version}}/cache#atomic-locks). Currently, those cache drivers include the `memcached`, `dynamodb`, `redis`, `database`, `file`, and `array` drivers. In addition, you may not use the `cookie` session driver.
+> 要使用會話阻塞功能，您的應用程式必須使用支援 [原子鎖](/docs/{{version}}/cache#atomic-locks) 的快取驅動程式。目前，這些快取驅動程式包括 `memcached`、`dynamodb`、`redis`、`database`、`file` 和 `array` 驅動程式。此外，您不能使用 `cookie` 會話驅動程式。
+```
 
-By default, Laravel allows requests using the same session to execute concurrently. So, for example, if you use a JavaScript HTTP library to make two HTTP requests to your application, they will both execute at the same time. For many applications, this is not a problem; however, session data loss can occur in a small subset of applications that make concurrent requests to two different application endpoints which both write data to the session.
+預設情況下，Laravel 允許使用相同會話的請求並行執行。例如，如果您使用 JavaScript HTTP 函式庫對您的應用程式進行兩個 HTTP 請求，它們將同時執行。對於許多應用程式來說，這不是問題；但是，在一小部分應用程式中，可能會發生會話資料遺失，這些應用程式同時對兩個不同應用程式端點進行並行請求，這兩個端點都將資料寫入會話。
 
-To mitigate this, Laravel provides functionality that allows you to limit concurrent requests for a given session. To get started, you may simply chain the `block` method onto your route definition. In this example, an incoming request to the `/profile` endpoint would acquire a session lock. While this lock is being held, any incoming requests to the `/profile` or `/order` endpoints which share the same session ID will wait for the first request to finish executing before continuing their execution:
+為了解決這個問題，Laravel 提供了功能，允許您限制給定會話的並行請求。要開始使用，您只需將 `block` 方法連接到您的路由定義中。在此範例中，對 `/profile` 端點的傳入請求將獲取會話鎖定。當保持此鎖定時，任何對 `/profile` 或 `/order` 端點的傳入請求，這些端點共享相同的會話 ID，將等待第一個請求完成執行後才繼續執行：
 
     Route::post('/profile', function () {
         // ...
@@ -273,23 +278,23 @@ To mitigate this, Laravel provides functionality that allows you to limit concur
         // ...
     })->block($lockSeconds = 10, $waitSeconds = 10)
 
-The `block` method accepts two optional arguments. The first argument accepted by the `block` method is the maximum number of seconds the session lock should be held for before it is released. Of course, if the request finishes executing before this time the lock will be released earlier.
+`block` 方法接受兩個可選引數。`block` 方法接受的第一個引數是會話鎖定應保持的最大秒數，在釋放之前。當然，如果請求在此時間之前完成執行，鎖定將提前釋放。
 
-The second argument accepted by the `block` method is the number of seconds a request should wait while attempting to obtain a session lock. An `Illuminate\Contracts\Cache\LockTimeoutException` will be thrown if the request is unable to obtain a session lock within the given number of seconds.
+`block` 方法接受的第二個引數是請求在嘗試獲取會話鎖定時應等待的秒數。如果請求無法在給定的秒數內獲取會話鎖定，將拋出一個 `Illuminate\Contracts\Cache\LockTimeoutException`。
 
-If neither of these arguments is passed, the lock will be obtained for a maximum of 10 seconds and requests will wait a maximum of 10 seconds while attempting to obtain a lock:
+如果沒有傳遞這些引數中的任何一個，鎖定將最多保持 10 秒，並且請求在嘗試獲取鎖定時最多等待 10 秒：
 
     Route::post('/profile', function () {
         // ...
     })->block()
 
 <a name="adding-custom-session-drivers"></a>
-## Adding Custom Session Drivers
+## 添加自訂會話驅動程式
 
 <a name="implementing-the-driver"></a>
-### Implementing the Driver
+### 實作驅動程式
 
-If none of the existing session drivers fit your application's needs, Laravel makes it possible to write your own session handler. Your custom session driver should implement PHP's built-in `SessionHandlerInterface`. This interface contains just a few simple methods. A stubbed MongoDB implementation looks like the following:
+如果現有的會話驅動程式都不符合您應用程式的需求，Laravel 允許您編寫自己的會話處理程序。您的自訂會話驅動程式應實作 PHP 內建的 `SessionHandlerInterface`。此介面僅包含幾個簡單的方法。一個樣板化的 MongoDB 實作如下所示：
 
     <?php
 
@@ -306,25 +311,25 @@ If none of the existing session drivers fit your application's needs, Laravel ma
     }
 
 > [!NOTE]  
-> Laravel does not ship with a directory to contain your extensions. You are free to place them anywhere you like. In this example, we have created an `Extensions` directory to house the `MongoSessionHandler`.
+> Laravel 不附帶一個目錄來容納您的擴充功能。您可以將它們放在任何您喜歡的地方。在此示例中，我們創建了一個 `Extensions` 目錄來存放 `MongoSessionHandler`。
 
-Since the purpose of these methods is not readily understandable, let's quickly cover what each of the methods do:
+由於這些方法的目的不容易理解，讓我們快速概述每個方法的功能：
 
 <div class="content-list" markdown="1">
 
-- The `open` method would typically be used in file based session store systems. Since Laravel ships with a `file` session driver, you will rarely need to put anything in this method. You can simply leave this method empty.
-- The `close` method, like the `open` method, can also usually be disregarded. For most drivers, it is not needed.
-- The `read` method should return the string version of the session data associated with the given `$sessionId`. There is no need to do any serialization or other encoding when retrieving or storing session data in your driver, as Laravel will perform the serialization for you.
-- The `write` method should write the given `$data` string associated with the `$sessionId` to some persistent storage system, such as MongoDB or another storage system of your choice.  Again, you should not perform any serialization - Laravel will have already handled that for you.
-- The `destroy` method should remove the data associated with the `$sessionId` from persistent storage.
-- The `gc` method should destroy all session data that is older than the given `$lifetime`, which is a UNIX timestamp. For self-expiring systems like Memcached and Redis, this method may be left empty.
+- `open` 方法通常用於基於檔案的會話存儲系統。由於 Laravel 預設提供了 `file` 會話驅動程式，您很少需要在此方法中放置任何內容。您可以將此方法保持為空。
+- `close` 方法與 `open` 方法一樣，通常可以忽略不計。對於大多數驅動程式，這不是必要的。
+- `read` 方法應返回與給定 `$sessionId` 相關聯的會話數據的字符串版本。在檢索或存儲驅動程式中的會話數據時，無需進行任何序列化或其他編碼，因為 Laravel 將為您執行序列化。
+- `write` 方法應將與 `$sessionId` 相關聯的給定 `$data` 字符串寫入某種持久性存儲系統，例如 MongoDB 或您選擇的其他存儲系統。同樣，您不應執行任何序列化 - Laravel 已經為您處理了這個問題。
+- `destroy` 方法應從持久性存儲中刪除與 `$sessionId` 相關聯的數據。
+- `gc` 方法應銷毀所有舊於給定 `$lifetime`（UNIX 時間戳）的會話數據。對於像 Memcached 和 Redis 這樣的自動過期系統，此方法可以保持為空。
 
 </div>
 
 <a name="registering-the-driver"></a>
-### Registering the Driver
+### 註冊驅動程式
 
-Once your driver has been implemented, you are ready to register it with Laravel. To add additional drivers to Laravel's session backend, you may use the `extend` method provided by the `Session` [facade](/docs/{{version}}/facades). You should call the `extend` method from the `boot` method of a [service provider](/docs/{{version}}/providers). You may do this from the existing `App\Providers\AppServiceProvider` or create an entirely new provider:
+一旦實現了您的驅動程式，您就可以準備將其註冊到 Laravel 中。要將其他驅動程式添加到 Laravel 的會話後端，您可以使用 `Session` [Facades](/docs/{{version}}/facades) 提供的 `extend` 方法。您應該從 [服務提供者](/docs/{{version}}/providers) 的 `boot` 方法中調用 `extend` 方法。您可以從現有的 `App\Providers\AppServiceProvider` 中執行此操作，或者創建一個全新的提供者：
 
     <?php
 
@@ -338,15 +343,16 @@ Once your driver has been implemented, you are ready to register it with Laravel
     class SessionServiceProvider extends ServiceProvider
     {
         /**
-         * Register any application services.
+         * 註冊任何應用程式服務。
          */
         public function register(): void
         {
             // ...
         }
 
+```php
         /**
-         * Bootstrap any application services.
+         * 啟動任何應用程式服務。
          */
         public function boot(): void
         {
@@ -356,5 +362,6 @@ Once your driver has been implemented, you are ready to register it with Laravel
             });
         }
     }
+```
 
-Once the session driver has been registered, you may use the `mongo` driver in your `config/session.php` configuration file.
+一旦會話驅動程式已註冊，您可以在您的 `config/session.php` 組態檔案中使用 `mongo` 驅動程式。

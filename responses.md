@@ -1,147 +1,170 @@
-# HTTP Responses
+# HTTP 回應
 
-- [Creating Responses](#creating-responses)
-    - [Attaching Headers to Responses](#attaching-headers-to-responses)
-    - [Attaching Cookies to Responses](#attaching-cookies-to-responses)
-    - [Cookies and Encryption](#cookies-and-encryption)
-- [Redirects](#redirects)
-    - [Redirecting to Named Routes](#redirecting-named-routes)
-    - [Redirecting to Controller Actions](#redirecting-controller-actions)
-    - [Redirecting to External Domains](#redirecting-external-domains)
-    - [Redirecting With Flashed Session Data](#redirecting-with-flashed-session-data)
-- [Other Response Types](#other-response-types)
-    - [View Responses](#view-responses)
-    - [JSON Responses](#json-responses)
-    - [File Downloads](#file-downloads)
-    - [File Responses](#file-responses)
-- [Response Macros](#response-macros)
+- [建立回應](#creating-responses)
+    - [將標頭附加到回應](#attaching-headers-to-responses)
+    - [將 Cookie 附加到回應](#attaching-cookies-to-responses)
+    - [Cookie 與加密](#cookies-and-encryption)
+- [重新導向](#redirects)
+    - [重新導向至命名路由](#redirecting-named-routes)
+    - [重新導向至控制器行為](#redirecting-controller-actions)
+    - [重新導向至外部網域](#redirecting-external-domains)
+    - [重新導向並帶有快閃會話資料](#redirecting-with-flashed-session-data)
+- [其他回應類型](#other-response-types)
+    - [視圖回應](#view-responses)
+    - [JSON 回應](#json-responses)
+    - [檔案下載](#file-downloads)
+    - [檔案回應](#file-responses)
+- [回應巨集](#response-macros)
 
 <a name="creating-responses"></a>
-## Creating Responses
+## 建立回應
 
 <a name="strings-arrays"></a>
-#### Strings and Arrays
+#### 字串和陣列
 
-All routes and controllers should return a response to be sent back to the user's browser. Laravel provides several different ways to return responses. The most basic response is returning a string from a route or controller. The framework will automatically convert the string into a full HTTP response:
+所有路由和控制器應該返回一個回應以傳送回給使用者的瀏覽器。Laravel 提供了幾種不同的方式來返回回應。最基本的回應是從路由或控制器返回一個字串。框架將自動將字串轉換為完整的 HTTP 回應：
 
     Route::get('/', function () {
         return 'Hello World';
     });
 
-In addition to returning strings from your routes and controllers, you may also return arrays. The framework will automatically convert the array into a JSON response:
+除了從路由和控制器返回字串外，您還可以返回陣列。框架將自動將陣列轉換為 JSON 回應：
 
     Route::get('/', function () {
         return [1, 2, 3];
     });
 
 > [!NOTE]  
-> Did you know you can also return [Eloquent collections](/docs/{{version}}/eloquent-collections) from your routes or controllers? They will automatically be converted to JSON. Give it a shot!
+> 您知道您也可以從您的路由或控制器返回 [Eloquent 集合](/docs/{{version}}/eloquent-collections) 嗎？它們將自動轉換為 JSON。試試看吧！
 
 <a name="response-objects"></a>
-#### Response Objects
+#### 回應物件
 
-Typically, you won't just be returning simple strings or arrays from your route actions. Instead, you will be returning full `Illuminate\Http\Response` instances or [views](/docs/{{version}}/views).
+通常，您不會只從路由行動中返回簡單的字串或陣列。相反，您將返回完整的 `Illuminate\Http\Response` 實例或 [視圖](/docs/{{version}}/views)。
 
-Returning a full `Response` instance allows you to customize the response's HTTP status code and headers. A `Response` instance inherits from the `Symfony\Component\HttpFoundation\Response` class, which provides a variety of methods for building HTTP responses:
+返回完整的 `Response` 實例允許您自訂回應的 HTTP 狀態碼和標頭。`Response` 實例繼承自 `Symfony\Component\HttpFoundation\Response` 類，該類提供了各種方法來構建 HTTP 回應：
 
-    Route::get('/home', function () {
-        return response('Hello World', 200)
-                      ->header('Content-Type', 'text/plain');
-    });
+```php
+Route::get('/home', function () {
+    return response('Hello World', 200)
+                  ->header('Content-Type', 'text/plain');
+});
+```
 
 <a name="eloquent-models-and-collections"></a>
-#### Eloquent Models and Collections
+#### Eloquent 模型與集合
 
-You may also return [Eloquent ORM](/docs/{{version}}/eloquent) models and collections directly from your routes and controllers. When you do, Laravel will automatically convert the models and collections to JSON responses while respecting the model's [hidden attributes](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json):
+您也可以直接從您的路由和控制器返回 [Eloquent ORM](/docs/{{version}}/eloquent) 模型和集合。當您這樣做時，Laravel 將自動將模型和集合轉換為 JSON 回應，同時尊重模型的 [隱藏屬性](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)：
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    Route::get('/user/{user}', function (User $user) {
-        return $user;
-    });
+Route::get('/user/{user}', function (User $user) {
+    return $user;
+});
+```
 
 <a name="attaching-headers-to-responses"></a>
-### Attaching Headers to Responses
+### 附加標頭到回應
 
-Keep in mind that most response methods are chainable, allowing for the fluent construction of response instances. For example, you may use the `header` method to add a series of headers to the response before sending it back to the user:
+請記住，大多數回應方法都支持鏈式調用，允許流暢地構建回應實例。例如，您可以使用 `header` 方法在將回應發送回用戶之前添加一系列標頭：
 
-    return response($content)
-                ->header('Content-Type', $type)
-                ->header('X-Header-One', 'Header Value')
-                ->header('X-Header-Two', 'Header Value');
+```php
+return response($content)
+            ->header('Content-Type', $type)
+            ->header('X-Header-One', 'Header Value')
+            ->header('X-Header-Two', 'Header Value');
+```
 
-Or, you may use the `withHeaders` method to specify an array of headers to be added to the response:
+或者，您可以使用 `withHeaders` 方法指定要添加到回應中的標頭陣列：
 
-    return response($content)
-                ->withHeaders([
-                    'Content-Type' => $type,
-                    'X-Header-One' => 'Header Value',
-                    'X-Header-Two' => 'Header Value',
-                ]);
+```php
+return response($content)
+            ->withHeaders([
+                'Content-Type' => $type,
+                'X-Header-One' => 'Header Value',
+                'X-Header-Two' => 'Header Value',
+            ]);
+```
 
 <a name="cache-control-middleware"></a>
-#### Cache Control Middleware
+#### 快取控制中介層
 
-Laravel includes a `cache.headers` middleware, which may be used to quickly set the `Cache-Control` header for a group of routes. Directives should be provided using the "snake case" equivalent of the corresponding cache-control directive and should be separated by a semicolon. If `etag` is specified in the list of directives, an MD5 hash of the response content will automatically be set as the ETag identifier:
+Laravel 包含一個 `cache.headers` 中介層，可用於快速設置一組路由的 `Cache-Control` 標頭。指示詞應使用相應快取控制指示詞的 "蛇形命名法" 提供，並應以分號分隔。如果在指示詞清單中指定了 `etag`，則回應內容的 MD5 雜湊將自動設置為 ETag 標識符：
 
-    Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
-        Route::get('/privacy', function () {
-            // ...
-        });
-
-        Route::get('/terms', function () {
-            // ...
-        });
+```php
+Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
+    Route::get('/privacy', function () {
+        // ...
     });
+});
+```
+
+```php
+Route::get('/terms', function () {
+    // ...
+});
+```
 
 <a name="attaching-cookies-to-responses"></a>
-### Attaching Cookies to Responses
+### 將 Cookie 附加到回應
 
-You may attach a cookie to an outgoing `Illuminate\Http\Response` instance using the `cookie` method. You should pass the name, value, and the number of minutes the cookie should be considered valid to this method:
+您可以使用 `cookie` 方法將 Cookie 附加到傳出的 `Illuminate\Http\Response` 實例。您應該將 Cookie 的名稱、值和 Cookie 應被視為有效的分鐘數傳遞給此方法：
 
-    return response('Hello World')->cookie(
-        'name', 'value', $minutes
-    );
+```php
+return response('Hello World')->cookie(
+    'name', 'value', $minutes
+);
+```
 
-The `cookie` method also accepts a few more arguments which are used less frequently. Generally, these arguments have the same purpose and meaning as the arguments that would be given to PHP's native [setcookie](https://secure.php.net/manual/en/function.setcookie.php) method:
+`cookie` 方法還接受一些較少使用的參數。一般來說，這些參數具有與會傳給 PHP 原生 [setcookie](https://secure.php.net/manual/en/function.setcookie.php) 方法相同的目的和意義：
 
-    return response('Hello World')->cookie(
-        'name', 'value', $minutes, $path, $domain, $secure, $httpOnly
-    );
+```php
+return response('Hello World')->cookie(
+    'name', 'value', $minutes, $path, $domain, $secure, $httpOnly
+);
+```
 
-If you would like to ensure that a cookie is sent with the outgoing response but you do not yet have an instance of that response, you can use the `Cookie` facade to "queue" cookies for attachment to the response when it is sent. The `queue` method accepts the arguments needed to create a cookie instance. These cookies will be attached to the outgoing response before it is sent to the browser:
+如果您希望確保 Cookie 與傳出的回應一起發送，但尚未擁有該回應的實例，您可以使用 `Cookie` Facade 將 Cookie "排隊" 以便在發送時附加到回應。`queue` 方法接受需要創建 Cookie 實例的參數。這些 Cookie 將在發送到瀏覽器之前附加到傳出的回應：
 
-    use Illuminate\Support\Facades\Cookie;
+```php
+use Illuminate\Support\Facades\Cookie;
 
-    Cookie::queue('name', 'value', $minutes);
+Cookie::queue('name', 'value', $minutes);
+```
 
 <a name="generating-cookie-instances"></a>
-#### Generating Cookie Instances
+#### 生成 Cookie 實例
 
-If you would like to generate a `Symfony\Component\HttpFoundation\Cookie` instance that can be attached to a response instance at a later time, you may use the global `cookie` helper. This cookie will not be sent back to the client unless it is attached to a response instance:
+如果您想要生成一個 `Symfony\Component\HttpFoundation\Cookie` 實例，以便稍後附加到回應實例，您可以使用全域 `cookie` 輔助函式。除非將此 Cookie 附加到回應實例，否則不會將此 Cookie 發送回客戶端：
 
-    $cookie = cookie('name', 'value', $minutes);
+```php
+$cookie = cookie('name', 'value', $minutes);
 
-    return response('Hello World')->cookie($cookie);
+return response('Hello World')->cookie($cookie);
+```
 
 <a name="expiring-cookies-early"></a>
-#### Expiring Cookies Early
+#### 提前過期 Cookie
 
-You may remove a cookie by expiring it via the `withoutCookie` method of an outgoing response:
+您可以通過傳出回應的 `withoutCookie` 方法來使 Cookie 過期並刪除它：
 
-    return response('Hello World')->withoutCookie('name');
+```php
+return response('Hello World')->withoutCookie('name');
+```
 
-If you do not yet have an instance of the outgoing response, you may use the `Cookie` facade's `expire` method to expire a cookie:
+如果您尚未擁有傳出回應的實例，您可以使用 `Cookie` Facade 的 `expire` 方法來使 Cookie 過期：
 
+```markdown
     Cookie::expire('name');
 
 <a name="cookies-and-encryption"></a>
 ### Cookies and Encryption
 
-By default, all cookies generated by Laravel are encrypted and signed so that they can't be modified or read by the client. If you would like to disable encryption for a subset of cookies generated by your application, you may use the `$except` property of the `App\Http\Middleware\EncryptCookies` middleware, which is located in the `app/Http/Middleware` directory:
+預設情況下，Laravel 生成的所有 Cookie 都是加密並簽署的，因此客戶端無法修改或讀取。如果您想要禁用應用程式生成的某些 Cookie 的加密，您可以使用 `App\Http\Middleware\EncryptCookies` 中介層的 `$except` 屬性，該中介層位於 `app/Http/Middleware` 目錄中：
 
     /**
-     * The names of the cookies that should not be encrypted.
+     * 不應該加密的 Cookie 名稱。
      *
      * @var array
      */
@@ -150,193 +173,188 @@ By default, all cookies generated by Laravel are encrypted and signed so that th
     ];
 
 <a name="redirects"></a>
-## Redirects
+## 重新導向
 
-Redirect responses are instances of the `Illuminate\Http\RedirectResponse` class, and contain the proper headers needed to redirect the user to another URL. There are several ways to generate a `RedirectResponse` instance. The simplest method is to use the global `redirect` helper:
+重新導向回應是 `Illuminate\Http\RedirectResponse` 類的實例，包含將用戶重新導向到另一個 URL 所需的正確標頭。有幾種方法可以生成 `RedirectResponse` 實例。最簡單的方法是使用全域 `redirect` 輔助函式：
 
     Route::get('/dashboard', function () {
         return redirect('home/dashboard');
     });
 
-Sometimes you may wish to redirect the user to their previous location, such as when a submitted form is invalid. You may do so by using the global `back` helper function. Since this feature utilizes the [session](/docs/{{version}}/session), make sure the route calling the `back` function is using the `web` middleware group:
+有時您可能希望將用戶重新導向到其先前位置，例如當提交的表單無效時。您可以使用全域 `back` 輔助函式來實現。由於此功能使用 [session](/docs/{{version}}/session)，請確保調用 `back` 函式的路由使用 `web` 中介層組：
 
     Route::post('/user/profile', function () {
-        // Validate the request...
+        // 驗證請求...
 
         return back()->withInput();
     });
 
 <a name="redirecting-named-routes"></a>
-### Redirecting to Named Routes
+### 重新導向至命名路由
 
-When you call the `redirect` helper with no parameters, an instance of `Illuminate\Routing\Redirector` is returned, allowing you to call any method on the `Redirector` instance. For example, to generate a `RedirectResponse` to a named route, you may use the `route` method:
+當您使用 `redirect` 輔助函式而不帶參數時，將返回 `Illuminate\Routing\Redirector` 的實例，允許您在 `Redirector` 實例上調用任何方法。例如，要生成到命名路由的 `RedirectResponse`，您可以使用 `route` 方法：
 
     return redirect()->route('login');
 
-If your route has parameters, you may pass them as the second argument to the `route` method:
+如果您的路由具有參數，您可以將它們作為第二個參數傳遞給 `route` 方法：
 
-    // For a route with the following URI: /profile/{id}
+    // 對於具有以下 URI 的路由：/profile/{id}
 
     return redirect()->route('profile', ['id' => 1]);
+```
 
-<a name="populating-parameters-via-eloquent-models"></a>
-#### Populating Parameters via Eloquent Models
+#### 透過 Eloquent 模型填充參數
 
-If you are redirecting to a route with an "ID" parameter that is being populated from an Eloquent model, you may pass the model itself. The ID will be extracted automatically:
+如果您正在將路由重定向到一個包含從 Eloquent 模型中提取的 "ID" 參數的路由，您可以傳遞模型本身。ID 將被自動提取：
 
-    // For a route with the following URI: /profile/{id}
+```php
+// 對於具有以下 URI 的路由：/profile/{id}
 
-    return redirect()->route('profile', [$user]);
+return redirect()->route('profile', [$user]);
+```
 
-If you would like to customize the value that is placed in the route parameter, you can specify the column in the route parameter definition (`/profile/{id:slug}`) or you can override the `getRouteKey` method on your Eloquent model:
+如果您想自定義放入路由參數的值，您可以在路由參數定義中指定列 (`/profile/{id:slug}`)，或者您可以覆寫您的 Eloquent 模型上的 `getRouteKey` 方法：
 
-    /**
-     * Get the value of the model's route key.
-     */
-    public function getRouteKey(): mixed
-    {
-        return $this->slug;
-    }
+```php
+/**
+ * 取得模型的路由鍵值。
+ */
+public function getRouteKey(): mixed
+{
+    return $this->slug;
+}
+```
 
-<a name="redirecting-controller-actions"></a>
-### Redirecting to Controller Actions
+#### 重定向到控制器行為
 
-You may also generate redirects to [controller actions](/docs/{{version}}/controllers). To do so, pass the controller and action name to the `action` method:
+您也可以生成重定向到[控制器行為](/docs/{{version}}/controllers)。為此，將控制器和行為名稱傳遞給 `action` 方法：
 
-    use App\Http\Controllers\UserController;
+```php
+use App\Http\Controllers\UserController;
 
-    return redirect()->action([UserController::class, 'index']);
+return redirect()->action([UserController::class, 'index']);
+```
 
-If your controller route requires parameters, you may pass them as the second argument to the `action` method:
+如果您的控制器路由需要參數，您可以將它們作為第二個參數傳遞給 `action` 方法：
 
-    return redirect()->action(
-        [UserController::class, 'profile'], ['id' => 1]
-    );
+```php
+return redirect()->action(
+    [UserController::class, 'profile'], ['id' => 1]
+);
+```
 
-<a name="redirecting-external-domains"></a>
-### Redirecting to External Domains
+#### 重定向到外部域
 
-Sometimes you may need to redirect to a domain outside of your application. You may do so by calling the `away` method, which creates a `RedirectResponse` without any additional URL encoding, validation, or verification:
+有時您可能需要重定向到應用程式之外的域。您可以通過調用 `away` 方法來執行此操作，該方法創建一個 `RedirectResponse`，而不需要進行任何額外的 URL 編碼、驗證或驗證：
 
-    return redirect()->away('https://www.google.com');
+```php
+return redirect()->away('https://www.google.com');
+```
 
-<a name="redirecting-with-flashed-session-data"></a>
-### Redirecting With Flashed Session Data
+#### 帶有閃存會話數據的重定向
 
-Redirecting to a new URL and [flashing data to the session](/docs/{{version}}/session#flash-data) are usually done at the same time. Typically, this is done after successfully performing an action when you flash a success message to the session. For convenience, you may create a `RedirectResponse` instance and flash data to the session in a single, fluent method chain:
+通常，在將 URL 重定向到新位置並[將數據閃存到會話中](/docs/{{version}}/session#flash-data)時，這兩個操作通常是一起完成的。通常在成功執行操作後閃存成功訊息到會話中。為方便起見，您可以在單個流暢方法鏈中創建一個 `RedirectResponse` 實例並將數據閃存到會話中：
 
-    Route::post('/user/profile', function () {
-        // ...
+```php
+return redirect('dashboard')->with('status', 'Profile updated!');
+```
 
-        return redirect('dashboard')->with('status', 'Profile updated!');
-    });
+當用戶被重新導向後，您可以從 [session](/docs/{{version}}/session) 中顯示閃存的訊息。例如，使用 [Blade 語法](/docs/{{version}}/blade)：
 
-After the user is redirected, you may display the flashed message from the [session](/docs/{{version}}/session). For example, using [Blade syntax](/docs/{{version}}/blade):
-
-    @if (session('status'))
-        <div class="alert alert-success">
-            {{ session('status') }}
-        </div>
-    @endif
+```php
+@if (session('status'))
+    <div class="alert alert-success">
+        {{ session('status') }}
+    </div>
+@endif
+```
 
 <a name="redirecting-with-input"></a>
-#### Redirecting With Input
+#### 帶輸入重新導向
 
-You may use the `withInput` method provided by the `RedirectResponse` instance to flash the current request's input data to the session before redirecting the user to a new location. This is typically done if the user has encountered a validation error. Once the input has been flashed to the session, you may easily [retrieve it](/docs/{{version}}/requests#retrieving-old-input) during the next request to repopulate the form:
+您可以使用 `RedirectResponse` 實例提供的 `withInput` 方法，將當前請求的輸入數據閃存到會話中，然後將用戶重新導向到新位置。如果用戶遇到驗證錯誤，通常會這樣做。一旦輸入數據被閃存到會話中，您可以在下一個請求期間輕鬆地 [檢索它](/docs/{{version}}/requests#retrieving-old-input) 以重新填充表單：
 
-    return back()->withInput();
+```php
+return back()->withInput();
+```
 
 <a name="other-response-types"></a>
-## Other Response Types
+## 其他回應類型
 
-The `response` helper may be used to generate other types of response instances. When the `response` helper is called without arguments, an implementation of the `Illuminate\Contracts\Routing\ResponseFactory` [contract](/docs/{{version}}/contracts) is returned. This contract provides several helpful methods for generating responses.
+`response` 助手可用於生成其他類型的回應實例。當調用 `response` 助手時沒有參數時，將返回 `Illuminate\Contracts\Routing\ResponseFactory` [contract](/docs/{{version}}/contracts) 的實現。此合約提供了幾個有用的方法來生成回應。
 
 <a name="view-responses"></a>
-### View Responses
+### 視圖回應
 
-If you need control over the response's status and headers but also need to return a [view](/docs/{{version}}/views) as the response's content, you should use the `view` method:
+如果您需要控制回應的狀態和標頭，但又需要將 [視圖](/docs/{{version}}/views) 作為回應的內容返回，您應該使用 `view` 方法：
 
-    return response()
-                ->view('hello', $data, 200)
-                ->header('Content-Type', $type);
+```php
+return response()
+            ->view('hello', $data, 200)
+            ->header('Content-Type', $type);
+```
 
-Of course, if you do not need to pass a custom HTTP status code or custom headers, you may use the global `view` helper function.
+當然，如果您不需要傳遞自定義的 HTTP 狀態碼或自定義標頭，您可以使用全局的 `view` 助手函數。
 
 <a name="json-responses"></a>
-### JSON Responses
+### JSON 回應
 
-The `json` method will automatically set the `Content-Type` header to `application/json`, as well as convert the given array to JSON using the `json_encode` PHP function:
+`json` 方法將自動將 `Content-Type` 標頭設置為 `application/json`，並使用 `json_encode` PHP 函數將給定的數組轉換為 JSON：
 
-    return response()->json([
-        'name' => 'Abigail',
-        'state' => 'CA',
-    ]);
+```php
+return response()
+            ->json(['name' => 'Abigail', 'state' => 'CA'])
+            ->withCallback($request->input('callback'));
+```
 
-If you would like to create a JSONP response, you may use the `json` method in combination with the `withCallback` method:
+```php
+return response()->download($pathToFile);
 
-    return response()
-                ->json(['name' => 'Abigail', 'state' => 'CA'])
-                ->withCallback($request->input('callback'));
+return response()->download($pathToFile, $name, $headers);
+```
 
-<a name="file-downloads"></a>
-### File Downloads
+```php
+use App\Services\GitHub;
 
-The `download` method may be used to generate a response that forces the user's browser to download the file at the given path. The `download` method accepts a filename as the second argument to the method, which will determine the filename that is seen by the user downloading the file. Finally, you may pass an array of HTTP headers as the third argument to the method:
+return response()->streamDownload(function () {
+    echo GitHub::api('repo')
+                ->contents()
+                ->readme('laravel', 'laravel')['contents'];
+}, 'laravel-readme.md');
+```
 
-    return response()->download($pathToFile);
+```php
+return response()->file($pathToFile);
 
-    return response()->download($pathToFile, $name, $headers);
+```php
+return response()->file($pathToFile, $headers);
+```
 
-> [!WARNING]  
-> Symfony HttpFoundation, which manages file downloads, requires the file being downloaded to have an ASCII filename.
+## 回應巨集
 
-<a name="streamed-downloads"></a>
-#### Streamed Downloads
+如果您想要定義一個自訂回應，以便在各種路由和控制器中重複使用，您可以在 `Response` Facade 上使用 `macro` 方法。通常，您應該從應用程式的其中一個 [服務提供者](/docs/{{version}}/providers) 的 `boot` 方法中調用此方法，例如 `App\Providers\AppServiceProvider` 服務提供者：
 
-Sometimes you may wish to turn the string response of a given operation into a downloadable response without having to write the contents of the operation to disk. You may use the `streamDownload` method in this scenario. This method accepts a callback, filename, and an optional array of headers as its arguments:
+```php
+namespace App\Providers;
 
-    use App\Services\GitHub;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\ServiceProvider;
 
-    return response()->streamDownload(function () {
-        echo GitHub::api('repo')
-                    ->contents()
-                    ->readme('laravel', 'laravel')['contents'];
-    }, 'laravel-readme.md');
-
-<a name="file-responses"></a>
-### File Responses
-
-The `file` method may be used to display a file, such as an image or PDF, directly in the user's browser instead of initiating a download. This method accepts the absolute path to the file as its first argument and an array of headers as its second argument:
-
-    return response()->file($pathToFile);
-
-    return response()->file($pathToFile, $headers);
-
-<a name="response-macros"></a>
-## Response Macros
-
-If you would like to define a custom response that you can re-use in a variety of your routes and controllers, you may use the `macro` method on the `Response` facade. Typically, you should call this method from the `boot` method of one of your application's [service providers](/docs/{{version}}/providers), such as the `App\Providers\AppServiceProvider` service provider:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Support\Facades\Response;
-    use Illuminate\Support\ServiceProvider;
-
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        /**
-         * Bootstrap any application services.
-         */
-        public function boot(): void
-        {
-            Response::macro('caps', function (string $value) {
-                return Response::make(strtoupper($value));
-            });
-        }
+        Response::macro('caps', function (string $value) {
+            return Response::make(strtoupper($value));
+        });
     }
+}
 
-The `macro` function accepts a name as its first argument and a closure as its second argument. The macro's closure will be executed when calling the macro name from a `ResponseFactory` implementation or the `response` helper:
+`macro` 函數接受一個名稱作為第一個引數，以及一個閉包作為第二個引數。當從 `ResponseFactory` 實作或 `response` 助手中調用巨集名稱時，巨集的閉包將被執行：
 
-    return response()->caps('foo');
+```php
+return response()->caps('foo');
+```

@@ -1,85 +1,86 @@
-# Console Tests
+# 控制台測試
 
-- [Introduction](#introduction)
-- [Success / Failure Expectations](#success-failure-expectations)
-- [Input / Output Expectations](#input-output-expectations)
-- [Console Events](#console-events)
+- [簡介](#introduction)
+- [成功 / 失敗期望](#success-failure-expectations)
+- [輸入 / 輸出期望](#input-output-expectations)
+- [控制台事件](#console-events)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-In addition to simplifying HTTP testing, Laravel provides a simple API for testing your application's [custom console commands](/docs/{{version}}/artisan).
+除了簡化 HTTP 測試外，Laravel 還提供了一個簡單的 API 來測試應用程式的[自訂控制台命令](/docs/{{version}}/artisan)。
 
 <a name="success-failure-expectations"></a>
-## Success / Failure Expectations
+## 成功 / 失敗期望
 
-To get started, let's explore how to make assertions regarding an Artisan command's exit code. To accomplish this, we will use the `artisan` method to invoke an Artisan command from our test. Then, we will use the `assertExitCode` method to assert that the command completed with a given exit code:
+要開始，讓我們探討如何對 Artisan 命令的退出代碼進行斷言。為了完成這個任務，我們將使用 `artisan` 方法從測試中調用一個 Artisan 命令。然後，我們將使用 `assertExitCode` 方法斷言該命令是否以給定的退出代碼完成：
 
     /**
-     * Test a console command.
+     * 測試控制台命令。
      */
     public function test_console_command(): void
     {
         $this->artisan('inspire')->assertExitCode(0);
     }
 
-You may use the `assertNotExitCode` method to assert that the command did not exit with a given exit code:
+您可以使用 `assertNotExitCode` 方法來斷言該命令未以給定的退出代碼退出：
 
     $this->artisan('inspire')->assertNotExitCode(1);
 
-Of course, all terminal commands typically exit with a status code of `0` when they are successful and a non-zero exit code when they are not successful. Therefore, for convenience, you may utilize the `assertSuccessful` and `assertFailed` assertions to assert that a given command exited with a successful exit code or not:
+當然，所有終端命令通常在成功時以狀態碼 `0` 退出，在失敗時以非零退出代碼退出。因此，為了方便起見，您可以使用 `assertSuccessful` 和 `assertFailed` 斷言來斷言給定命令是否以成功的退出代碼退出或否：
 
     $this->artisan('inspire')->assertSuccessful();
 
     $this->artisan('inspire')->assertFailed();
 
 <a name="input-output-expectations"></a>
-## Input / Output Expectations
+## 輸入 / 輸出期望
 
-Laravel allows you to easily "mock" user input for your console commands using the `expectsQuestion` method. In addition, you may specify the exit code and text that you expect to be output by the console command using the `assertExitCode` and `expectsOutput` methods. For example, consider the following console command:
+Laravel 允許您使用 `expectsQuestion` 方法輕鬆“模擬”控制台命令的用戶輸入。此外，您可以使用 `assertExitCode` 和 `expectsOutput` 方法指定您期望由控制台命令輸出的退出代碼和文本。例如，考慮以下控制台命令：
 
     Artisan::command('question', function () {
-        $name = $this->ask('What is your name?');
+        $name = $this->ask('你叫什麼名字？');
 
-        $language = $this->choice('Which language do you prefer?', [
+        $language = $this->choice('你喜歡哪種語言？', [
             'PHP',
             'Ruby',
             'Python',
         ]);
 
-        $this->line('Your name is '.$name.' and you prefer '.$language.'.');
+```php
+        $this->line('您的名字是'.$name.'，您偏好的語言是'.$language.'。');
     });
 
-You may test this command with the following test which utilizes the `expectsQuestion`, `expectsOutput`, `doesntExpectOutput`, `expectsOutputToContain`, `doesntExpectOutputToContain`, and `assertExitCode` methods:
+您可以使用以下測試來測試此命令，該測試使用`expectsQuestion`、`expectsOutput`、`doesntExpectOutput`、`expectsOutputToContain`、`doesntExpectOutputToContain`和`assertExitCode`方法：
 
     /**
-     * Test a console command.
+     * 測試控制台命令。
      */
     public function test_console_command(): void
     {
         $this->artisan('question')
-             ->expectsQuestion('What is your name?', 'Taylor Otwell')
-             ->expectsQuestion('Which language do you prefer?', 'PHP')
-             ->expectsOutput('Your name is Taylor Otwell and you prefer PHP.')
-             ->doesntExpectOutput('Your name is Taylor Otwell and you prefer Ruby.')
+             ->expectsQuestion('您的名字是？', 'Taylor Otwell')
+             ->expectsQuestion('您偏好哪種語言？', 'PHP')
+             ->expectsOutput('您的名字是Taylor Otwell，您偏好PHP。')
+             ->doesntExpectOutput('您的名字是Taylor Otwell，您偏好Ruby。')
              ->expectsOutputToContain('Taylor Otwell')
-             ->doesntExpectOutputToContain('you prefer Ruby')
+             ->doesntExpectOutputToContain('您偏好Ruby')
              ->assertExitCode(0);
     }
 
 <a name="confirmation-expectations"></a>
-#### Confirmation Expectations
+#### 確認期望
 
-When writing a command which expects confirmation in the form of a "yes" or "no" answer, you may utilize the `expectsConfirmation` method:
+當編寫一個需要以“是”或“否”回答的確認形式的命令時，您可以使用`expectsConfirmation`方法：
 
     $this->artisan('module:import')
-        ->expectsConfirmation('Do you really wish to run this command?', 'no')
+        ->expectsConfirmation('您真的希望運行此命令嗎？', 'no')
         ->assertExitCode(1);
 
 <a name="table-expectations"></a>
-#### Table Expectations
+#### 表格期望
 
-If your command displays a table of information using Artisan's `table` method, it can be cumbersome to write output expectations for the entire table. Instead, you may use the `expectsTable` method. This method accepts the table's headers as its first argument and the table's data as its second argument:
+如果您的命令使用Artisan的`table`方法顯示信息表，為整個表編寫輸出期望可能很繁瑣。相反，您可以使用`expectsTable`方法。此方法將表的標題作為第一個參數，表的數據作為第二個參數：
 
     $this->artisan('users:all')
         ->expectsTable([
@@ -91,20 +92,23 @@ If your command displays a table of information using Artisan's `table` method, 
         ]);
 
 <a name="console-events"></a>
-## Console Events
+## 控制台事件
 
-By default, the `Illuminate\Console\Events\CommandStarting` and `Illuminate\Console\Events\CommandFinished` events are not dispatched while running your application's tests. However, you can enable these events for a given test class by adding the `Illuminate\Foundation\Testing\WithConsoleEvents` trait to the class:
+默認情況下，在運行應用程序測試時，不會分派`Illuminate\Console\Events\CommandStarting`和`Illuminate\Console\Events\CommandFinished`事件。但是，您可以通過將`Illuminate\Foundation\Testing\WithConsoleEvents`特性添加到類中來為給定的測試類啟用這些事件：
+```
 
-    <?php
-    
-    namespace Tests\Feature;
+```php
+<?php
 
-    use Illuminate\Foundation\Testing\WithConsoleEvents;
-    use Tests\TestCase;
-    
-    class ConsoleEventTest extends TestCase
-    {
-        use WithConsoleEvents;
-    
-        // ...
-    }
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\WithConsoleEvents;
+use Tests\TestCase;
+
+class ConsoleEventTest extends TestCase
+{
+    use WithConsoleEvents;
+
+    // ...
+}
+```

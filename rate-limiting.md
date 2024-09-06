@@ -1,34 +1,34 @@
-# Rate Limiting
+# 速率限制
 
-- [Introduction](#introduction)
-    - [Cache Configuration](#cache-configuration)
-- [Basic Usage](#basic-usage)
-    - [Manually Incrementing Attempts](#manually-incrementing-attempts)
-    - [Clearing Attempts](#clearing-attempts)
+- [簡介](#introduction)
+    - [快取組態](#cache-configuration)
+- [基本使用](#basic-usage)
+    - [手動增加嘗試次數](#manually-incrementing-attempts)
+    - [清除嘗試次數](#clearing-attempts)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel includes a simple to use rate limiting abstraction which, in conjunction with your application's [cache](cache), provides an easy way to limit any action during a specified window of time.
+Laravel 包含一個簡單易用的速率限制抽象，與應用程式的 [快取](cache) 搭配使用，提供了一種在指定時間窗口內限制任何操作的簡單方法。
 
 > [!NOTE]  
-> If you are interested in rate limiting incoming HTTP requests, please consult the [rate limiter middleware documentation](routing#rate-limiting).
+> 如果您對限制傳入的 HTTP 請求感興趣，請參考 [速率限制中介層文件](routing#rate-limiting)。
 
 <a name="cache-configuration"></a>
-### Cache Configuration
+### 快取組態
 
-Typically, the rate limiter utilizes your default application cache as defined by the `default` key within your application's `cache` configuration file. However, you may specify which cache driver the rate limiter should use by defining a `limiter` key within your application's `cache` configuration file:
+通常，速率限制器使用您應用程式快取的預設設定，這是在您應用程式的 `cache` 組態檔案中由 `default` 金鑰定義的。但是，您可以通過在您應用程式的 `cache` 組態檔案中定義一個 `limiter` 金鑰來指定速率限制器應該使用哪個快取驅動程式：
 
     'default' => 'memcached',
 
     'limiter' => 'redis',
 
 <a name="basic-usage"></a>
-## Basic Usage
+## 基本使用
 
-The `Illuminate\Support\Facades\RateLimiter` facade may be used to interact with the rate limiter. The simplest method offered by the rate limiter is the `attempt` method, which rate limits a given callback for a given number of seconds.
+`Illuminate\Support\Facades\RateLimiter` 門面可用於與速率限制器互動。速率限制器提供的最簡單方法是 `attempt` 方法，該方法為給定的回呼函式在指定秒數內設定速率限制。
 
-The `attempt` method returns `false` when the callback has no remaining attempts available; otherwise, the `attempt` method will return the callback's result or `true`. The first argument accepted by the `attempt` method is a rate limiter "key", which may be any string of your choosing that represents the action being rate limited:
+當回呼函式沒有剩餘的嘗試次數時，`attempt` 方法將返回 `false`；否則，`attempt` 方法將返回回呼函式的結果或 `true`。`attempt` 方法接受的第一個引數是速率限制器的「金鑰」，這可以是您選擇的任何字串，代表正在受到速率限制的操作：
 
     use Illuminate\Support\Facades\RateLimiter;
 
@@ -36,87 +36,100 @@ The `attempt` method returns `false` when the callback has no remaining attempts
         'send-message:'.$user->id,
         $perMinute = 5,
         function() {
-            // Send message...
+            // 發送訊息...
         }
     );
 
     if (! $executed) {
-      return 'Too many messages sent!';
+      return '發送訊息過多！';
     }
 
-If necessary, you may provide a fourth argument to the `attempt` method, which is the "decay rate", or the number of seconds until the available attempts are reset. For example, we can modify the example above to allow five attempts every two minutes:
+如有必要，您可以向 `attempt` 方法提供第四個引數，即「衰減率」，即可用嘗試次數重置之前的秒數。例如，我們可以修改上面的範例，以允許每兩分鐘進行五次嘗試：
 
-    $executed = RateLimiter::attempt(
-        'send-message:'.$user->id,
-        $perTwoMinutes = 5,
-        function() {
-            // Send message...
-        },
-        $decayRate = 120,
-    );
+```php
+$executed = RateLimiter::attempt(
+    'send-message:'.$user->id,
+    $perTwoMinutes = 5,
+    function() {
+        // Send message...
+    },
+    $decayRate = 120,
+);
+```
 
 <a name="manually-incrementing-attempts"></a>
-### Manually Incrementing Attempts
+### 手動增加嘗試次數
 
-If you would like to manually interact with the rate limiter, a variety of other methods are available. For example, you may invoke the `tooManyAttempts` method to determine if a given rate limiter key has exceeded its maximum number of allowed attempts per minute:
+如果您想要手動與速率限制器互動，還有其他多種方法可供使用。例如，您可以調用 `tooManyAttempts` 方法來確定特定速率限制器鍵是否已超過每分鐘允許的最大嘗試次數：
 
-    use Illuminate\Support\Facades\RateLimiter;
+```php
+use Illuminate\Support\Facades\RateLimiter;
 
-    if (RateLimiter::tooManyAttempts('send-message:'.$user->id, $perMinute = 5)) {
-        return 'Too many attempts!';
-    }
+if (RateLimiter::tooManyAttempts('send-message:'.$user->id, $perMinute = 5)) {
+    return '嘗試次數過多！';
+}
 
+RateLimiter::increment('send-message:'.$user->id);
+
+// Send message...
+```
+
+或者，您可以使用 `remaining` 方法來檢索特定鍵剩餘的嘗試次數。如果特定鍵還有重試次數，您可以調用 `increment` 方法來增加總嘗試次數：
+
+```php
+use Illuminate\Support\Facades\RateLimiter;
+
+if (RateLimiter::remaining('send-message:'.$user->id, $perMinute = 5)) {
     RateLimiter::increment('send-message:'.$user->id);
 
     // Send message...
+}
+```
 
-Alternatively, you may use the `remaining` method to retrieve the number of attempts remaining for a given key. If a given key has retries remaining, you may invoke the `increment` method to increment the number of total attempts:
+如果您想要為特定速率限制器鍵的值增加超過一個的數量，您可以向 `increment` 方法提供所需的數量：
 
-    use Illuminate\Support\Facades\RateLimiter;
-
-    if (RateLimiter::remaining('send-message:'.$user->id, $perMinute = 5)) {
-        RateLimiter::increment('send-message:'.$user->id);
-
-        // Send message...
-    }
-
-If you would like to increment the value for a given rate limiter key by more than one, you may provide the desired amount to the `increment` method:
-
-    RateLimiter::increment('send-message:'.$user->id, amount: 5);
+```php
+RateLimiter::increment('send-message:'.$user->id, amount: 5);
+```
 
 <a name="determining-limiter-availability"></a>
-#### Determining Limiter Availability
+#### 確定限制器可用性
 
-When a key has no more attempts left, the `availableIn` method returns the number of seconds remaining until more attempts will be available:
+當一個鍵沒有更多的嘗試次數時，`availableIn` 方法會返回直到更多嘗試次數可用之前剩餘的秒數：
 
-    use Illuminate\Support\Facades\RateLimiter;
+```php
+use Illuminate\Support\Facades\RateLimiter;
 
-    if (RateLimiter::tooManyAttempts('send-message:'.$user->id, $perMinute = 5)) {
-        $seconds = RateLimiter::availableIn('send-message:'.$user->id);
+if (RateLimiter::tooManyAttempts('send-message:'.$user->id, $perMinute = 5)) {
+    $seconds = RateLimiter::availableIn('send-message:'.$user->id);
 
-        return 'You may try again in '.$seconds.' seconds.';
-    }
+    return '您可以在 '.$seconds.' 秒後再試一次。';
+}
 
-    RateLimiter::increment('send-message:'.$user->id);
+RateLimiter::increment('send-message:'.$user->id);
 
-    // Send message...
+// Send message...
+```
 
-<a name="clearing-attempts"></a>
-### Clearing Attempts
+### 清除嘗試
 
-You may reset the number of attempts for a given rate limiter key using the `clear` method. For example, you may reset the number of attempts when a given message is read by the receiver:
+您可以使用 `clear` 方法來重置特定速率限制器鍵的嘗試次數。例如，當接收者閱讀特定訊息時，您可以重置嘗試次數：
 
-    use App\Models\Message;
-    use Illuminate\Support\Facades\RateLimiter;
+```php
+use App\Models\Message;
+use Illuminate\Support\Facades\RateLimiter;
 
-    /**
-     * Mark the message as read.
-     */
-    public function read(Message $message): Message
-    {
-        $message->markAsRead();
+/**
+ * 標記訊息為已讀。
+ */
+public function read(Message $message): Message
+{
+    $message->markAsRead();
 
-        RateLimiter::clear('send-message:'.$message->user_id);
+    RateLimiter::clear('send-message:'.$message->user_id);
 
-        return $message;
-    }
+    return $message;
+}
+```
+
+<Notes>permalink: https://laravel.com/docs/8.x/routing#clearing-attempts</Notes>
