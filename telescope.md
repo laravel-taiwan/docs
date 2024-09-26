@@ -1,222 +1,244 @@
 # Laravel Telescope
 
-- [Introduction](#introduction)
-- [Installation](#installation)
-    - [Configuration](#configuration)
-    - [Data Pruning](#data-pruning)
-    - [Migration Customization](#migration-customization)
-- [Dashboard Authorization](#dashboard-authorization)
-- [Filtering](#filtering)
-    - [Entries](#filtering-entries)
-    - [Batches](#filtering-batches)
-- [Tagging](#tagging)
-- [Available Watchers](#available-watchers)
-    - [Cache Watcher](#cache-watcher)
-    - [Command Watcher](#command-watcher)
-    - [Dump Watcher](#dump-watcher)
-    - [Event Watcher](#event-watcher)
-    - [Exception Watcher](#exception-watcher)
-    - [Gate Watcher](#gate-watcher)
-    - [Job Watcher](#job-watcher)
-    - [Log Watcher](#log-watcher)
-    - [Mail Watcher](#mail-watcher)
-    - [Model Watcher](#model-watcher)
-    - [Notification Watcher](#notification-watcher)
-    - [Query Watcher](#query-watcher)
-    - [Redis Watcher](#redis-watcher)
-    - [Request Watcher](#request-watcher)
-    - [Schedule Watcher](#schedule-watcher)
+- [簡介](#introduction)
+- [安裝](#installation)
+    - [組態設定](#configuration)
+    - [資料清理](#data-pruning)
+    - [遷移自訂](#migration-customization)
+- [儀表板授權](#dashboard-authorization)
+- [篩選](#filtering)
+    - [條目](#filtering-entries)
+    - [批次](#filtering-batches)
+- [標記](#tagging)
+- [可用的監視器](#available-watchers)
+    - [快取監視器](#cache-watcher)
+    - [指令監視器](#command-watcher)
+    - [轉儲監視器](#dump-watcher)
+    - [事件監視器](#event-watcher)
+    - [異常監視器](#exception-watcher)
+    - [Gate 監視器](#gate-watcher)
+    - [工作監視器](#job-watcher)
+    - [日誌監視器](#log-watcher)
+    - [郵件監視器](#mail-watcher)
+    - [模型監視器](#model-watcher)
+    - [通知監視器](#notification-watcher)
+    - [查詢監視器](#query-watcher)
+    - [Redis 監視器](#redis-watcher)
+    - [請求監視器](#request-watcher)
+    - [排程監視器](#schedule-watcher)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel Telescope is an elegant debug assistant for the Laravel framework. Telescope provides insight into the requests coming into your application, exceptions, log entries, database queries, queued jobs, mail, notifications, cache operations, scheduled tasks, variable dumps and more. Telescope makes a wonderful companion to your local Laravel development environment.
+Laravel Telescope 是 Laravel 框架的優雅調試助手。Telescope 提供了有關進入應用程序的請求、異常、日誌條目、資料庫查詢、排隊工作、郵件、通知、快取操作、排程任務、變數轉儲等的洞察。Telescope 是您本地 Laravel 開發環境的絕佳伴侶。
 
 <p align="center">
 <img src="https://laravel.com/assets/img/examples/Screen_Shot_2018-10-09_at_1.47.23_PM.png" width="600">
 </p>
 
 <a name="installation"></a>
-## Installation
+## 安裝
 
-You may use Composer to install Telescope into your Laravel project:
+您可以使用 Composer 將 Telescope 安裝到您的 Laravel 專案中：
 
-    composer require laravel/telescope
+    composer require laravel/telescope:^3.0
 
-After installing Telescope, publish its assets using the `telescope:install` Artisan command. After installing Telescope, you should also run the `migrate` command:
+安裝 Telescope 後，使用 `telescope:install` Artisan 命令發佈其資源。安裝 Telescope 後，您還應運行 `migrate` 命令：
 
     php artisan telescope:install
 
     php artisan migrate
 
-#### Updating Telescope
+#### 更新 Telescope
 
-When updating Telescope, you should re-publish Telescope's assets:
+更新 Telescope 時，您應重新發佈 Telescope 的資源：
 
-    php artisan telescope:publish
+```php
+php artisan telescope:publish
+```
 
-### Installing Only In Specific Environments
+### 僅在特定環境中安裝
 
-If you plan to only use Telescope to assist your local development, you may install Telescope using the `--dev` flag:
+如果您打算僅在本地開發中使用 Telescope，您可以使用 `--dev` 標誌來安裝 Telescope：
 
-    composer require laravel/telescope --dev
+```bash
+composer require laravel/telescope --dev
+```
 
-After running `telescope:install`, you should remove the `TelescopeServiceProvider` service provider registration from your `app` configuration file. Instead, manually register the service provider in the `register` method of your `AppServiceProvider`:
+執行 `telescope:install` 後，您應該從您的 `app` 配置文件中刪除 `TelescopeServiceProvider` 服務提供者的註冊。而是在您的 `AppServiceProvider` 的 `register` 方法中手動註冊服務提供者：
 
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        if ($this->app->isLocal()) {
-            $this->app->register(TelescopeServiceProvider::class);
-        }
+```php
+/**
+ * 註冊任何應用程式服務。
+ *
+ * @return void
+ */
+public function register()
+{
+    if ($this->app->isLocal()) {
+        $this->app->register(TelescopeServiceProvider::class);
     }
+}
+```
 
 <a name="migration-customization"></a>
-### Migration Customization
+### 遷移自訂
 
-If you are not going to use Telescope's default migrations, you should call the `Telescope::ignoreMigrations` method in the `register` method of your `AppServiceProvider`. You may export the default migrations using the `php artisan vendor:publish --tag=telescope-migrations` command.
+如果您不打算使用 Telescope 的預設遷移，您應該在您的 `AppServiceProvider` 的 `register` 方法中調用 `Telescope::ignoreMigrations` 方法。您可以使用 `php artisan vendor:publish --tag=telescope-migrations` 命令導出默認遷移。
 
 <a name="configuration"></a>
-### Configuration
+### 組態設定
 
-After publishing Telescope's assets, its primary configuration file will be located at `config/telescope.php`. This configuration file allows you to configure your watcher options and each configuration option includes a description of its purpose, so be sure to thoroughly explore this file.
+在發布 Telescope 的資源後，其主要組態文件將位於 `config/telescope.php`。這個組態文件允許您配置您的監視器選項，每個配置選項都包括其目的的描述，因此請務必仔細探索這個文件。
 
-If desired, you may disable Telescope's data collection entirely using the `enabled` configuration option:
+如果需要，您可以使用 `enabled` 組態選項完全禁用 Telescope 的數據收集：
 
-    'enabled' => env('TELESCOPE_ENABLED', true),
+```php
+'enabled' => env('TELESCOPE_ENABLED', true),
+```
 
 <a name="data-pruning"></a>
-### Data Pruning
+### 數據修剪
 
-Without pruning, the `telescope_entries` table can accumulate records very quickly. To mitigate this, you should schedule the `telescope:prune` Artisan command to run daily:
+如果不進行修剪，`telescope_entries` 表會非常快速地累積記錄。為了緩解這個問題，您應該安排 `telescope:prune` Artisan 命令每天運行：
 
-    $schedule->command('telescope:prune')->daily();
+```bash
+$schedule->command('telescope:prune')->daily();
+```
 
-By default, all entries older than 24 hours will be pruned. You may use the `hours` option when calling the command to determine how long to retain Telescope data. For example, the following command will delete all records created over 48 hours ago:
+默認情況下，所有舊於 24 小時的記錄將被修剪。您可以在調用命令時使用 `hours` 選項來確定保留 Telescope 數據的時間長短。例如，以下命令將刪除 48 小時前創建的所有記錄：```
 
-    $schedule->command('telescope:prune --hours=48')->daily();
+```php
+$schedule->command('telescope:prune --hours=48')->daily();
+```
 
 <a name="dashboard-authorization"></a>
-## Dashboard Authorization
+## 面板授權
 
-Telescope exposes a dashboard at `/telescope`. By default, you will only be able to access this dashboard in the `local` environment. Within your `app/Providers/TelescopeServiceProvider.php` file, there is a `gate` method. This authorization gate controls access to Telescope in **non-local** environments. You are free to modify this gate as needed to restrict access to your Telescope installation:
+Telescope 在 `/telescope` 路徑上公開了一個儀表板。預設情況下，您只能在 `local` 環境中訪問此儀表板。在您的 `app/Providers/TelescopeServiceProvider.php` 檔案中，有一個 `gate` 方法。這個授權閘控制對 **非本地** 環境中 Telescope 的訪問。您可以根據需要自由修改此授權閘以限制對您的 Telescope 安裝的訪問：
 
-    /**
-     * Register the Telescope gate.
-     *
-     * This gate determines who can access Telescope in non-local environments.
-     *
-     * @return void
-     */
-    protected function gate()
-    {
-        Gate::define('viewTelescope', function ($user) {
-            return in_array($user->email, [
-                'taylor@laravel.com',
-            ]);
-        });
-    }
+```php
+/**
+ * 註冊 Telescope 閘。
+ *
+ * 這個閘確定誰可以在非本地環境中訪問 Telescope。
+ *
+ * @return void
+ */
+protected function gate()
+{
+    Gate::define('viewTelescope', function ($user) {
+        return in_array($user->email, [
+            'taylor@laravel.com',
+        ]);
+    });
+}
+```
 
 <a name="filtering"></a>
-## Filtering
+## 篩選
 
 <a name="filtering-entries"></a>
-### Entries
+### 記錄
 
-You may filter the data that is recorded by Telescope via the `filter` callback that is registered in your `TelescopeServiceProvider`. By default, this callback records all data in the `local` environment and exceptions, failed jobs, scheduled tasks, and data with monitored tags in all other environments:
+您可以通過在您的 `TelescopeServiceProvider` 中註冊的 `filter` 回調來篩選 Telescope 記錄的數據。預設情況下，此回調在 `local` 環境中記錄所有數據，並在所有其他環境中記錄異常、失敗的任務、定時任務以及具有監控標籤的數據：
 
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->hideSensitiveRequestDetails();
+```php
+/**
+ * 註冊任何應用程式服務。
+ *
+ * @return void
+ */
+public function register()
+{
+    $this->hideSensitiveRequestDetails();
 
-        Telescope::filter(function (IncomingEntry $entry) {
-            if ($this->app->isLocal()) {
-                return true;
-            }
+    Telescope::filter(function (IncomingEntry $entry) {
+        if ($this->app->isLocal()) {
+            return true;
+        }
 
+        return $entry->isReportableException() ||
+            $entry->isFailedJob() ||
+            $entry->isScheduledTask() ||
+            $entry->hasMonitoredTag();
+    });
+}
+```
+
+<a name="filtering-batches"></a>
+### 批次
+
+雖然 `filter` 回調用於篩選個別記錄的數據，但您可以使用 `filterBatch` 方法來註冊一個回調，以篩選給定請求或控制台命令的所有數據。如果回調返回 `true`，則 Telescope 會記錄所有記錄：
+
+```php
+use Illuminate\Support\Collection;
+
+/**
+ * 註冊任何應用程式服務。
+ *
+ * @return void
+ */
+public function register()
+{
+    $this->hideSensitiveRequestDetails();
+
+    Telescope::filterBatch(function (Collection $entries) {
+        if ($this->app->isLocal()) {
+            return true;
+        }
+
+        return $entries->contains(function ($entry) {
             return $entry->isReportableException() ||
                 $entry->isFailedJob() ||
                 $entry->isScheduledTask() ||
                 $entry->hasMonitoredTag();
         });
-    }
-
-<a name="filtering-batches"></a>
-### Batches
-
-While the `filter` callback filters data for individual entries, you may use the `filterBatch` method to register a callback that filters all data for a given request or console command. If the callback returns `true`, all of the entries are recorded by Telescope:
-
-    use Illuminate\Support\Collection;
-
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->hideSensitiveRequestDetails();
-
-        Telescope::filterBatch(function (Collection $entries) {
-            if ($this->app->isLocal()) {
-                return true;
-            }
-
-            return $entries->contains(function ($entry) {
-                return $entry->isReportableException() ||
-                    $entry->isFailedJob() ||
-                    $entry->isScheduledTask() ||
-                    $entry->hasMonitoredTag();
-                });
-        });
-    }
+    });
+}
+```
 
 <a name="tagging"></a>
-## Tagging
+## 標記
 
-Telescope allows you to search entries by "tag". Often, tags are Eloquent model class names or authenticated user IDs which Telescope automatically adds to entries. Occasionally, you may want to attach your own custom tags to entries. To accomplish this, you may use the `Telescope::tag` method. The `tag` method accepts a callback which should return an array of tags. The tags returned by the callback will be merged with any tags Telescope would automatically attach to the entry. You should call the `tag` method within your `TelescopeServiceProvider`:
+Telescope 允許您按“標記”搜索條目。通常，標記是 Eloquent 模型類名或已驗證的使用者 ID，Telescope 會自動將其添加到條目中。偶爾，您可能希望將自己的自定義標記附加到條目上。為此，您可以使用 `Telescope::tag` 方法。`tag` 方法接受一個回調函式，該函式應返回一個標記陣列。回調函式返回的標記將與 Telescope 自動附加到條目的任何標記合併。您應該在您的 `TelescopeServiceProvider` 內調用 `tag` 方法：
 
-    use Laravel\Telescope\Telescope;
+```php
+use Laravel\Telescope\Telescope;
 
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->hideSensitiveRequestDetails();
+/**
+ * 註冊任何應用程式服務。
+ *
+ * @return void
+ */
+public function register()
+{
+    $this->hideSensitiveRequestDetails();
 
-        Telescope::tag(function (IncomingEntry $entry) {
-            if ($entry->type === 'request') {
-                return ['status:'.$entry->content['response_status']];
-            }
+    Telescope::tag(function (IncomingEntry $entry) {
+        if ($entry->type === 'request') {
+            return ['status:'.$entry->content['response_status']];
+        }
 
-            return [];
-        });
-     }
+        return [];
+    });
+}
+```
 
 <a name="available-watchers"></a>
-## Available Watchers
+## 可用的監視器
 
-Telescope watchers gather application data when a request or console command is executed. You may customize the list of watchers that you would like to enable within your `config/telescope.php` configuration file:
+Telescope 監視器在執行請求或控制台命令時收集應用程式資料。您可以自定義要在 `config/telescope.php` 組態檔中啟用的監視器清單：
 
-    'watchers' => [
-        Watchers\CacheWatcher::class => true,
-        Watchers\CommandWatcher::class => true,
-        ...
-    ],
+```php
+'watchers' => [
+    Watchers\CacheWatcher::class => true,
+    Watchers\CommandWatcher::class => true,
+    ...
+],
+```
 
-Some watchers also allow you to provide additional customization options:
+一些觀察者還允許您提供額外的自定義選項：
 
     'watchers' => [
         Watchers\QueryWatcher::class => [
@@ -227,14 +249,14 @@ Some watchers also allow you to provide additional customization options:
     ],
 
 <a name="cache-watcher"></a>
-### Cache Watcher
+### 快取觀察者
 
-The cache watcher records data when a cache key is hit, missed, updated and forgotten.
+快取觀察者在快取鍵被命中、未命中、更新和遺忘時記錄數據。
 
 <a name="command-watcher"></a>
-### Command Watcher
+### 指令觀察者
 
-The command watcher records the arguments, options, exit code, and output whenever an Artisan command is executed. If you would like to exclude certain commands from being recorded by the watcher, you may specify the command in the `ignore` option in your `config/telescope.php` file:
+指令觀察者在執行 Artisan 指令時記錄引數、選項、退出代碼和輸出。如果您希望排除某些指令不被觀察者記錄，您可以在 `config/telescope.php` 文件中的 `ignore` 選項中指定該指令：
 
     'watchers' => [
         Watchers\CommandWatcher::class => [
@@ -245,24 +267,24 @@ The command watcher records the arguments, options, exit code, and output whenev
     ],
 
 <a name="dump-watcher"></a>
-### Dump Watcher
+### 輸出觀察者
 
-The dump watcher records and displays your variable dumps in Telescope. When using Laravel, variables may be dumped using the global `dump` function. The dump watcher tab must be open in a browser for the recording to occur, otherwise the dumps will be ignored by the watcher.
+輸出觀察者在 Telescope 中記錄並顯示您的變數輸出。在使用 Laravel 時，變數可以使用全局的 `dump` 函數輸出。輸出觀察者選項卡必須在瀏覽器中打開以進行記錄，否則觀察者將忽略這些輸出。
 
 <a name="event-watcher"></a>
-### Event Watcher
+### 事件觀察者
 
-The event watcher records the payload, listeners, and broadcast data for any events dispatched by your application. The Laravel framework's internal events are ignored by the Event watcher.
+事件觀察者記錄應用程序分發的任何事件的有效載荷、監聽器和廣播數據。Laravel 框架內部事件將被事件觀察者忽略。
 
 <a name="exception-watcher"></a>
-### Exception Watcher
+### 異常觀察者
 
-The exception watcher records the data and stack trace for any reportable Exceptions that are thrown by your application.
+異常觀察者記錄應用程序拋出的任何可報告異常的數據和堆棧跟踪。
 
 <a name="gate-watcher"></a>
-### Gate Watcher
+### Gate 觀察者
 
-The gate watcher records the data and result of gate and policy checks by your application. If you would like to exclude certain abilities from being recorded by the watcher, you may specify those in the `ignore_abilities` option in your `config/telescope.php` file:
+Gate 觀察者記錄應用程序進行的權限和策略檢查的數據和結果。如果您希望排除某些權限不被觀察者記錄，您可以在 `config/telescope.php` 文件中的 `ignore_abilities` 選項中指定這些權限：
 
     'watchers' => [
         Watchers\GateWatcher::class => [
@@ -272,62 +294,60 @@ The gate watcher records the data and result of gate and policy checks by your a
         ...
     ],
 
-<a name="job-watcher"></a>
-### Job Watcher
 
-The job watcher records the data and status of any jobs dispatched by your application.
+### 任務監視器
 
-<a name="log-watcher"></a>
-### Log Watcher
+任務監視器記錄應用程式調度的任何任務的資料和狀態。
 
-The log watcher records the log data for any logs written by your application.
+### 日誌監視器
 
-<a name="mail-watcher"></a>
-### Mail Watcher
+日誌監視器記錄應用程式寫入的所有日誌資料。
 
-The mail watcher allows you to view an in-browser preview of the emails along with their associated data. You may also download the email as an `.eml` file.
+### 郵件監視器
 
-<a name="model-watcher"></a>
-### Model Watcher
+郵件監視器允許您在瀏覽器中預覽電子郵件以及相關資料。您也可以將郵件下載為 `.eml` 檔案。
 
-The model watcher records model changes whenever an Eloquent `created`, `updated`, `restored`, or `deleted` event is dispatched. You may specify which model events should be recorded via the watcher's `events` option:
+### 模型監視器
 
-    'watchers' => [
-        Watchers\ModelWatcher::class => [
-            'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
-            'events' => ['eloquent.created*', 'eloquent.updated*'],
-        ],
-        ...
+模型監視器在 Eloquent `created`、`updated`、`restored` 或 `deleted` 事件調度時記錄模型變更。您可以通過監視器的 `events` 選項指定應記錄哪些模型事件：
+
+```php
+'watchers' => [
+    Watchers\ModelWatcher::class => [
+        'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
+        'events' => ['eloquent.created*', 'eloquent.updated*'],
     ],
+    ...
+],
+```
 
-<a name="notification-watcher"></a>
-### Notification Watcher
+### 通知監視器
 
-The notification watcher records all notifications sent by your application. If the notification triggers an email and you have the mail watcher enabled, the email will also be available for preview on the mail watcher screen.
+通知監視器記錄應用程式發送的所有通知。如果通知觸發郵件並且啟用了郵件監視器，則郵件也將在郵件監視器畫面上進行預覽。
 
-<a name="query-watcher"></a>
-### Query Watcher
+### 查詢監視器
 
-The query watcher records the raw SQL, bindings, and execution time for all queries that are executed by your application. The watcher also tags any queries slower than 100ms as `slow`. You may customize the slow query threshold using the watcher's `slow` option:
+查詢監視器記錄應用程式執行的所有查詢的原始 SQL、綁定和執行時間。監視器還將任何執行時間超過 100 毫秒的查詢標記為 `slow`。您可以使用監視器的 `slow` 選項自定義慢查詢閾值：
 
-    'watchers' => [
-        Watchers\QueryWatcher::class => [
-            'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
-            'slow' => 50,
-        ],
-        ...
+```php
+'watchers' => [
+    Watchers\QueryWatcher::class => [
+        'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
+        'slow' => 50,
     ],
+    ...
+],
+```
 
-<a name="redis-watcher"></a>
-### Redis Watcher
+### Redis 監視器
 
-The Redis watcher records all Redis commands executed by your application. If you are using Redis for caching, cache commands will also be recorded by the Redis Watcher.
+Redis 監視器記錄應用程式執行的所有 Redis 命令。如果您正在使用 Redis 進行快取，快取命令也將被 Redis 監視器記錄。
 
-<a name="request-watcher"></a>
-### Request Watcher
+### 請求監視器
 
-The request watcher records the request, headers, session, and response data associated with any requests handled by the application. You may limit your response data via the `size_limit` (in KB) option:
+請求監視器記錄應用程式處理的任何請求相關的請求、標頭、會話和回應資料。您可以通過 `size_limit`（以 KB 為單位）選項限制您的回應資料：
 
+```php
     'watchers' => [
         Watchers\RequestWatcher::class => [
             'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
@@ -335,8 +355,9 @@ The request watcher records the request, headers, session, and response data ass
         ],
         ...
     ],
+```
 
 <a name="schedule-watcher"></a>
-### Schedule Watcher
+### 排程監視器
 
-The schedule watcher records the command and output of any scheduled tasks run by your application.
+排程監視器記錄應用程式執行的任何排程任務的命令和輸出。

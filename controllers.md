@@ -1,33 +1,33 @@
-# Controllers
+# 控制器
 
-- [Introduction](#introduction)
-- [Basic Controllers](#basic-controllers)
-    - [Defining Controllers](#defining-controllers)
-    - [Controllers & Namespaces](#controllers-and-namespaces)
-    - [Single Action Controllers](#single-action-controllers)
-- [Controller Middleware](#controller-middleware)
-- [Resource Controllers](#resource-controllers)
-    - [Partial Resource Routes](#restful-partial-resource-routes)
-    - [Nested Resources](#restful-nested-resources)
-    - [Naming Resource Routes](#restful-naming-resource-routes)
-    - [Naming Resource Route Parameters](#restful-naming-resource-route-parameters)
-    - [Localizing Resource URIs](#restful-localizing-resource-uris)
-    - [Supplementing Resource Controllers](#restful-supplementing-resource-controllers)
-- [Dependency Injection & Controllers](#dependency-injection-and-controllers)
-- [Route Caching](#route-caching)
+- [簡介](#introduction)
+- [基本控制器](#basic-controllers)
+    - [定義控制器](#defining-controllers)
+    - [控制器與命名空間](#controllers-and-namespaces)
+    - [單一行為控制器](#single-action-controllers)
+- [控制器中介層](#controller-middleware)
+- [資源控制器](#resource-controllers)
+    - [部分資源路由](#restful-partial-resource-routes)
+    - [巢狀資源](#restful-nested-resources)
+    - [命名資源路由](#restful-naming-resource-routes)
+    - [命名資源路由參數](#restful-naming-resource-route-parameters)
+    - [本地化資源 URI](#restful-localizing-resource-uris)
+    - [補充資源控制器](#restful-supplementing-resource-controllers)
+- [依賴注入與控制器](#dependency-injection-and-controllers)
+- [路由快取](#route-caching)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Instead of defining all of your request handling logic as Closures in route files, you may wish to organize this behavior using Controller classes. Controllers can group related request handling logic into a single class. Controllers are stored in the `app/Http/Controllers` directory.
+與在路由檔案中將所有請求處理邏輯定義為閉包不同，您可能希望使用控制器類別來組織這些行為。控制器可以將相關的請求處理邏輯分組到單一類別中。控制器存儲在 `app/Http/Controllers` 目錄中。
 
 <a name="basic-controllers"></a>
-## Basic Controllers
+## 基本控制器
 
 <a name="defining-controllers"></a>
-### Defining Controllers
+### 定義控制器
 
-Below is an example of a basic controller class. Note that the controller extends the base controller class included with Laravel. The base class provides a few convenience methods such as the `middleware` method, which may be used to attach middleware to controller actions:
+以下是一個基本控制器類別的範例。請注意，控制器擴展了 Laravel 隨附的基本控制器類別。基本類提供了一些方便的方法，例如 `middleware` 方法，可用於將中介層附加到控制器行為：
 
     <?php
 
@@ -39,7 +39,7 @@ Below is an example of a basic controller class. Note that the controller extend
     class UserController extends Controller
     {
         /**
-         * Show the profile for the given user.
+         * 顯示給定使用者的個人資料。
          *
          * @param  int  $id
          * @return View
@@ -50,118 +50,140 @@ Below is an example of a basic controller class. Note that the controller extend
         }
     }
 
-You can define a route to this controller action like so:
+您可以這樣定義到這個控制器行為的路由：
 
-    Route::get('user/{id}', 'UserController@show');
+```php
+Route::get('user/{id}', 'UserController@show');
+```
 
-Now, when a request matches the specified route URI, the `show` method on the `UserController` class will be executed. The route parameters will also be passed to the method.
+現在，當請求符合指定的路由 URI 時，`UserController` 類別中的 `show` 方法將被執行。路由參數也將傳遞給該方法。
 
-> {tip} Controllers are not **required** to extend a base class. However, you will not have access to convenience features such as the `middleware`, `validate`, and `dispatch` methods.
+> {tip} 控制器並非**必須**擴展基類。但是，您將無法使用方便功能，如 `middleware`、`validate` 和 `dispatch` 方法。
 
 <a name="controllers-and-namespaces"></a>
-### Controllers & Namespaces
+### 控制器與命名空間
 
-It is very important to note that we did not need to specify the full controller namespace when defining the controller route. Since the `RouteServiceProvider` loads your route files within a route group that contains the namespace, we only specified the portion of the class name that comes after the `App\Http\Controllers` portion of the namespace.
+非常重要的一點是，在定義控制器路由時，我們並不需要指定完整的控制器命名空間。由於 `RouteServiceProvider` 在包含命名空間的路由組中加載您的路由文件，我們只需指定類名的部分，該部分位於命名空間的 `App\Http\Controllers` 部分之後。
 
-If you choose to nest your controllers deeper into the `App\Http\Controllers` directory, use the specific class name relative to the `App\Http\Controllers` root namespace. So, if your full controller class is `App\Http\Controllers\Photos\AdminController`, you should register routes to the controller like so:
+如果您選擇將控制器嵌套到 `App\Http\Controllers` 目錄中的更深層次，請使用相對於 `App\Http\Controllers` 根命名空間的特定類名。因此，如果您的完整控制器類別是 `App\Http\Controllers\Photos\AdminController`，您應該像這樣註冊到控制器的路由：
 
-    Route::get('foo', 'Photos\AdminController@method');
+```php
+Route::get('foo', 'Photos\AdminController@method');
+```
 
 <a name="single-action-controllers"></a>
-### Single Action Controllers
+### 單一行為控制器
 
-If you would like to define a controller that only handles a single action, you may place a single `__invoke` method on the controller:
+如果您想定義僅處理單一行為的控制器，您可以在控制器上放置單一的 `__invoke` 方法：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\User;
+use App\Http\Controllers\Controller;
+use App\User;
 
-    class ShowProfile extends Controller
+class ShowProfile extends Controller
+{
+    /**
+     * 顯示給定使用者的個人資料。
+     *
+     * @param  int  $id
+     * @return View
+     */
+    public function __invoke($id)
     {
-        /**
-         * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return View
-         */
-        public function __invoke($id)
-        {
-            return view('user.profile', ['user' => User::findOrFail($id)]);
-        }
+        return view('user.profile', ['user' => User::findOrFail($id)]);
     }
+}
+```
 
-When registering routes for single action controllers, you do not need to specify a method:
+當為單一行為控制器註冊路由時，您不需要指定方法：
 
-    Route::get('user/{id}', 'ShowProfile');
+```php
+Route::get('user/{id}', 'ShowProfile');
+```
 
-You may generate an invokable controller by using the `--invokable` option of the `make:controller` Artisan command:
+您可以使用 `make:controller` Artisan 命令的 `--invokable` 選項生成可調用的控制器：
 
-    php artisan make:controller ShowProfile --invokable
+```php
+php artisan make:controller ShowProfile --invokable
+```
 
 <a name="controller-middleware"></a>
-## Controller Middleware
+## 控制器中介層
 
-[Middleware](/docs/{{version}}/middleware) may be assigned to the controller's routes in your route files:
+您可以在路由檔案中為控制器的路由指定[中介層](/docs/{{version}}/middleware)：
 
-    Route::get('profile', 'UserController@show')->middleware('auth');
+```php
+Route::get('profile', 'UserController@show')->middleware('auth');
+```
 
-However, it is more convenient to specify middleware within your controller's constructor. Using the `middleware` method from your controller's constructor, you may easily assign middleware to the controller's action. You may even restrict the middleware to only certain methods on the controller class:
+然而，在控制器的建構子中指定中介層更為方便。使用控制器建構子中的 `middleware` 方法，您可以輕鬆地將中介層指定給控制器的行為。您甚至可以將中介層限制為僅適用於控制器類別中的某些方法：
 
-    class UserController extends Controller
+```php
+class UserController extends Controller
+{
+    /**
+     * 實例化一個新的控制器實例。
+     *
+     * @return void
+     */
+    public function __construct()
     {
-        /**
-         * Instantiate a new controller instance.
-         *
-         * @return void
-         */
-        public function __construct()
-        {
-            $this->middleware('auth');
+        $this->middleware('auth');
 
-            $this->middleware('log')->only('index');
+        $this->middleware('log')->only('index');
 
-            $this->middleware('subscribed')->except('store');
-        }
+        $this->middleware('subscribed')->except('store');
     }
+}
+```
 
-Controllers also allow you to register middleware using a Closure. This provides a convenient way to define a middleware for a single controller without defining an entire middleware class:
+控制器還允許您使用閉包註冊中介層。這為定義單個控制器的中介層提供了一種方便的方式，而無需定義整個中介層類別：
 
-    $this->middleware(function ($request, $next) {
-        // ...
+```php
+$this->middleware(function ($request, $next) {
+    // ...
 
-        return $next($request);
-    });
+    return $next($request);
+});
+```
 
-> {tip} You may assign middleware to a subset of controller actions; however, it may indicate your controller is growing too large. Instead, consider breaking your controller into multiple, smaller controllers.
+> {tip} 您可以將中介層指定給控制器行為的子集；但是，這可能表示您的控制器正在變得過於龐大。相反，請考慮將控制器拆分為多個較小的控制器。
 
 <a name="resource-controllers"></a>
-## Resource Controllers
+## 資源控制器
 
-Laravel resource routing assigns the typical "CRUD" routes to a controller with a single line of code. For example, you may wish to create a controller that handles all HTTP requests for "photos" stored by your application. Using the `make:controller` Artisan command, we can quickly create such a controller:
+Laravel 資源路由將典型的 "CRUD" 路由分配給一個控制器，只需一行程式碼。例如，您可能希望創建一個控制器，處理應用程式存儲的所有 "photos" 的 HTTP 請求。使用 `make:controller` Artisan 命令，我們可以快速創建這樣一個控制器：
 
-    php artisan make:controller PhotoController --resource
+```php
+php artisan make:controller PhotoController --resource
+```
 
-This command will generate a controller at `app/Http/Controllers/PhotoController.php`. The controller will contain a method for each of the available resource operations.
+此命令將在 `app/Http/Controllers/PhotoController.php` 生成一個控制器。該控制器將包含每個可用資源操作的方法。
 
-Next, you may register a resourceful route to the controller:
+接下來，您可以註冊一個資源路由到控制器：
 
-    Route::resource('photos', 'PhotoController');
+```php
+Route::resource('photos', 'PhotoController');
+```
 
-This single route declaration creates multiple routes to handle a variety of actions on the resource. The generated controller will already have methods stubbed for each of these actions, including notes informing you of the HTTP verbs and URIs they handle.
+這個單一路由宣告會建立多個路由來處理資源的各種操作。生成的控制器將已經為每個操作存根方法，包括通知您它們處理的 HTTP 動詞和 URI。
 
-You may register many resource controllers at once by passing an array to the `resources` method:
+您可以通過將陣列傳遞給 `resources` 方法一次註冊多個資源控制器：
 
-    Route::resources([
-        'photos' => 'PhotoController',
-        'posts' => 'PostController'
-    ]);
+```php
+Route::resources([
+    'photos' => 'PhotoController',
+    'posts' => 'PostController'
+]);
+```
 
-#### Actions Handled By Resource Controller
+#### 資源控制器處理的操作
 
-Verb      | URI                  | Action       | Route Name
+動詞      | URI                  | 操作       | 路由名稱
 ----------|-----------------------|--------------|---------------------
 GET       | `/photos`              | index        | photos.index
 GET       | `/photos/create`       | create       | photos.create
@@ -171,70 +193,89 @@ GET       | `/photos/{photo}/edit` | edit         | photos.edit
 PUT/PATCH | `/photos/{photo}`      | update       | photos.update
 DELETE    | `/photos/{photo}`      | destroy      | photos.destroy
 
-#### Specifying The Resource Model
+#### 指定資源模型
 
-If you are using route model binding and would like the resource controller's methods to type-hint a model instance, you may use the `--model` option when generating the controller:
+如果您正在使用路由模型繫結並希望資源控制器的方法對模型實例進行型別提示，您可以在生成控制器時使用 `--model` 選項：
 
-    php artisan make:controller PhotoController --resource --model=Photo
+```bash
+php artisan make:controller PhotoController --resource --model=Photo
+```
 
-#### Spoofing Form Methods
+#### 模擬表單方法
 
-Since HTML forms can't make `PUT`, `PATCH`, or `DELETE` requests, you will need to add a hidden `_method` field to spoof these HTTP verbs. The `@method` Blade directive can create this field for you:
+由於 HTML 表單無法進行 `PUT`、`PATCH` 或 `DELETE` 請求，您需要添加一個隱藏的 `_method` 欄位來模擬這些 HTTP 動詞。`@method` Blade 指示詞可以為您創建此欄位：
 
-    <form action="/foo/bar" method="POST">
-        @method('PUT')
-    </form>
+```html
+<form action="/foo/bar" method="POST">
+    @method('PUT')
+</form>
+```
 
 <a name="restful-partial-resource-routes"></a>
-### Partial Resource Routes
+### 部分資源路由
 
-When declaring a resource route, you may specify a subset of actions the controller should handle instead of the full set of default actions:
+在宣告資源路由時，您可以指定控制器應處理的一部分操作，而不是完整的預設操作集：
 
-    Route::resource('photos', 'PhotoController')->only([
-        'index', 'show'
-    ]);
+```php
+Route::resource('photos', 'PhotoController')->only([
+    'index', 'show'
+]);
+```
 
-    Route::resource('photos', 'PhotoController')->except([
-        'create', 'store', 'update', 'destroy'
-    ]);
+```php
+Route::resource('photos', 'PhotoController')->except([
+    'create', 'store', 'update', 'destroy'
+]);
 
-#### API Resource Routes
+#### API 資源路由
 
-When declaring resource routes that will be consumed by APIs, you will commonly want to exclude routes that present HTML templates such as `create` and `edit`. For convenience, you may use the `apiResource` method to automatically exclude these two routes:
+當宣告將被 API 使用的資源路由時，通常會想要排除呈現 HTML 模板的路由，例如 `create` 和 `edit`。為了方便起見，您可以使用 `apiResource` 方法自動排除這兩個路由：
 
-    Route::apiResource('photos', 'PhotoController');
+```php
+Route::apiResource('photos', 'PhotoController');
+```
 
-You may register many API resource controllers at once by passing an array to the `apiResources` method:
+您可以一次註冊多個 API 資源控制器，方法是將陣列傳遞給 `apiResources` 方法：
 
-    Route::apiResources([
-        'photos' => 'PhotoController',
-        'posts' => 'PostController'
-    ]);
+```php
+Route::apiResources([
+    'photos' => 'PhotoController',
+    'posts' => 'PostController'
+]);
+```
 
-To quickly generate an API resource controller that does not include the `create` or `edit` methods, use the `--api` switch when executing the `make:controller` command:
+要快速生成一個不包含 `create` 或 `edit` 方法的 API 資源控制器，請在執行 `make:controller` 命令時使用 `--api` 選項：
 
-    php artisan make:controller API/PhotoController --api
+```bash
+php artisan make:controller API/PhotoController --api
+```
 
 <a name="restful-nested-resources"></a>
-### Nested Resources
+### 巢狀資源
 
-Sometimes you may need to define routes to a nested resource. For example, a photo resource may have multiple comments that may be attached to the photo. To nest the resource controllers, use "dot" notation in your route declaration:
+有時您可能需要定義到巢狀資源的路由。例如，一個照片資源可能有多個評論可以附加到該照片。要巢狀設置資源控制器，請在路由宣告中使用「點」符號：
 
-    Route::resource('photos.comments', 'PhotoCommentController');
+```php
+Route::resource('photos.comments', 'PhotoCommentController');
+```
 
-This route will register a nested resource that may be accessed with URIs like the following:
+此路由將註冊一個可以透過以下 URI 存取的巢狀資源：
 
-    /photos/{photo}/comments/{comment}
+```
+/photos/{photo}/comments/{comment}
+```
 
-#### Shallow Nesting
+#### 淺層巢狀
 
-Often, it is not entirely necessary to have both the parent and the child IDs within a URI since the child ID is already a unique identifier. When using unique identifier such as auto-incrementing primary keys to identify your models in URI segments, you may choose to use "shallow nesting":
+通常，並不完全需要在 URI 中同時包含父 ID 和子 ID，因為子 ID 已經是一個唯一識別符。當使用唯一識別符（例如自動遞增的主鍵）來識別您的模型在 URI 段中時，您可以選擇使用「淺層巢狀」：
 
-    Route::resource('photos.comments', 'CommentController')->shallow();
+```php
+Route::resource('photos.comments', 'CommentController')->shallow();
+```
 
-The route definition above will define the following routes:
+上面的路由定義將定義以下路由：
 
-Verb      | URI                               | Action       | Route Name
+動詞      | URI                               | 動作       | 路由名稱
 ----------|-----------------------------------|--------------|---------------------
 GET       | `/photos/{photo}/comments`        | index        | photos.comments.index
 GET       | `/photos/{photo}/comments/create` | create       | photos.comments.create
@@ -243,72 +284,80 @@ GET       | `/comments/{comment}`             | show         | comments.show
 GET       | `/comments/{comment}/edit`        | edit         | comments.edit
 PUT/PATCH | `/comments/{comment}`             | update       | comments.update
 DELETE    | `/comments/{comment}`             | destroy      | comments.destroy
+```
 
-<a name="restful-naming-resource-routes"></a>
-### Naming Resource Routes
+### 命名資源路由
 
-By default, all resource controller actions have a route name; however, you can override these names by passing a `names` array with your options:
+預設情況下，所有資源控制器動作都有一個路由名稱；但是，您可以通過傳遞帶有您選項的 `names` 陣列來覆蓋這些名稱：
 
-    Route::resource('photos', 'PhotoController')->names([
-        'create' => 'photos.build'
+```php
+Route::resource('photos', 'PhotoController')->names([
+    'create' => 'photos.build'
+]);
+```
+
+### 命名資源路由參數
+
+預設情況下，`Route::resource` 將根據資源名稱的「單數化」版本為您的資源路由創建路由參數。您可以通過使用 `parameters` 方法在每個資源基礎上輕鬆覆蓋這一點。傳遞給 `parameters` 方法的陣列應該是資源名稱和參數名稱的關聯陣列：
+
+```php
+Route::resource('users', 'AdminUserController')->parameters([
+    'users' => 'admin_user'
+]);
+```
+
+上面的範例為資源的 `show` 路由生成以下 URI：
+
+```
+/users/{admin_user}
+```
+
+### 本地化資源 URI
+
+預設情況下，`Route::resource` 將使用英文動詞創建資源 URI。如果您需要本地化 `create` 和 `edit` 動作動詞，您可以使用 `Route::resourceVerbs` 方法。這可以在您的 `AppServiceProvider` 的 `boot` 方法中完成：
+
+```php
+use Illuminate\Support\Facades\Route;
+
+/**
+ * Bootstrap any application services.
+ *
+ * @return void
+ */
+public function boot()
+{
+    Route::resourceVerbs([
+        'create' => 'crear',
+        'edit' => 'editar',
     ]);
+}
+```
 
-<a name="restful-naming-resource-route-parameters"></a>
-### Naming Resource Route Parameters
+一旦動詞被自定義，像 `Route::resource('fotos', 'PhotoController')` 這樣的資源路由註冊將生成以下 URI：
 
-By default, `Route::resource` will create the route parameters for your resource routes based on the "singularized" version of the resource name. You can easily override this on a per resource basis by using the `parameters` method. The array passed into the `parameters` method should be an associative array of resource names and parameter names:
+```
+/fotos/crear
 
-    Route::resource('users', 'AdminUserController')->parameters([
-        'users' => 'admin_user'
-    ]);
+/fotos/{foto}/editar
+```
 
- The example above generates the following URIs for the resource's `show` route:
+### 補充資源控制器
 
-    /users/{admin_user}
+如果您需要在資源控制器中添加額外的路由超出預設的資源路由集，您應該在呼叫 `Route::resource` 之前定義這些路由；否則，`resource` 方法定義的路由可能會意外地優先於您的補充路由：
 
-<a name="restful-localizing-resource-uris"></a>
-### Localizing Resource URIs
-
-By default, `Route::resource` will create resource URIs using English verbs. If you need to localize the `create` and `edit` action verbs, you may use the `Route::resourceVerbs` method. This may be done in the `boot` method of your `AppServiceProvider`:
-
-    use Illuminate\Support\Facades\Route;
-
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        Route::resourceVerbs([
-            'create' => 'crear',
-            'edit' => 'editar',
-        ]);
-    }
-
-Once the verbs have been customized, a resource route registration such as `Route::resource('fotos', 'PhotoController')` will produce the following URIs:
-
-    /fotos/crear
-
-    /fotos/{foto}/editar
-
-<a name="restful-supplementing-resource-controllers"></a>
-### Supplementing Resource Controllers
-
-If you need to add additional routes to a resource controller beyond the default set of resource routes, you should define those routes before your call to `Route::resource`; otherwise, the routes defined by the `resource` method may unintentionally take precedence over your supplemental routes:
-
+```php
     Route::get('photos/popular', 'PhotoController@method');
 
     Route::resource('photos', 'PhotoController');
 
-> {tip} Remember to keep your controllers focused. If you find yourself routinely needing methods outside of the typical set of resource actions, consider splitting your controller into two, smaller controllers.
+> {tip} 記得保持您的控制器專注。如果您發現自己經常需要超出典型資源操作範圍之外的方法，請考慮將您的控制器拆分為兩個更小的控制器。
 
 <a name="dependency-injection-and-controllers"></a>
-## Dependency Injection & Controllers
+## 依賴注入與控制器
 
-#### Constructor Injection
+#### 建構子注入
 
-The Laravel [service container](/docs/{{version}}/container) is used to resolve all Laravel controllers. As a result, you are able to type-hint any dependencies your controller may need in its constructor. The declared dependencies will automatically be resolved and injected into the controller instance:
+Laravel [服務容器](/docs/{{version}}/container) 用於解析所有 Laravel 控制器。因此，您可以在控制器的建構子中對控制器可能需要的任何依賴進行型別提示。聲明的依賴將自動解析並注入到控制器實例中：
 
     <?php
 
@@ -319,12 +368,12 @@ The Laravel [service container](/docs/{{version}}/container) is used to resolve 
     class UserController extends Controller
     {
         /**
-         * The user repository instance.
+         * 使用者存儲庫實例。
          */
         protected $users;
 
         /**
-         * Create a new controller instance.
+         * 創建一個新的控制器實例。
          *
          * @param  UserRepository  $users
          * @return void
@@ -335,11 +384,11 @@ The Laravel [service container](/docs/{{version}}/container) is used to resolve 
         }
     }
 
-You may also type-hint any [Laravel contract](/docs/{{version}}/contracts). If the container can resolve it, you can type-hint it. Depending on your application, injecting your dependencies into your controller may provide better testability.
+您也可以對任何 [Laravel 契約](/docs/{{version}}/contracts) 進行型別提示。如果容器可以解析它，您就可以對其進行型別提示。根據您的應用程序，將依賴項注入到控制器中可能會提供更好的可測性。
 
-#### Method Injection
+#### 方法注入
 
-In addition to constructor injection, you may also type-hint dependencies on your controller's methods. A common use-case for method injection is injecting the `Illuminate\Http\Request` instance into your controller methods:
+除了建構子注入之外，您還可以對控制器的方法進行型別提示。方法注入的一個常見用例是將 `Illuminate\Http\Request` 實例注入到控制器方法中：
 
     <?php
 
@@ -350,7 +399,7 @@ In addition to constructor injection, you may also type-hint dependencies on you
     class UserController extends Controller
     {
         /**
-         * Store a new user.
+         * 儲存新使用者。
          *
          * @param  Request  $request
          * @return Response
@@ -358,16 +407,17 @@ In addition to constructor injection, you may also type-hint dependencies on you
         public function store(Request $request)
         {
             $name = $request->name;
+```
 
-            //
+```php
         }
     }
 
-If your controller method is also expecting input from a route parameter, list your route arguments after your other dependencies. For example, if your route is defined like so:
+如果您的控制器方法還需要從路由參數中接收輸入，請在其他依賴項之後列出您的路由引數。例如，如果您的路由定義如下所示：
 
     Route::put('user/{id}', 'UserController@update');
 
-You may still type-hint the `Illuminate\Http\Request` and access your `id` parameter by defining your controller method as follows:
+您仍然可以對 `Illuminate\Http\Request` 進行型別提示，並通過以下方式定義您的控制器方法來訪問您的 `id` 參數：
 
     <?php
 
@@ -378,7 +428,7 @@ You may still type-hint the `Illuminate\Http\Request` and access your `id` param
     class UserController extends Controller
     {
         /**
-         * Update the given user.
+         * 更新給定的用戶。
          *
          * @param  Request  $request
          * @param  string  $id
@@ -389,18 +439,20 @@ You may still type-hint the `Illuminate\Http\Request` and access your `id` param
             //
         }
     }
+```
 
 <a name="route-caching"></a>
-## Route Caching
+## 路由快取
 
-> {note} Closure based routes cannot be cached. To use route caching, you must convert any Closure routes to controller classes.
+> {note} 基於閉包的路由無法被快取。要使用路由快取，您必須將任何閉包路由轉換為控制器類。
 
-If your application is exclusively using controller based routes, you should take advantage of Laravel's route cache. Using the route cache will drastically decrease the amount of time it takes to register all of your application's routes. In some cases, your route registration may even be up to 100x faster. To generate a route cache, just execute the `route:cache` Artisan command:
+如果您的應用程序僅使用基於控制器的路由，您應該利用 Laravel 的路由快取。使用路由快取將大幅減少註冊應用程序所有路由所需的時間。在某些情況下，您的路由註冊甚至可能快達 100 倍。要生成路由快取，只需執行 `route:cache` Artisan 命令：
 
     php artisan route:cache
 
-After running this command, your cached routes file will be loaded on every request. Remember, if you add any new routes you will need to generate a fresh route cache. Because of this, you should only run the `route:cache` command during your project's deployment.
+執行此命令後，您的快取路由文件將在每個請求上加載。請記住，如果添加任何新路由，您將需要生成新的路由快取。因此，您應該僅在項目部署期間運行 `route:cache` 命令。
 
-You may use the `route:clear` command to clear the route cache:
+您可以使用 `route:clear` 命令來清除路由快取：
 
     php artisan route:clear
+```

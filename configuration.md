@@ -1,39 +1,39 @@
-# Configuration
+# 組態設定
 
-- [Introduction](#introduction)
-- [Environment Configuration](#environment-configuration)
-    - [Environment Variable Types](#environment-variable-types)
-    - [Retrieving Environment Configuration](#retrieving-environment-configuration)
-    - [Determining The Current Environment](#determining-the-current-environment)
-    - [Hiding Environment Variables From Debug Pages](#hiding-environment-variables-from-debug)
-- [Accessing Configuration Values](#accessing-configuration-values)
-- [Configuration Caching](#configuration-caching)
-- [Maintenance Mode](#maintenance-mode)
+- [簡介](#introduction)
+- [環境組態](#environment-configuration)
+    - [環境變數類型](#environment-variable-types)
+    - [擷取環境組態](#retrieving-environment-configuration)
+    - [確定目前環境](#determining-the-current-environment)
+    - [隱藏環境變數於除錯頁面](#hiding-environment-variables-from-debug)
+- [存取組態值](#accessing-configuration-values)
+- [組態快取](#configuration-caching)
+- [維護模式](#maintenance-mode)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-All of the configuration files for the Laravel framework are stored in the `config` directory. Each option is documented, so feel free to look through the files and get familiar with the options available to you.
+Laravel 框架的所有組態檔案都存放在 `config` 目錄中。每個選項都有文件記錄，因此請隨意查看文件並熟悉可用的選項。
 
 <a name="environment-configuration"></a>
-## Environment Configuration
+## 環境組態
 
-It is often helpful to have different configuration values based on the environment where the application is running. For example, you may wish to use a different cache driver locally than you do on your production server.
+根據應用程式運行的環境，基於不同的組態值通常是有幫助的。例如，您可能希望在本地使用不同的快取驅動程式，而不是在生產伺服器上使用的。
 
-To make this a cinch, Laravel utilizes the [DotEnv](https://github.com/vlucas/phpdotenv) PHP library by Vance Lucas. In a fresh Laravel installation, the root directory of your application will contain a `.env.example` file. If you install Laravel via Composer, this file will automatically be renamed to `.env`. Otherwise, you should rename the file manually.
+為了讓這變得簡單，Laravel 使用了 Vance Lucas 的 [DotEnv](https://github.com/vlucas/phpdotenv) PHP 函式庫。在新的 Laravel 安裝中，您的應用程式的根目錄將包含一個 `.env.example` 文件。如果您通過 Composer 安裝 Laravel，則此文件將自動更名為 `.env`。否則，您應該手動更改文件名。
 
-Your `.env` file should not be committed to your application's source control, since each developer / server using your application could require a different environment configuration. Furthermore, this would be a security risk in the event an intruder gains access to your source control repository, since any sensitive credentials would get exposed.
+您的 `.env` 文件不應該提交到應用程式的源代碼控制，因為使用您的應用程式的每個開發人員/伺服器可能需要不同的環境組態。此外，如果入侵者獲得對您的源代碼存儲庫的訪問權限，這將是一個安全風險，因為任何敏感憑證將被揭露。
 
-If you are developing with a team, you may wish to continue including a `.env.example` file with your application. By putting placeholder values in the example configuration file, other developers on your team can clearly see which environment variables are needed to run your application. You may also create a `.env.testing` file. This file will override the `.env` file when running PHPUnit tests or executing Artisan commands with the `--env=testing` option.
+如果您正在與團隊開發，您可能希望繼續將 `.env.example` 文件包含在您的應用程式中。通過在示例組態文件中放置佔位符值，您團隊中的其他開發人員可以清楚看到運行應用程式所需的環境變數。您也可以創建一個 `.env.testing` 文件。當運行 PHPUnit 測試或使用 `--env=testing` 選項執行 Artisan 命令時，此文件將覆蓋 `.env` 文件。
 
-> {tip} Any variable in your `.env` file can be overridden by external environment variables such as server-level or system-level environment variables.
+> {tip} 您的`.env`文件中的任何變數都可以被外部環境變數覆蓋，例如伺服器級或系統級環境變數。
 
 <a name="environment-variable-types"></a>
-### Environment Variable Types
+### 環境變數類型
 
-All variables in your `.env` files are parsed as strings, so some reserved values have been created to allow you to return a wider range of types from the `env()` function:
+`.env`文件中的所有變數都被解析為字符串，因此創建了一些保留值，以允許您從`env()`函數返回更廣泛的類型：
 
-`.env` Value  | `env()` Value
+`.env` 值  | `env()` 值
 ------------- | -------------
 true | (bool) true
 (true) | (bool) true
@@ -44,113 +44,124 @@ empty | (string) ''
 null | (null) null
 (null) | (null) null
 
-If you need to define an environment variable with a value that contains spaces, you may do so by enclosing the value in double quotes.
+如果您需要定義一個包含空格的值的環境變數，可以將該值用雙引號括起來。
 
     APP_NAME="My Application"
 
 <a name="retrieving-environment-configuration"></a>
-### Retrieving Environment Configuration
+### 檢索環境配置
 
-All of the variables listed in this file will be loaded into the `$_ENV` PHP super-global when your application receives a request. However, you may use the `env` helper to retrieve values from these variables in your configuration files. In fact, if you review the Laravel configuration files, you will notice several of the options already using this helper:
+當您的應用程序收到請求時，此文件中列出的所有變數將被加載到`$_ENV` PHP 超全局變數中。但是，您可以使用`env`輔助函數在配置文件中檢索這些變數的值。實際上，如果您查看 Laravel 配置文件，您會注意到一些選項已經在使用此輔助函數：
 
     'debug' => env('APP_DEBUG', false),
 
-The second value passed to the `env` function is the "default value". This value will be used if no environment variable exists for the given key.
+傳遞給`env`函數的第二個值是“默認值”。如果給定鍵的環境變數不存在，將使用此值。
 
 <a name="determining-the-current-environment"></a>
-### Determining The Current Environment
+### 確定當前環境
 
-The current application environment is determined via the `APP_ENV` variable from your `.env` file. You may access this value via the `environment` method on the `App` [facade](/docs/{{version}}/facades):
+當前應用程序環境是通過您的`.env`文件中的`APP_ENV`變數確定的。您可以通過`App` [facade](/docs/{{version}}/facades) 上的`environment`方法訪問此值：
 
     $environment = App::environment();
 
-You may also pass arguments to the `environment` method to check if the environment matches a given value. The method will return `true` if the environment matches any of the given values:
+您也可以向`environment`方法傳遞參數以檢查環境是否與給定值匹配。如果環境與任何給定值匹配，該方法將返回`true`：
 
     if (App::environment('local')) {
-        // The environment is local
+        // 環境是本地的
     }
 
-    if (App::environment(['local', 'staging'])) {
-        // The environment is either local OR staging...
-    }
+```php
+if (App::environment(['local', 'staging'])) {
+    // 環境為本地或暫存...
+}
+```
 
-> {tip} The current application environment detection can be overridden by a server-level `APP_ENV` environment variable. This can be useful when you need to share the same application for different environment configurations, so you can set up a given host to match a given environment in your server's configurations.
+> {tip} 目前應用程式環境偵測可以被伺服器層級的 `APP_ENV` 環境變數覆寫。當您需要為不同的環境配置共享同一應用程式時，這將非常有用，因此您可以設定特定主機以符合伺服器配置中的特定環境。
 
 <a name="hiding-environment-variables-from-debug"></a>
-### Hiding Environment Variables From Debug Pages
+### 隱藏偵錯頁面中的環境變數
 
-When an exception is uncaught and the `APP_DEBUG` environment variable is `true`, the debug page will show all environment variables and their contents. In some cases you may want to obscure certain variables. You may do this by updating the `debug_blacklist` option in your `config/app.php` configuration file.
+當未捕獲到異常且 `APP_DEBUG` 環境變數為 `true` 時，偵錯頁面將顯示所有環境變數及其內容。在某些情況下，您可能希望模糊某些變數。您可以通過更新 `config/app.php` 配置文件中的 `debug_blacklist` 選項來執行此操作。
 
-Some variables are available in both the environment variables and the server / request data. Therefore, you may need to blacklist them for both `$_ENV` and `$_SERVER`:
+某些變數同時可在環境變數和伺服器/請求數據中使用。因此，您可能需要將它們列入黑名單以適用於 `$_ENV` 和 `$_SERVER`：
 
-    return [
+```php
+return [
 
-        // ...
+    // ...
 
-        'debug_blacklist' => [
-            '_ENV' => [
-                'APP_KEY',
-                'DB_PASSWORD',
-            ],
-
-            '_SERVER' => [
-                'APP_KEY',
-                'DB_PASSWORD',
-            ],
-
-            '_POST' => [
-                'password',
-            ],
+    'debug_blacklist' => [
+        '_ENV' => [
+            'APP_KEY',
+            'DB_PASSWORD',
         ],
-    ];
+
+        '_SERVER' => [
+            'APP_KEY',
+            'DB_PASSWORD',
+        ],
+
+        '_POST' => [
+            'password',
+        ],
+    ],
+];
+```
 
 <a name="accessing-configuration-values"></a>
-## Accessing Configuration Values
+## 存取組態值
 
-You may easily access your configuration values using the global `config` helper function from anywhere in your application. The configuration values may be accessed using "dot" syntax, which includes the name of the file and option you wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
+您可以在應用程式的任何位置使用全域 `config` 輔助函式輕鬆存取您的組態值。組態值可以使用「點」語法來存取，其中包括您希望存取的檔案名稱和選項。如果組態選項不存在，也可以指定默認值：
 
-    $value = config('app.timezone');
+```php
+$value = config('app.timezone');
+```
 
-To set configuration values at runtime, pass an array to the `config` helper:
+要在運行時設定組態值，請將陣列傳遞給 `config` 輔助函式：
 
-    config(['app.timezone' => 'America/Chicago']);
+```php
+config(['app.timezone' => 'America/Chicago']);
+```
 
 <a name="configuration-caching"></a>
-## Configuration Caching
+## 組態快取
 
-To give your application a speed boost, you should cache all of your configuration files into a single file using the `config:cache` Artisan command. This will combine all of the configuration options for your application into a single file which will be loaded quickly by the framework.
+為了加速您的應用程式，您應該使用 `config:cache` Artisan 命令將所有組態文件緩存到單個文件中。這將把您應用程式的所有組態選項合併到一個文件中，框架將快速加載該文件。
+```
 
-You should typically run the `php artisan config:cache` command as part of your production deployment routine. The command should not be run during local development as configuration options will frequently need to be changed during the course of your application's development.
+通常在生產部署過程中，您應該運行 `php artisan config:cache` 命令。該命令不應在本地開發期間運行，因為在應用程序開發過程中，配置選項經常需要更改。
 
-> {note} If you execute the `config:cache` command during your deployment process, you should be sure that you are only calling the `env` function from within your configuration files. Once the configuration has been cached, the `.env` file will not be loaded and all calls to the `env` function will return `null`.
+> {note} 如果在部署過程中執行 `config:cache` 命令，請確保您只在配置文件中調用 `env` 函數。一旦配置被緩存，`.env` 文件將不會被加載，並且對 `env` 函數的所有調用將返回 `null`。
 
 <a name="maintenance-mode"></a>
-## Maintenance Mode
+## 維護模式
 
-When your application is in maintenance mode, a custom view will be displayed for all requests into your application. This makes it easy to "disable" your application while it is updating or when you are performing maintenance. A maintenance mode check is included in the default middleware stack for your application. If the application is in maintenance mode, a `MaintenanceModeException` will be thrown with a status code of 503.
+當應用程序處於維護模式時，將為應用程序的所有請求顯示自定義視圖。這使得在更新應用程序或進行維護時“禁用”應用程序變得容易。維護模式檢查包含在應用程序的默認中介層堆棧中。如果應用程序處於維護模式，將拋出一個帶有狀態碼 503 的 `MaintenanceModeException`。
 
-To enable maintenance mode, execute the `down` Artisan command:
+要啟用維護模式，執行 `down` Artisan 命令：
 
     php artisan down
 
-You may also provide `message` and `retry` options to the `down` command. The `message` value may be used to display or log a custom message, while the `retry` value will be set as the `Retry-After` HTTP header's value:
+您還可以為 `down` 命令提供 `message` 和 `retry` 選項。`message` 值可用於顯示或記錄自定義消息，而 `retry` 值將設置為 `Retry-After` HTTP 標頭的值：
 
     php artisan down --message="Upgrading Database" --retry=60
 
-Even while in maintenance mode, specific IP addresses or networks may be allowed to access the application using the command's `allow` option:
+即使在維護模式下，特定 IP 地址或網絡也可以使用命令的 `allow` 選項訪問應用程序：
 
     php artisan down --allow=127.0.0.1 --allow=192.168.0.0/16
 
-To disable maintenance mode, use the `up` command:
+要禁用維護模式，使用 `up` 命令：
 
     php artisan up
 
-> {tip} You may customize the default maintenance mode template by defining your own template at `resources/views/errors/503.blade.php`.
+> {tip} 您可以通過在 `resources/views/errors/503.blade.php` 定義自己的模板來自定義默認維護模式模板。
 
-#### Maintenance Mode & Queues
+#### 維護模式與佇列
 
-While your application is in maintenance mode, no [queued jobs](/docs/{{version}}/queues) will be handled. The jobs will continue to be handled as normal once the application is out of maintenance mode.
+當您的應用程序處於維護模式時，將不處理任何[佇列作業](/docs/{{version}}/queues)。一旦應用程序退出維護模式，作業將像往常一樣繼續處理。
 
-#### Alternatives To Maintenance Mode
+#### 維護模式的替代方案
 
-Since maintenance mode requires your application to have several seconds of downtime, consider alternatives like [Envoyer](https://envoyer.io) to accomplish zero-downtime deployment with Laravel.
+由於維護模式需要您的應用程式停機數秒，請考慮使用 [Envoyer](https://envoyer.io) 等替代方案，以實現 Laravel 的零停機部署。 
+
+<Notes>permalink: https://envoyer.io

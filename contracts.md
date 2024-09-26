@@ -1,136 +1,142 @@
-# Contracts
+# 合約
 
-- [Introduction](#introduction)
-    - [Contracts Vs. Facades](#contracts-vs-facades)
-- [When To Use Contracts](#when-to-use-contracts)
-    - [Loose Coupling](#loose-coupling)
-    - [Simplicity](#simplicity)
-- [How To Use Contracts](#how-to-use-contracts)
-- [Contract Reference](#contract-reference)
+- [簡介](#introduction)
+    - [合約與外觀模式的比較](#contracts-vs-facades)
+- [何時使用合約](#when-to-use-contracts)
+    - [鬆散耦合](#loose-coupling)
+    - [簡單性](#simplicity)
+- [如何使用合約](#how-to-use-contracts)
+- [合約參考](#contract-reference)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's Contracts are a set of interfaces that define the core services provided by the framework. For example, a `Illuminate\Contracts\Queue\Queue` contract defines the methods needed for queueing jobs, while the `Illuminate\Contracts\Mail\Mailer` contract defines the methods needed for sending e-mail.
+Laravel 的合約是一組介面，定義了框架提供的核心服務。例如，`Illuminate\Contracts\Queue\Queue` 合約定義了排程工作所需的方法，而 `Illuminate\Contracts\Mail\Mailer` 合約定義了發送電子郵件所需的方法。
 
-Each contract has a corresponding implementation provided by the framework. For example, Laravel provides a queue implementation with a variety of drivers, and a mailer implementation that is powered by [SwiftMailer](https://swiftmailer.symfony.com/).
+每個合約都有框架提供的相應實現。例如，Laravel 提供了具有各種驅動程式的排程實現，以及由 [SwiftMailer](https://swiftmailer.symfony.com/) 提供動力的郵件實現。
 
-All of the Laravel contracts live in [their own GitHub repository](https://github.com/illuminate/contracts). This provides a quick reference point for all available contracts, as well as a single, decoupled package that may be utilized by package developers.
+所有 Laravel 的合約都存放在[自己的 GitHub 存儲庫](https://github.com/illuminate/contracts)中。這提供了所有可用合約的快速參考點，以及一個可以被套件開發人員使用的單一、解耦的套件。
 
 <a name="contracts-vs-facades"></a>
-### Contracts Vs. Facades
+### 合約與外觀模式的比較
 
-Laravel's [facades](/docs/{{version}}/facades) and helper functions provide a simple way of utilizing Laravel's services without needing to type-hint and resolve contracts out of the service container. In most cases, each facade has an equivalent contract.
+Laravel 的[外觀模式](/docs/{{version}}/facades)和輔助函式提供了一種簡單的方式來使用 Laravel 的服務，而無需在服務容器中進行型別提示和解析合約。在大多數情況下，每個外觀都有對應的合約。
 
-Unlike facades, which do not require you to require them in your class' constructor, contracts allow you to define explicit dependencies for your classes. Some developers prefer to explicitly define their dependencies in this way and therefore prefer to use contracts, while other developers enjoy the convenience of facades.
+與外觀不同，合約允許您為類別定義明確的依賴關係。一些開發人員喜歡以這種方式明確定義他們的依賴關係，因此更喜歡使用合約，而其他開發人員則享受外觀的便利性。
 
-> {tip} Most applications will be fine regardless of whether you prefer facades or contracts. However, if you are building a package, you should strongly consider using contracts since they will be easier to test in a package context.
+> {tip} 大多數應用程式無論您喜歡外觀還是合約都會運作正常。但是，如果您正在開發一個套件，您應該強烈考慮使用合約，因為在套件上下文中更容易進行測試。
 
-<a name="when-to-use-contracts"></a>
-## When To Use Contracts
+## 何時使用合約
 
-As discussed elsewhere, much of the decision to use contracts or facades will come down to personal taste and the tastes of your development team. Both contracts and facades can be used to create robust, well-tested Laravel applications. As long as you are keeping your class' responsibilities focused, you will notice very few practical differences between using contracts and facades.
+如在其他地方討論的那樣，使用合約或外觀的決定很大程度上取決於個人口味和開發團隊的喜好。合約和外觀都可以用於創建堅固、經過良好測試的 Laravel 應用程式。只要您保持類別的責任專注，您將會注意到在使用合約和外觀之間幾乎沒有實際差異。
 
-However, you may still have several questions regarding contracts. For example, why use interfaces at all? Isn't using interfaces more complicated? Let's distill the reasons for using interfaces to the following headings: loose coupling and simplicity.
+然而，您可能仍有幾個關於合約的問題。例如，為什麼要使用介面？使用介面不是更複雜嗎？讓我們將使用介面的原因歸納為以下標題：鬆散耦合和簡單性。
 
-<a name="loose-coupling"></a>
-### Loose Coupling
+### 鬆散耦合
 
-First, let's review some code that is tightly coupled to a cache implementation. Consider the following:
+首先，讓我們回顧一些與快取實作緊密耦合的程式碼。考慮以下示例：
 
-    <?php
+```php
+namespace App\Orders;
 
-    namespace App\Orders;
+class Repository
+{
+    /**
+     * 快取實例。
+     */
+    protected $cache;
 
-    class Repository
+    /**
+     * 創建一個新的存儲庫實例。
+     *
+     * @param  \SomePackage\Cache\Memcached  $cache
+     * @return void
+     */
+    public function __construct(\SomePackage\Cache\Memcached $cache)
     {
-        /**
-         * The cache instance.
-         */
-        protected $cache;
-
-        /**
-         * Create a new repository instance.
-         *
-         * @param  \SomePackage\Cache\Memcached  $cache
-         * @return void
-         */
-        public function __construct(\SomePackage\Cache\Memcached $cache)
-        {
-            $this->cache = $cache;
-        }
-
-        /**
-         * Retrieve an Order by ID.
-         *
-         * @param  int  $id
-         * @return Order
-         */
-        public function find($id)
-        {
-            if ($this->cache->has($id)) {
-                //
-            }
-        }
+        $this->cache = $cache;
     }
 
-In this class, the code is tightly coupled to a given cache implementation. It is tightly coupled because we are depending on a concrete Cache class from a package vendor. If the API of that package changes our code must change as well.
-
-Likewise, if we want to replace our underlying cache technology (Memcached) with another technology (Redis), we again will have to modify our repository. Our repository should not have so much knowledge regarding who is providing them data or how they are providing it.
-
-**Instead of this approach, we can improve our code by depending on a simple, vendor agnostic interface:**
-
-    <?php
-
-    namespace App\Orders;
-
-    use Illuminate\Contracts\Cache\Repository as Cache;
-
-    class Repository
+    /**
+     * 按 ID 檢索訂單。
+     *
+     * @param  int  $id
+     * @return Order
+     */
+    public function find($id)
     {
-        /**
-         * The cache instance.
-         */
-        protected $cache;
-
-        /**
-         * Create a new repository instance.
-         *
-         * @param  Cache  $cache
-         * @return void
-         */
-        public function __construct(Cache $cache)
-        {
-            $this->cache = $cache;
+        if ($this->cache->has($id)) {
+            //
         }
     }
+}
+```
 
-Now the code is not coupled to any specific vendor, or even Laravel. Since the contracts package contains no implementation and no dependencies, you may easily write an alternative implementation of any given contract, allowing you to replace your cache implementation without modifying any of your cache consuming code.
+在這個類別中，程式碼與特定快取實作緊密耦合。這是因為我們依賴於來自套件供應商的具體快取類別。如果該套件的 API 變更，我們的程式碼也必須跟著變更。
+
+同樣地，如果我們想要將底層快取技術（Memcached）替換為另一種技術（Redis），我們將再次不得不修改我們的存儲庫。我們的存儲庫不應該對提供數據的人或提供數據的方式有太多了解。 
+
+<Notes>
+本文為翻譯示例，並非完整翻譯。
+
+**改用這種方法，我們可以通過依賴於一個簡單、供應商不可知的介面來改進我們的代碼：**
+
+```php
+<?php
+
+namespace App\Orders;
+
+use Illuminate\Contracts\Cache\Repository as Cache;
+
+class Repository
+{
+    /**
+     * 快取實例。
+     */
+    protected $cache;
+
+    /**
+     * 創建一個新的存儲庫實例。
+     *
+     * @param  Cache  $cache
+     * @return void
+     */
+    public function __construct(Cache $cache)
+    {
+        $this->cache = $cache;
+    }
+}
+```
+
+現在代碼不再與任何特定供應商耦合，甚至不再與 Laravel 相關聯。由於合約套件不包含任何實現和依賴，您可以輕鬆編寫任何給定合約的替代實現，從而可以在不修改任何快取消費代碼的情況下替換您的快取實現。
 
 <a name="simplicity"></a>
-### Simplicity
+### 簡單性
 
-When all of Laravel's services are neatly defined within simple interfaces, it is very easy to determine the functionality offered by a given service. **The contracts serve as succinct documentation to the framework's features.**
+當 Laravel 的所有服務都清晰定義在簡單的介面中時，很容易確定特定服務提供的功能。**這些合約作為框架功能的簡潔文檔。**
 
-In addition, when you depend on simple interfaces, your code is easier to understand and maintain. Rather than tracking down which methods are available to you within a large, complicated class, you can refer to a simple, clean interface.
+此外，當您依賴於簡單的介面時，您的代碼更容易理解和維護。您不必追蹤大型複雜類中可用的方法，而是可以參考簡單、乾淨的介面。
 
 <a name="how-to-use-contracts"></a>
-## How To Use Contracts
+## 如何使用合約
 
-So, how do you get an implementation of a contract? It's actually quite simple.
+那麼，如何獲取合約的實現呢？其實非常簡單。
 
-Many types of classes in Laravel are resolved through the [service container](/docs/{{version}}/container), including controllers, event listeners, middleware, queued jobs, and even route Closures. So, to get an implementation of a contract, you can just "type-hint" the interface in the constructor of the class being resolved.
+在 Laravel 中，許多類型的類通過[服務容器](/docs/{{version}}/container)解析，包括控制器、事件監聽器、中介層、佇列作業，甚至路由閉包。因此，要獲取合約的實現，您只需在正在解析的類的構造函數中“型別提示”介面。
 
-For example, take a look at this event listener:
+例如，看一下這個事件監聽器：
 
-    <?php
+```php
+<?php
 
-    namespace App\Listeners;
+namespace App\Listeners;
 
-    use App\Events\OrderWasPlaced;
-    use App\User;
-    use Illuminate\Contracts\Redis\Factory;
+use App\Events\OrderWasPlaced;
+use App\User;
+use Illuminate\Contracts\Redis\Factory;
+```
 
+```markdown
     class CacheOrderInformation
     {
         /**
@@ -161,14 +167,14 @@ For example, take a look at this event listener:
         }
     }
 
-When the event listener is resolved, the service container will read the type-hints on the constructor of the class, and inject the appropriate value. To learn more about registering things in the service container, check out [its documentation](/docs/{{version}}/container).
+當事件監聽器被解析時，服務容器將讀取類別建構子上的型別提示，並注入適當的值。要了解更多有關在服務容器中註冊事物的資訊，請查看[其文件](/docs/{{version}}/container)。
 
 <a name="contract-reference"></a>
-## Contract Reference
+## 合約參考
 
-This table provides a quick reference to all of the Laravel contracts and their equivalent facades:
+此表提供了所有 Laravel 合約及其對應 Facedes 的快速參考：
 
-Contract  |  References Facade
+合約  |  參考 Facade
 ------------- | -------------
 [Illuminate\Contracts\Auth\Access\Authorizable](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Authorizable.php) | &nbsp;
 [Illuminate\Contracts\Auth\Access\Gate](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Gate.php) | `Gate`
@@ -249,3 +255,6 @@ Contract  |  References Facade
 [Illuminate\Contracts\View\Engine](https://github.com/illuminate/contracts/blob/{{version}}/View/Engine.php) | &nbsp;
 [Illuminate\Contracts\View\Factory](https://github.com/illuminate/contracts/blob/{{version}}/View/Factory.php) | `View`
 [Illuminate\Contracts\View\View](https://github.com/illuminate/contracts/blob/{{version}}/View/View.php) | `View::make()`
+```
+
+Please paste the Markdown content you need to be translated into traditional Chinese.

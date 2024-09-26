@@ -1,42 +1,42 @@
-# Views
+# 檢視
 
-- [建立視圖](#creating-views)
-- [傳遞資料到視圖](#passing-data-to-views)
-    - [共享資料給所有視圖](#sharing-data-with-all-views)
-- [視圖組件](#view-composers)
+- [建立檢視](#creating-views)
+- [將資料傳遞給檢視](#passing-data-to-views)
+    - [與所有檢視共用資料](#sharing-data-with-all-views)
+- [檢視組件](#view-composers)
 
 <a name="creating-views"></a>
-## 建立視圖
+## 建立檢視
 
-> {tip} 想要找到更多如何撰寫 Blade 模板的資訊嗎？查看完整的 [Blade 文件](/docs/{{version}}/blade)來入門。
+> {tip} 想要瞭解如何撰寫 Blade 模板的更多資訊嗎？請查看完整的 [Blade 文件](/docs/{{version}}/blade) 以開始。
 
-視圖包含應用程式用到的 HTML，它能夠將呈現邏輯從控制器和應用程式邏輯分離出來。視圖被存在 `resources/views` 目錄下。一個簡單的視圖看起來可能像這樣：
+檢視包含應用程式提供的 HTML，並將您的控制器 / 應用程式邏輯與呈現邏輯分開。檢視存儲在 `resources/views` 目錄中。一個簡單的檢視可能如下所示：
 
-    <!-- 視圖被儲存在 resources/views/greeting.blade.php -->
+    <!-- 檢視存儲在 resources/views/greeting.blade.php -->
 
     <html>
         <body>
-            <h1>Hello, {{ $name }}</h1>
+            <h1>你好，{{ $name }}</h1>
         </body>
     </html>
 
-因為這個視圖被儲存在 `resources/views/greeting.blade.php`，我們可以像這樣使用全域的輔助函式 `view` 來回傳：
+由於此檢視存儲在 `resources/views/greeting.blade.php`，我們可以使用全域 `view` 助手來返回它，如下所示：
 
     Route::get('/', function () {
         return view('greeting', ['name' => 'James']);
     });
 
-如你所見，`view` 輔助函式的第一個參數會對應到 `resources/views` 目錄下視圖檔案的名稱；傳遞到 `view` 輔助函式的第二個參數，是一個能夠在視圖內取用的資料陣列。在這個例子中，我們傳遞 `name` 這個變數，然後在視圖裡面我們使用 [Blade 語法](/docs/{{version}}/blade)來顯示。
+如您所見，傳遞給 `view` 助手的第一個引數對應於 `resources/views` 目錄中檢視檔案的名稱。第二個引數是一個應該提供給檢視的資料陣列。在這個案例中，我們傳遞了 `name` 變數，該變數使用 [Blade 語法](/docs/{{version}}/blade) 在檢視中顯示。
 
-當然，視圖檔案也可以被存放在 `resources/views` 的子目錄下。`.` （小數點）的表示法可以被用來表示在子目錄內的視圖檔案。舉例來說，如果你的視圖檔案儲存在 `resources/views/admin/profile.blade.php`，你可以用以下的程式碼來回傳：
+檢視也可以嵌套在 `resources/views` 目錄的子目錄中。可以使用「點」表示法來參考嵌套檢視。例如，如果您的檢視存儲在 `resources/views/admin/profile.blade.php`，您可以這樣引用它：
 
     return view('admin.profile', $data);
 
-> {note} 視圖資料夾名稱不應該包含 `.` 符號。
+> {note} 檢視目錄名稱不應包含 `.` 字元。
 
-#### 判斷視圖檔案是否存在
+#### 確定檢視是否存在
 
-如果你需要判斷視圖檔案是否存在，你可以使用 `View` Facade。它的 `exists` 方法將會在視圖檔案存在時回傳 `true`：
+如果您需要確定檢視是否存在，您可以使用 `View` Facade。`exists` 方法將在檢視存在時返回 `true`：
 
     use Illuminate\Support\Facades\View;
 
@@ -44,142 +44,154 @@
         //
     }
 
-#### Creating The First Available View
+#### 建立第一個可用的檢視
 
-Using the `first` method, you may create the first view that exists in a given array of views. This is useful if your application or package allows views to be customized or overwritten:
+使用 `first` 方法，您可以在給定的檢視陣列中建立第一個存在的檢視。如果您的應用程式或套件允許自訂或覆寫檢視，這將非常有用：
 
-    return view()->first(['custom.admin', 'admin'], $data);
+```php
+return view()->first(['custom.admin', 'admin'], $data);
+```
 
-Of course, you may also call this method via the `View` [facade](/docs/{{version}}/facades):
+您也可以透過 `View` [facade](/docs/{{version}}/facades) 來呼叫此方法：
 
-    use Illuminate\Support\Facades\View;
+```php
+use Illuminate\Support\Facades\View;
 
-    return View::first(['custom.admin', 'admin'], $data);
+return View::first(['custom.admin', 'admin'], $data);
+```
 
 <a name="passing-data-to-views"></a>
-## 傳遞資料到視圖
+## 傳遞資料至視圖
 
-如之前的範例所見，你可以簡單的傳遞一個陣列的資料給視圖：
+如前面的範例所示，您可以將資料陣列傳遞給視圖：
 
-    return view('greetings', ['name' => 'Victoria']);
+```php
+return view('greetings', ['name' => 'Victoria']);
+```
 
-用上面的方式傳遞資料時，資料必須是一個鍵值對的陣列。在你的視圖中，你可以用相對應的鍵名取用值，如：`<?php echo $key; ?>`；你也可以用另一個替代的語法來傳遞資料陣列，在 `view` 輔助函式使用 `with` 來傳遞額外資料給視圖：
+以這種方式傳遞資訊時，資料應該是一個具有鍵值對的陣列。在您的視圖中，您可以透過對應的鍵來存取每個值，例如 `<?php echo $key; ?>`。除了將完整的資料陣列傳遞給 `view` 輔助函式之外，您也可以使用 `with` 方法將個別的資料添加到視圏中：
 
-    return view('greeting')->with('name', 'Victoria');
+```php
+return view('greeting')->with('name', 'Victoria');
+```
 
 <a name="sharing-data-with-all-views"></a>
-#### 共享資料給所有視圖
+#### 與所有視圖分享資料
 
-有時候你可能想要共享某些資料給所有應用程式所渲染的視圖，你可以使用視圖 facade 的 `share` 方法來做到這件事。通常，你應該把些呼叫 `share` 方法的程式碼放在一個服務提供者的 `boot` 方法內。你可以選擇直接寫在 `AppServiceProvider` 或是自己產生一個不同的服務提供者來安置這些程式碼：
+偶爾，您可能需要將一個資料片段與應用程式渲染的所有視圖分享。您可以使用視圖 facade 的 `share` 方法來實現這一點。通常，您應該將對 `share` 的調用放在服務提供者的 `boot` 方法中。您可以將它們添加到 `AppServiceProvider` 中，或者生成一個獨立的服務提供者來存放它們：
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\View;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     *
+     * @return void
+     */
+    public function register()
     {
-        /**
-         * 啟動任何應用程式的服務。
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            View::share('key', 'value');
-        }
-
-        /**
-         * 註冊服務提供者。
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
+        //
     }
+
+    /**
+     * 引導任何應用程式服務。
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        View::share('key', 'value');
+    }
+}
+```
 
 <a name="view-composers"></a>
 ## 視圖組件
 
-視圖組件就是在視圖被渲染前，會呼叫的回呼或類別方法。如果你想在每次渲染某些視圖時綁定資料，視圖組件可以把這樣的程式邏輯組織在同一個地方。
+視圖組件是在渲染視圖時調用的回呼函式或類方法。如果您有要綁定到每次渲染該視圖時的資料，視圖組件可以幫助您將該邏輯組織到單一位置。
 
-舉例來說，讓我們在[服務提供者](/docs/{{version}}/providers)內註冊視圖組件。我們將使用 View facade 來取得底層 `Illuminate\Contracts\View\Factory` contract 實作。請注意，Laravel 沒有預設的目錄來放置視圖組件。你可以自由的把它們放在你想要的地方。舉例來說，你可以建立一個 `app/Http/ViewComposers` 目錄：
+在這個範例中，讓我們在一個[服務提供者](/docs/{{version}}/providers)中註冊視圖組件。我們將使用`View` Facade 來存取底層的`Illuminate\Contracts\View\Factory`合約實作。請記住，Laravel 不包含視圖組件的預設目錄。您可以自由地按照您的喜好進行組織。例如，您可以建立一個`app/Http/View/Composers`目錄：
 
-    <?php
+```php
+namespace App\Providers;
 
-    namespace App\Providers;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
-    use Illuminate\Support\Facades\View;
-    use Illuminate\Support\ServiceProvider;
-
-    class ComposerServiceProvider extends ServiceProvider
+class ViewServiceProvider extends ServiceProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     *
+     * @return void
+     */
+    public function register()
     {
-        /**
-         * 在容器內註冊所有綁定。
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            // 使用物件型態的視圖組件…
-            View::composer(
-                'profile', 'App\Http\ViewComposers\ProfileComposer'
-            );
-
-            // 使用閉包型態的視圖組件…
-            View::composer('dashboard', function ($view) {
-                //
-            });
-        }
-
-        /**
-         * 註冊服務提供者。
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
+        //
     }
 
-> {note} 記住，如果你建立了一個新的服務提供者來註冊你的視圖組件，你需要把服務提供者加入 `config/app.php` 設定檔內的 `providers` 陣列。
-
-現在我們已經註冊了視圖組件，在每次 `profile` 視圖渲染的時候，`ProfileComposer@compose` 都將會被執行。所以接下來我們來定義這個類別形式的視圖組件：
-
-    <?php
-
-    namespace App\Http\ViewComposers;
-
-    use Illuminate\View\View;
-    use App\Repositories\UserRepository;
-
-    class ProfileComposer
+    /**
+     * 引導任何應用程式服務。
+     *
+     * @return void
+     */
+    public function boot()
     {
-        /**
-         * 使用者儲存庫的實例。
-         *
-         * @var UserRepository
-         */
-        protected $users;
+        // 使用基於類別的視圖組件...
+        View::composer(
+            'profile', 'App\Http\View\Composers\ProfileComposer'
+        );
 
-        /**
-         * 建立一個新的個人檔案視圖組件。
-         *
-         * @param  UserRepository  $users
-         * @return void
-         */
-        public function __construct(UserRepository $users)
-        {
-            // 所有依賴都會自動地被服務容器解析…
-            $this->users = $users;
-        }
+        // 使用基於閉包的視圖組件...
+        View::composer('dashboard', function ($view) {
+            //
+        });
+    }
+}
+```
 
+> {note} 請記住，如果您建立一個新的服務提供者來包含您的視圖組件註冊，您需要將該服務提供者添加到`config/app.php`組態檔案中的`providers`陣列中。
+
+現在我們已經註冊了視圖組件，每次渲染`profile`視圖時，`ProfileComposer@compose`方法將被執行。因此，讓我們定義視圖組件類別：
+
+```php
+namespace App\Http\View\Composers;
+
+use App\Repositories\UserRepository;
+use Illuminate\View\View;
+
+class ProfileComposer
+{
+    /**
+     * 使用者存儲庫實作。
+     *
+     * @var UserRepository
+     */
+    protected $users;
+
+    /**
+     * 創建一個新的個人資料視圖組件。
+     *
+     * @param  UserRepository  $users
+     * @return void
+     */
+    public function __construct(UserRepository $users)
+    {
+        // 依賴性會被服務容器自動解析...
+        $this->users = $users;
+    }
+}
+```
+
+```markdown
         /**
-         * 將資料綁定到視圖。
+         * 綁定資料到視圖。
          *
          * @param  View  $view
          * @return void
@@ -190,20 +202,20 @@ Of course, you may also call this method via the `View` [facade](/docs/{{version
         }
     }
 
-在視圖被渲染之前，視圖組件的 `compose` 方法會被呼叫，並傳入一個 `Illuminate\View\View` 實例。你可以使用 `with` 方法把資料綁定到視圖。
+在渲染視圖之前，會呼叫組件的 `compose` 方法，並傳入 `Illuminate\View\View` 實例。您可以使用 `with` 方法將資料綁定到視圖。
 
-> {tip} 所有的視圖組件都會被[服務容器](/docs/{{version}}/container)解析，所以你可以在視圖組件的建構子中，使用型別提示來自動注入你所需的任何相依物件。
+> {tip} 所有視圖組件都是透過 [服務容器](/docs/{{version}}/container) 解析的，因此您可以在組件的建構子中使用型別提示來注入任何需要的依賴。
 
-#### 在多個視圖中附加同一個視圖組件
+#### 將組件附加到多個視圖
 
-你可以在 `composer` 方法的第一個參數傳遞一個視圖陣列，來一次對多個視圖附加同一個視圖組件：
+您可以通過將視圖陣列作為 `composer` 方法的第一個引數，一次將視圖組件附加到多個視圖：
 
     View::composer(
         ['profile', 'dashboard'],
-        'App\Http\ViewComposers\MyViewComposer'
+        'App\Http\View\Composers\MyViewComposer'
     );
 
-視圖的 `composer` 方法也可以接受 `*` 作為萬用字元，允許你對所有視圖附加 composer：
+`composer` 方法還接受 `*` 字元作為萬用字元，允許您將組件附加到所有視圖：
 
     View::composer('*', function ($view) {
         //
@@ -211,6 +223,7 @@ Of course, you may also call this method via the `View` [facade](/docs/{{version
 
 #### 視圖創建者
 
-視圖**創建者**幾乎和視圖組件運作方式一樣；只是視圖創建者會在視圖初始化後就立刻執行，而不是像視圖組件會一直等到視圖即將被渲染時才會執行。要註冊一個創建者，只要使用 `creator` 方法：
+視圖**創建者**與視圖組件非常相似；但是，它們會在視圖實例化後立即執行，而不是等到視圖即將渲染時才執行。要註冊視圖創建者，請使用 `creator` 方法：
 
-    View::creator('profile', 'App\Http\ViewCreators\ProfileCreator');
+    View::creator('profile', 'App\Http\View\Creators\ProfileCreator');
+```

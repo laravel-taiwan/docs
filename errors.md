@@ -1,40 +1,41 @@
-# Error Handling
+# 錯誤處理
 
-- [Introduction](#introduction)
-- [Configuration](#configuration)
-- [The Exception Handler](#the-exception-handler)
-    - [Report Method](#report-method)
-    - [Render Method](#render-method)
-    - [Reportable & Renderable Exceptions](#renderable-exceptions)
-- [HTTP Exceptions](#http-exceptions)
-    - [Custom HTTP Error Pages](#custom-http-error-pages)
+- [簡介](#introduction)
+- [組態設定](#configuration)
+- [例外處理器](#the-exception-handler)
+    - [報告方法](#report-method)
+    - [渲染方法](#render-method)
+    - [可報告和可渲染的例外](#renderable-exceptions)
+- [HTTP 例外](#http-exceptions)
+    - [自訂 HTTP 錯誤頁面](#custom-http-error-pages)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-When you start a new Laravel project, error and exception handling is already configured for you. The `App\Exceptions\Handler` class is where all exceptions triggered by your application are logged and then rendered back to the user. We'll dive deeper into this class throughout this documentation.
+當您啟動一個新的 Laravel 專案時，錯誤和例外處理已經為您配置好了。`App\Exceptions\Handler` 類別是您的應用程式觸發的所有例外都被記錄並返回給使用者的地方。我們將在本文件中更深入地探討這個類別。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
-The `debug` option in your `config/app.php` configuration file determines how much information about an error is actually displayed to the user. By default, this option is set to respect the value of the `APP_DEBUG` environment variable, which is stored in your `.env` file.
+在您的 `config/app.php` 組態檔中的 `debug` 選項決定了實際顯示給使用者的錯誤資訊量。預設情況下，此選項設置為尊重 `APP_DEBUG` 環境變數的值，該值存儲在您的 `.env` 檔案中。
 
-For local development, you should set the `APP_DEBUG` environment variable to `true`. In your production environment, this value should always be `false`. If the value is set to `true` in production, you risk exposing sensitive configuration values to your application's end users.
+在本地開發中，您應將 `APP_DEBUG` 環境變數設置為 `true`。在正式環境中，此值應始終為 `false`。如果在正式環境中將值設置為 `true`，則可能會將敏感組態值暴露給您應用程式的最終用戶。
 
 <a name="the-exception-handler"></a>
-## The Exception Handler
+## 例外處理器
 
 <a name="report-method"></a>
-### The Report Method
+### 報告方法
 
-All exceptions are handled by the `App\Exceptions\Handler` class. This class contains two methods: `report` and `render`. We'll examine each of these methods in detail. The `report` method is used to log exceptions or send them to an external service like [Flare](https://flareapp.io), [Bugsnag](https://bugsnag.com) or [Sentry](https://github.com/getsentry/sentry-laravel). By default, the `report` method passes the exception to the base class where the exception is logged. However, you are free to log exceptions however you wish.
+所有例外都由 `App\Exceptions\Handler` 類別處理。此類別包含兩個方法：`report` 和 `render`。我們將詳細檢查這兩個方法。`report` 方法用於記錄例外或將其發送到外部服務，如 [Flare](https://flareapp.io)、[Bugsnag](https://bugsnag.com) 或 [Sentry](https://github.com/getsentry/sentry-laravel)。預設情況下，`report` 方法將例外傳遞給基類，其中例外被記錄。但是，您可以自由地以任何您希望的方式記錄例外。
 
-For example, if you need to report different types of exceptions in different ways, you may use the PHP `instanceof` comparison operator:
+例如，如果您需要以不同方式報告不同類型的例外，您可以使用 PHP 的 `instanceof` 比較運算子：
 
+```markdown
     /**
-     * Report or log an exception.
+     * 報告或記錄異常。
      *
-     * This is a great spot to send exceptions to Flare, Sentry, Bugsnag, etc.
+     * 這是一個很好的地方，可以將異常發送到 Flare、Sentry、Bugsnag 等。
      *
      * @param  \Exception  $exception
      * @return void
@@ -48,14 +49,14 @@ For example, if you need to report different types of exceptions in different wa
         parent::report($exception);
     }
 
-> {tip} Instead of making a lot of `instanceof` checks in your `report` method, consider using [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
+> {tip} 在您的 `report` 方法中，不要進行大量的 `instanceof` 檢查，考慮使用[可報告的異常](/docs/{{version}}/errors#renderable-exceptions)
 
-#### Global Log Context
+#### 全域日誌上下文
 
-If available, Laravel automatically adds the current user's ID to every exception's log message as contextual data. You may define your own global contextual data by overriding the `context` method of your application's `App\Exceptions\Handler` class. This information will be included in every exception's log message written by your application:
+如果可用，Laravel 會自動將當前用戶的 ID 添加到每個異常的日誌消息中作為上下文數據。您可以通過覆蓋應用程序的 `App\Exceptions\Handler` 類的 `context` 方法來定義自己的全域上下文數據。這些信息將包含在應用程序寫入的每個異常日誌消息中：
 
     /**
-     * Get the default context variables for logging.
+     * 獲取用於記錄的默認上下文變數。
      *
      * @return array
      */
@@ -66,14 +67,14 @@ If available, Laravel automatically adds the current user's ID to every exceptio
         ]);
     }
 
-#### The `report` Helper
+#### `report` 助手
 
-Sometimes you may need to report an exception but continue handling the current request. The `report` helper function allows you to quickly report an exception using your exception handler's `report` method without rendering an error page:
+有時您可能需要報告一個異常，但繼續處理當前請求。`report` 助手函數允許您快速報告一個異常，使用您的異常處理程序的 `report` 方法，而不需要呈現錯誤頁面：
 
     public function isValid($value)
     {
         try {
-            // Validate the value...
+            // 驗證值...
         } catch (Exception $e) {
             report($e);
 
@@ -81,12 +82,12 @@ Sometimes you may need to report an exception but continue handling the current 
         }
     }
 
-#### Ignoring Exceptions By Type
+#### 忽略特定類型的異常
 
-The `$dontReport` property of the exception handler contains an array of exception types that will not be logged. For example, exceptions resulting from 404 errors, as well as several other types of errors, are not written to your log files. You may add other exception types to this array as needed:
+異常處理程序的 `$dontReport` 屬性包含一個不會被記錄的異常類型數組。例如，由於 404 錯誤引起的異常，以及其他幾種類型的錯誤，不會被寫入您的日誌文件。您可以根據需要將其他異常類型添加到此數組中：
 
     /**
-     * A list of the exception types that should not be reported.
+     * 不應報告的異常類型列表。
      *
      * @var array
      */
@@ -97,83 +98,93 @@ The `$dontReport` property of the exception handler contains an array of excepti
         \Illuminate\Database\Eloquent\ModelNotFoundException::class,
         \Illuminate\Validation\ValidationException::class,
     ];
+```
 
-<a name="render-method"></a>
-### The Render Method
+### 渲染方法
 
-The `render` method is responsible for converting a given exception into an HTTP response that should be sent back to the browser. By default, the exception is passed to the base class which generates a response for you. However, you are free to check the exception type or return your own custom response:
+`render` 方法負責將給定的例外轉換為應發送回瀏覽器的 HTTP 回應。預設情況下，例外會傳遞給基類，該基類會為您生成一個回應。但是，您可以自由檢查例外類型或返回自定義回應：
+
+```php
+/**
+ * Render an exception into an HTTP response.
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @param  \Exception  $exception
+ * @return \Illuminate\Http\Response
+ */
+public function render($request, Exception $exception)
+{
+    if ($exception instanceof CustomException) {
+        return response()->view('errors.custom', [], 500);
+    }
+
+    return parent::render($request, $exception);
+}
+```
+
+### 可報告和可渲染的例外
+
+您可以在自定義例外上直接定義 `report` 和 `render` 方法，而不是在例外處理程序的 `report` 和 `render` 方法中進行類型檢查。當這些方法存在時，框架將自動調用它們：
+
+```php
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+
+class RenderException extends Exception
+{
+    /**
+     * Report the exception.
+     *
+     * @return void
+     */
+    public function report()
+    {
+        //
+    }
 
     /**
-     * Render an exception into an HTTP response.
+     * Render the exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $exception)
+    public function render($request)
     {
-        if ($exception instanceof CustomException) {
-            return response()->view('errors.custom', [], 500);
-        }
-
-        return parent::render($request, $exception);
+        return response(...);
     }
+}
+```
 
-<a name="renderable-exceptions"></a>
-### Reportable & Renderable Exceptions
+> {tip} 您可以對 `report` 方法的任何必需依賴進行型別提示，這些依賴將自動由 Laravel 的[服務容器](/docs/{{version}}/container)注入到該方法中。
 
-Instead of type-checking exceptions in the exception handler's `report` and `render` methods, you may define `report` and `render` methods directly on your custom exception. When these methods exist, they will be called automatically by the framework:
+## HTTP 例外
 
-    <?php
+有些例外描述了來自伺服器的 HTTP 錯誤代碼。例如，這可能是一個「找不到頁面」錯誤（404），一個「未經授權的錯誤」（401）甚至是開發人員生成的 500 錯誤。為了從應用程序中的任何位置生成這樣的回應，您可以使用 `abort` 助手。
 
-    namespace App\Exceptions;
-
-    use Exception;
-
-    class RenderException extends Exception
-    {
-        /**
-         * Report the exception.
-         *
-         * @return void
-         */
-        public function report()
-        {
-            //
-        }
-
-        /**
-         * Render the exception into an HTTP response.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
-         */
-        public function render($request)
-        {
-            return response(...);
-        }
-    }
-
-> {tip} You may type-hint any required dependencies of the `report` method and they will automatically be injected into the method by Laravel's [service container](/docs/{{version}}/container).
-
-<a name="http-exceptions"></a>
-## HTTP Exceptions
-
-Some exceptions describe HTTP error codes from the server. For example, this may be a "page not found" error (404), an "unauthorized error" (401) or even a developer generated 500 error. In order to generate such a response from anywhere in your application, you may use the `abort` helper:
-
+```php
     abort(404);
+```
 
-The `abort` helper will immediately raise an exception which will be rendered by the exception handler. Optionally, you may provide the response text:
+`abort` 助手會立即拋出一個例外，該例外將由例外處理程序呈現。可選擇地，您可以提供回應文字：
 
-    abort(403, 'Unauthorized action.');
+```php
+    abort(403, '未經授權的操作。');
+```
 
 <a name="custom-http-error-pages"></a>
-### Custom HTTP Error Pages
+### 自訂 HTTP 錯誤頁面
 
-Laravel makes it easy to display custom error pages for various HTTP status codes. For example, if you wish to customize the error page for 404 HTTP status codes, create a `resources/views/errors/404.blade.php`. This file will be served on all 404 errors generated by your application. The views within this directory should be named to match the HTTP status code they correspond to. The `HttpException` instance raised by the `abort` function will be passed to the view as an `$exception` variable:
+Laravel 讓您可以輕鬆地為各種 HTTP 狀態碼顯示自訂錯誤頁面。例如，如果您希望自訂 404 HTTP 狀態碼的錯誤頁面，請建立一個 `resources/views/errors/404.blade.php`。此檔案將用於您的應用程式產生的所有 404 錯誤。此目錄中的視圖應命名以符合它們對應的 HTTP 狀態碼。`abort` 函數引發的 `HttpException` 實例將作為 `$exception` 變數傳遞給視圖：
 
+```php
     <h2>{{ $exception->getMessage() }}</h2>
+```
 
-You may publish Laravel's error page templates using the `vendor:publish` Artisan command. Once the templates have been published, you may customize them to your liking:
+您可以使用 `vendor:publish` Artisan 命令發佈 Laravel 的錯誤頁面模板。一旦模板已發佈，您可以按照您的喜好進行自訂：
 
+```php
     php artisan vendor:publish --tag=laravel-errors
+```

@@ -1,79 +1,87 @@
-# CSRF Protection
+# CSRF 保護
 
-- [Introduction](#csrf-introduction)
-- [Excluding URIs](#csrf-excluding-uris)
+- [簡介](#csrf-introduction)
+- [排除 URI](#csrf-excluding-uris)
 - [X-CSRF-Token](#csrf-x-csrf-token)
 - [X-XSRF-Token](#csrf-x-xsrf-token)
 
 <a name="csrf-introduction"></a>
-## Introduction
+## 簡介
 
-Laravel makes it easy to protect your application from [cross-site request forgery](https://en.wikipedia.org/wiki/Cross-site_request_forgery) (CSRF) attacks. Cross-site request forgeries are a type of malicious exploit whereby unauthorized commands are performed on behalf of an authenticated user.
+Laravel 讓保護應用程式免受 [跨站請求偽造](https://en.wikipedia.org/wiki/Cross-site_request_forgery) (CSRF) 攻擊變得容易。跨站請求偽造是一種惡意利用，未經授權的命令代表已驗證的使用者執行。
 
-Laravel automatically generates a CSRF "token" for each active user session managed by the application. This token is used to verify that the authenticated user is the one actually making the requests to the application.
+Laravel 自動為應用程式管理的每個有效使用者工作階段生成 CSRF「標記」。此標記用於驗證已驗證的使用者是否實際在對應用程式發出請求。
 
-Anytime you define an HTML form in your application, you should include a hidden CSRF token field in the form so that the CSRF protection middleware can validate the request. You may use the `@csrf` Blade directive to generate the token field:
+每當您在應用程式中定義 HTML 表單時，應該在表單中包含一個隱藏的 CSRF 標記欄位，以便 CSRF 保護中介層可以驗證請求。您可以使用 `@csrf` Blade 指示詞來生成標記欄位：
 
     <form method="POST" action="/profile">
         @csrf
         ...
     </form>
 
-The `VerifyCsrfToken` [middleware](/docs/{{version}}/middleware), which is included in the `web` middleware group, will automatically verify that the token in the request input matches the token stored in the session.
+包含在 `web` 中介層組中的 `VerifyCsrfToken` [中介層](/docs/{{version}}/middleware) 將自動驗證請求輸入中的標記是否與工作階段中存儲的標記相符。
 
-#### CSRF Tokens & JavaScript
+#### CSRF 標記與 JavaScript
 
-When building JavaScript driven applications, it is convenient to have your JavaScript HTTP library automatically attach the CSRF token to every outgoing request. By default, the Axios HTTP library provided in the `resources/js/bootstrap.js` file automatically sends an `X-XSRF-TOKEN` header using the value of the encrypted `XSRF-TOKEN` cookie. If you are not using this library, you will need to manually configure this behavior for your application.
+在建立 JavaScript 驅動的應用程式時，讓您的 JavaScript HTTP 函式庫自動將 CSRF 標記附加到每個外發請求是方便的。預設情況下，`resources/js/bootstrap.js` 檔案中提供的 Axios HTTP 函式庫會使用加密的 `XSRF-TOKEN` cookie 值自動發送 `X-XSRF-TOKEN` 標頭。如果您未使用此函式庫，則需要為您的應用程式手動配置此行為。
 
 <a name="csrf-excluding-uris"></a>
-## Excluding URIs From CSRF Protection
+## 從 CSRF 保護中排除 URI
 
-Sometimes you may wish to exclude a set of URIs from CSRF protection. For example, if you are using [Stripe](https://stripe.com) to process payments and are utilizing their webhook system, you will need to exclude your Stripe webhook handler route from CSRF protection since Stripe will not know what CSRF token to send to your routes.
+有時您可能希望從 CSRF 保護中排除一組 URI。例如，如果您正在使用 [Stripe](https://stripe.com) 來處理付款並且正在使用其 Webhooks 系統，則需要從 CSRF 保護中排除您的 Stripe Webhook 處理程序路由，因為 Stripe 不會知道要發送到您路由的 CSRF 標記。
 
-Typically, you should place these kinds of routes outside of the `web` middleware group that the `RouteServiceProvider` applies to all routes in the `routes/web.php` file. However, you may also exclude the routes by adding their URIs to the `$except` property of the `VerifyCsrfToken` middleware:
+通常，您應該將這些類型的路由放在 `RouteServiceProvider` 應用於 `routes/web.php` 檔案中的所有路由的 `web` 中介軟體組之外。但是，您也可以通過將它們的 URI 添加到 `VerifyCsrfToken` 中介軟體的 `$except` 屬性來排除這些路由：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Middleware;
+namespace App\Http\Middleware;
 
-    use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
-    class VerifyCsrfToken extends Middleware
-    {
-        /**
-         * The URIs that should be excluded from CSRF verification.
-         *
-         * @var array
-         */
-        protected $except = [
-            'stripe/*',
-            'http://example.com/foo/bar',
-            'http://example.com/foo/*',
-        ];
-    }
+class VerifyCsrfToken extends Middleware
+{
+    /**
+     * 應該從 CSRF 驗證中排除的 URI。
+     *
+     * @var array
+     */
+    protected $except = [
+        'stripe/*',
+        'http://example.com/foo/bar',
+        'http://example.com/foo/*',
+    ];
+}
+```
 
-> {tip} The CSRF middleware is automatically disabled when [running tests](/docs/{{version}}/testing).
+> {tip} 當[執行測試](/docs/{{version}}/testing)時，CSRF 中介軟體會自動停用。
 
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN
 
-In addition to checking for the CSRF token as a POST parameter, the `VerifyCsrfToken` middleware will also check for the `X-CSRF-TOKEN` request header. You could, for example, store the token in an HTML `meta` tag:
+除了檢查 CSRF 標記作為 POST 參數外，`VerifyCsrfToken` 中介軟體還將檢查 `X-CSRF-TOKEN` 請求標頭。例如，您可以將標記存儲在 HTML 的 `meta` 標籤中：
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+```html
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
 
-Then, once you have created the `meta` tag, you can instruct a library like jQuery to automatically add the token to all request headers. This provides simple, convenient CSRF protection for your AJAX based applications:
+然後，一旦您創建了 `meta` 標籤，您可以指示像 jQuery 這樣的庫自動將標記添加到所有請求標頭。這為基於 AJAX 的應用程序提供了簡單、方便的 CSRF 保護：
 
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+```javascript
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+```
 
 <a name="csrf-x-xsrf-token"></a>
 ## X-XSRF-TOKEN
 
-Laravel stores the current CSRF token in an encrypted `XSRF-TOKEN` cookie that is included with each response generated by the framework. You can use the cookie value to set the `X-XSRF-TOKEN` request header.
+Laravel 將當前的 CSRF 標記存儲在一個加密的 `XSRF-TOKEN` Cookie 中，該 Cookie 包含由框架生成的每個回應。您可以使用 Cookie 值來設置 `X-XSRF-TOKEN` 請求標頭。
 
-This cookie is primarily sent as a convenience since some JavaScript frameworks and libraries, like Angular and Axios, automatically place its value in the `X-XSRF-TOKEN` header on same-origin requests.
+這個 Cookie 主要作為一種便利，因為一些 JavaScript 框架和庫，如 Angular 和 Axios，在同源請求上自動將其值放在 `X-XSRF-TOKEN` 標頭中。
 
-> {tip} By default, the `resources/js/bootstrap.js` file includes the Axios HTTP library which will automatically send this for you.
+> {tip} 默認情況下，`resources/js/bootstrap.js` 檔案包含 Axios HTTP 库，它將自動為您發送此標頭。
+
+Please paste the Markdown content that you need to be translated into traditional Chinese.

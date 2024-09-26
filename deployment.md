@@ -1,26 +1,26 @@
-# Deployment
+# 部署
 
-- [Introduction](#introduction)
-- [Server Configuration](#server-configuration)
+- [簡介](#introduction)
+- [伺服器設定](#server-configuration)
     - [Nginx](#nginx)
-- [Optimization](#optimization)
-    - [Autoloader Optimization](#autoloader-optimization)
-    - [Optimizing Configuration Loading](#optimizing-configuration-loading)
-    - [Optimizing Route Loading](#optimizing-route-loading)
-- [Deploying With Forge](#deploying-with-forge)
+- [優化](#optimization)
+    - [自動載入器優化](#autoloader-optimization)
+    - [優化組態載入](#optimizing-configuration-loading)
+    - [優化路由載入](#optimizing-route-loading)
+- [使用 Forge 部署](#deploying-with-forge)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-When you're ready to deploy your Laravel application to production, there are some important things you can do to make sure your application is running as efficiently as possible. In this document, we'll cover some great starting points for making sure your Laravel application is deployed properly.
+當您準備將 Laravel 應用程式部署到正式環境時，有一些重要的事項可以確保您的應用程式運行效率最大化。在本文件中，我們將介紹一些確保您的 Laravel 應用程式正確部署的絕佳起點。
 
 <a name="server-configuration"></a>
-## Server Configuration
+## 伺服器設定
 
 <a name="nginx"></a>
 ### Nginx
 
-If you are deploying your application to a server that is running Nginx, you may use the following configuration file as a starting point for configuring your web server. Most likely, this file will need to be customized depending on your server's configuration. If you would like assistance in managing your server, consider using a service such as [Laravel Forge](https://forge.laravel.com):
+如果您將應用程式部署到運行 Nginx 的伺服器，您可以使用以下組態檔案作為配置網頁伺服器的起點。很可能，根據您的伺服器配置，這個檔案需要進行自訂。如果您需要協助管理伺服器，考慮使用像 [Laravel Forge](https://forge.laravel.com) 這樣的服務：
 
     server {
         listen 80;
@@ -51,48 +51,51 @@ If you are deploying your application to a server that is running Nginx, you may
             include fastcgi_params;
         }
 
+```markdown
         location ~ /\.(?!well-known).* {
             deny all;
         }
     }
 
 <a name="optimization"></a>
-## Optimization
+## 優化
 
 <a name="autoloader-optimization"></a>
-### Autoloader Optimization
+### 自動載入器優化
 
-When deploying to production, make sure that you are optimizing Composer's class autoloader map so Composer can quickly find the proper file to load for a given class:
+在部署到正式環境時，請確保您正在優化 Composer 的類別自動載入器映射，以便 Composer 可以快速找到要為給定類別加載的正確檔案：
 
     composer install --optimize-autoloader --no-dev
 
-> {tip} In addition to optimizing the autoloader, you should always be sure to include a `composer.lock` file in your project's source control repository. Your project's dependencies can be installed much faster when a `composer.lock` file is present.
+> {tip} 除了優化自動載入器外，您應該始終確保在您專案的原始碼控制存儲庫中包含一個 `composer.lock` 檔案。當存在 `composer.lock` 檔案時，專案的相依性可以更快地安裝。
 
 <a name="optimizing-configuration-loading"></a>
-### Optimizing Configuration Loading
+### 優化組態載入
 
-When deploying your application to production, you should make sure that you run the `config:cache` Artisan command during your deployment process:
+在將應用程式部署到正式環境時，您應該確保在部署過程中運行 `config:cache` Artisan 指令：
 
     php artisan config:cache
 
-This command will combine all of Laravel's configuration files into a single, cached file, which greatly reduces the number of trips the framework must make to the filesystem when loading your configuration values.
+此指令將所有 Laravel 的組態檔案合併為一個單一的快取檔案，大大減少框架在載入組態值時必須對檔案系統進行的查找次數。
 
-> {note} If you execute the `config:cache` command during your deployment process, you should be sure that you are only calling the `env` function from within your configuration files. Once the configuration has been cached, the `.env` file will not be loaded and all calls to the `env` function will return `null`.
+> {note} 如果在部署過程中執行 `config:cache` 指令，請確保您只在組態檔案內部調用 `env` 函式。一旦組態被快取，`.env` 檔案將不會被載入，並且對 `env` 函式的所有調用將返回 `null`。
 
 <a name="optimizing-route-loading"></a>
-### Optimizing Route Loading
+### 優化路由載入
 
-If you are building a large application with many routes, you should make sure that you are running the `route:cache` Artisan command during your deployment process:
+如果您正在建立具有許多路由的大型應用程式，請確保在部署過程中運行 `route:cache` Artisan 指令：
 
     php artisan route:cache
 
-This command reduces all of your route registrations into a single method call within a cached file, improving the performance of route registration when registering hundreds of routes.
+此指令將所有路由註冊合併為一個快取檔案中的單個方法呼叫，從而提高了在註冊數百個路由時的路由註冊性能。
 
-> {note} Since this feature uses PHP serialization, you may only cache the routes for applications that exclusively use controller based routes. PHP is not able to serialize Closures.
+> {note} 由於此功能使用 PHP 序列化，您只能對僅使用基於控制器的路由的應用程式進行路由快取。PHP 無法序列化閉包。
+```
+
 
 <a name="deploying-with-forge"></a>
-## Deploying With Forge
+## 使用 Forge 部署
 
-If you aren't quite ready to manage your own server configuration or aren't comfortable configuring all of the various services needed to run a robust Laravel application, [Laravel Forge](https://forge.laravel.com) is a wonderful alternative.
+如果您尚未準備好管理自己的伺服器配置，或者不熟悉配置運行強大 Laravel 應用所需的各種服務，[Laravel Forge](https://forge.laravel.com) 是一個很好的選擇。
 
-Laravel Forge can create servers on various infrastructure providers such as DigitalOcean, Linode, AWS, and more. In addition, Forge installs and manages all of the tools needed to build robust Laravel applications, such as Nginx, MySQL, Redis, Memcached, Beanstalk, and more.
+Laravel Forge 可以在各種基礎設施提供商上創建伺服器，如 DigitalOcean、Linode、AWS 等。此外，Forge 還安裝並管理構建強大 Laravel 應用所需的所有工具，如 Nginx、MySQL、Redis、Memcached、Beanstalk 等。

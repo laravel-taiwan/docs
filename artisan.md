@@ -1,69 +1,69 @@
-# Artisan Console
+# Artisan 控制台
 
-- [介紹](#introduction)
+- [簡介](#introduction)
     - [Tinker (REPL)](#tinker)
 - [撰寫指令](#writing-commands)
-    - [產生指令](#generating-commands)
+    - [生成指令](#generating-commands)
     - [指令結構](#command-structure)
     - [閉包指令](#closure-commands)
-- [定義預期的輸入](#defining-input-expectations)
-    - [參數](#arguments)
+- [定義輸入期望](#defining-input-expectations)
+    - [引數](#arguments)
     - [選項](#options)
     - [輸入陣列](#input-arrays)
-    - [輸入說明](#input-descriptions)
+    - [輸入描述](#input-descriptions)
 - [指令 I/O](#command-io)
-    - [取得輸入](#retrieving-input)
-    - [互動式輸入](#prompting-for-input)
-    - [自訂輸出](#writing-output)
+    - [擷取輸入](#retrieving-input)
+    - [提示輸入](#prompting-for-input)
+    - [輸出內容](#writing-output)
 - [註冊指令](#registering-commands)
-- [使用程式碼執行指令](#programmatically-executing-commands)
-    - [在指令中呼叫其他指令](#calling-commands-from-other-commands)
+- [程式化執行指令](#programmatically-executing-commands)
+    - [從其他指令呼叫指令](#calling-commands-from-other-commands)
 
 <a name="introduction"></a>
-## 介紹
+## 簡介
 
-Artisan 是 Laravel 內建的指令集合，它能提供許多好用的指令來協助你開發程式。你可以使用 `list` 查詢所有可用的 Artisan 指令列表：
+Artisan 是 Laravel 內建的命令列介面。它提供了許多有用的指令，可以在您建立應用程式時協助您。要查看所有可用的 Artisan 指令清單，您可以使用 `list` 指令：
 
     php artisan list
 
-每個指令還包含一個幫助畫面，可以顯示和描述該指令所有可用的參數和選項，要查看幫助畫面的話，請在指令名稱前加上 `help`
+每個指令還包含一個「幫助」畫面，顯示並描述指令的可用引數和選項。要查看幫助畫面，請在指令名稱前加上 `help`：
 
     php artisan help migrate
 
 <a name="tinker"></a>
 ### Tinker (REPL)
 
-Laravel Tinker 是一個由 [PsySH](https://github.com/bobthecow/psysh) 套件提供給 Laravel 框架的強大 REPL。
+Laravel Tinker 是 Laravel 框架的強大 REPL，由 [PsySH](https://github.com/bobthecow/psysh) 套件提供支援。
 
 #### 安裝
 
-所有的 Laravel 應用程式都預設包含 Tinker，但如果需要的話，你可以藉由 Composer 手動安裝：
+所有 Laravel 應用程式都預設包含 Tinker。但是，如果需要，您可以使用 Composer 手動安裝：
 
     composer require laravel/tinker
 
-#### 使用方式
+#### 使用
 
-Tinker 允許你在指令列上和整個 Laravel 應用程式互動，包含 Eloquent ORM、任務、事件等，想進入 Tinker 環境，請執行 `tinker` Artisan 指令：
+Tinker 允許您在命令列上與整個 Laravel 應用程式互動，包括 Eloquent ORM、工作、事件等。要進入 Tinker 環境，執行 `tinker` Artisan 指令：
 
     php artisan tinker
 
-你可以使用 `vendor:publish` 指令發布 Tinker 的設定檔：
+您可以使用 `vendor:publish` 指令發佈 Tinker 的組態檔：
 
     php artisan vendor:publish --provider="Laravel\Tinker\TinkerServiceProvider"
 
-> {note} `Dispatchable` 類別上的 `dispatch` 輔助函式和 `dispatch` 方法依賴記憶體回收機制來把任務放在隊列上。因此，在使用 tinker 的時候，你應該使用 `Bus::dispatch` 或 `queue::push` 來觸發任務。
+> {注意} `dispatch` 輔助函式和 `Dispatchable` 類別上的 `dispatch` 方法取決於垃圾回收將工作放入佇列。因此，在使用 tinker 時，您應該使用 `Bus::dispatch` 或 `Queue::push` 來分派工作。
 
 #### 指令白名單
 
-Tinker 利用白名單來確認哪些 Artisan 指令能在 shell 上執行，預設情況下，你可以執行 `clear-compiled`、`down`、`env`、`inspire`、`migrate`、`optimize` 和 `up` 指令。如果你想要將更多指令列入白名單，你可以在 `tinker.php` 設定檔的 `commands` 陣列中加入它們：
+Tinker 使用白名單來確定哪些 Artisan 指令可以在其 shell 內運行。預設情況下，您可以運行 `clear-compiled`、`down`、`env`、`inspire`、`migrate`、`optimize` 和 `up` 指令。如果您想要將更多指令加入白名單，您可以將它們添加到您的 `tinker.php` 組態檔案中的 `commands` 陣列中：
 
     'commands' => [
         // App\Console\Commands\ExampleCommand::class,
     ],
 
-#### 黑名單別名
+#### 別名黑名單
 
-一般來說，Tinker 會根據你的 Tinker 中的需求自動為類別增加別名，但你可能不希望某些類別被加上別名，你可以在 `tinker.php` 設定檔中的 `dont_alias` 陣列中列舉這些類別來達成這種操作：
+通常，Tinker 會根據您在 Tinker 中需要它們時自動為類別設定別名。但是，您可能希望永遠不要為某些類別設定別名。您可以通過在您的 `tinker.php` 組態檔案的 `dont_alias` 陣列中列出這些類別來實現此目的：
 
     'dont_alias' => [
         App\User::class,
@@ -72,122 +72,33 @@ Tinker 利用白名單來確認哪些 Artisan 指令能在 shell 上執行，預
 <a name="writing-commands"></a>
 ## 撰寫指令
 
-除了 Artisan 提供的指令以外，你還可以編寫自定義的指令。指令一般儲存在 `app/Console/Commands` 資料夾中，但只要 Composer 可以加載，你可以自由選擇儲存的位置。
+除了 Artisan 提供的指令之外，您還可以建立自己的自訂指令。指令通常存儲在 `app/Console/Commands` 目錄中；但是，只要您的指令可以被 Composer 載入，您可以自由選擇自己的存儲位置。
 
 <a name="generating-commands"></a>
 ### 產生指令
 
-可以使用 `make:command` 來產生一個新的 Artisan 指令。這個指令會在 `app/Console/Commands` 資料夾中產生一個新的 command 類別。如果你的應用程式中沒有此資料夾，不用擔心，它會在你第一次執行 `make:command` 時被產生，產生的指令會包含所有指令中預設存在的屬性和方法：
+要創建新指令，請使用 `make:command` Artisan 指令。此指令將在 `app/Console/Commands` 目錄中創建一個新的指令類別。如果您的應用程式中不存在此目錄，不用擔心，因為當您第一次執行 `make:command` Artisan 指令時，將會創建該目錄。生成的指令將包含所有指令上都存在的預設屬性和方法：
 
     php artisan make:command SendEmails
 
 <a name="command-structure"></a>
 ### 指令結構
 
-產生你的指令之後，你應該填寫類別的 `signature` 和 `description` 他們會在你使用 `list` 指令時顯示。`handle` 方法會在你呼叫指令時被執行，你可以將你的指令邏輯放在這個方法。
+生成指令後，您應填寫類別的 `signature` 和 `description` 屬性，這將在 `list` 螢幕上顯示您的指令時使用。當執行您的指令時，將調用 `handle` 方法。您可以將指令邏輯放在此方法中。
 
-> {tip} 為了更好的程式碼複用，最好讓終端指令保持輕量，並讓它們延遲到應用程式服務中完成。在下面的例子中，我們將注入一個服務類別來完成發送電子郵件這種「繁重的任務」。
+> {tip} 為了更好地重複使用程式碼，將您的終端指令保持輕量並讓它們延遲到應用服務來完成任務是一種良好的實踐。在下面的範例中，請注意我們注入一個服務類別來執行發送電子郵件的「重活」。
 
-讓我們來看一個指令的例子，我們可以在指令的 `handle` 方法中注入任何需要的依賴。Laravel 的 [服務容器](/docs/{{version}}/container) 將會自動注入所有在此方法中帶有型別提示的依賴：
+讓我們來看一個範例指令。請注意，我們能夠將我們需要的任何依賴注入到指令的 `handle` 方法中。Laravel [服務容器](/docs/{{version}}/container) 將自動注入所有在此方法簽名中進行型別提示的依賴項：
 
-    <?php
+```php
+namespace App\Console\Commands;
 
-    namespace App\Console\Commands;
+use App\DripEmailer;
+use App\User;
+use Illuminate\Console\Command;
 
-    use App\DripEmailer;
-    use App\User;
-    use Illuminate\Console\Command;
-
-    class SendEmails extends Command
-    {
-        /**
-         * The name and signature of the console command.
-         *
-         * @var string
-         */
-        protected $signature = 'email:send {user}';
-
-        /**
-         * The console command description.
-         *
-         * @var string
-         */
-        protected $description = 'Send drip e-mails to a user';
-
-        /**
-         * Create a new command instance.
-         *
-         * @return void
-         */
-        public function __construct()
-        {
-            parent::__construct();
-        }
-
-        /**
-         * Execute the console command.
-         *
-         * @param  \App\DripEmailer  $drip
-         * @return mixed
-         */
-        public function handle(DripEmailer $drip)
-        {
-            $drip->send(User::find($this->argument('user')));
-        }
-    }
-
-<a name="closure-commands"></a>
-### 閉包指令
-
-基於閉包的指令提供了有別於使用類別定義終端指令的方法。就像路由閉包是控制器的替代方法一樣，閉包指令可以視為是指令類別的替代方法。在 `app/Console/Kernel.php` 檔案中的 `commands` 方法，Laravel 載入了 `routes/console.php` 檔案：
-
-    /**
-     * Register the Closure based commands for the application.
-     *
-     * @return void
-     */
-    protected function commands()
-    {
-        require base_path('routes/console.php');
-    }
-
-雖然這個檔案沒有定義 HTTP 路由，但它定義了基於終端的應用程式入口(路由)。在這個檔案中，你可以使用`Artisan::command` 方法定義所有閉包路由。`command` 方法接受兩個參數：[指令簽章](#defining-input-expectations)和一個接收指令參數和選項的閉包：
-
-    Artisan::command('build {project}', function ($project) {
-        $this->info("Building {$project}!");
-    });
-
-因為閉包綁定底層的指令實例，所以你可以使用所有在指令類別中可以使用的輔助函式。
-
-#### 型別提示依賴
-
-除了接收指令的參數和選項以外，指令閉包也可以使用型別提示從[服務容器](/docs/{{version}}/container)中解析其他的依賴：
-
-    use App\DripEmailer;
-    use App\User;
-
-    Artisan::command('email:send {user}', function (DripEmailer $drip, $user) {
-        $drip->send(User::find($user));
-    });
-
-#### 閉包指令描述
-
-當定義一個基於指令的閉包時，你可以使用 `describe` 方法來為你的指令增加描述。這個描述會在你執行 `php artisan list` 或 `php artisan help` 指令時顯示：
-
-    Artisan::command('build {project}', function ($project) {
-        $this->info("Building {$project}!");
-    })->describe('Build the project');
-
-<a name="defining-input-expectations"></a>
-## 定義預期的輸入
-
-在撰寫終端指令時，透過參數或選項來取得使用者的輸入是很常見的，Laravel 可以非常方便的在指令中的 `signature` 屬性定義你期望使用者輸入的內容。`signature` 屬性允許你用單一的、可讀性高且類似路由的語法來定義名稱、參數和選項。
-
-<a name="arguments"></a>
-### 參數
-
-所以使用者輸入的參數和選項都會在大括號中，在接下來的範例中，這個指令定義了一個**必要的**參數： `user`：
-
+class SendEmails extends Command
+{
     /**
      * The name and signature of the console command.
      *
@@ -195,98 +106,212 @@ Tinker 利用白名單來確認哪些 Artisan 指令能在 shell 上執行，預
      */
     protected $signature = 'email:send {user}';
 
-你也可以建立可選的參數，並定義參數的預設值：
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Send drip e-mails to a user';
 
-    // Optional argument...
-    email:send {user?}
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-    // Optional argument with default value...
-    email:send {user=foo}
+    /**
+     * Execute the console command.
+     *
+     * @param  \App\DripEmailer  $drip
+     * @return mixed
+     */
+    public function handle(DripEmailer $drip)
+    {
+        $drip->send(User::find($this->argument('user')));
+    }
+}
+```
+
+<a name="closure-commands"></a>
+### 閉包指令
+
+基於閉包的指令提供了一種將終端指令定義為類別之外的替代方法。就像路由閉包是控制器的替代方法一樣，將指令閉包視為指令類別的替代方法。在您的 `app/Console/Kernel.php` 檔案的 `commands` 方法中，Laravel 加載 `routes/console.php` 檔案：
+
+```php
+/**
+ * 註冊應用程式的基於閉包的指令。
+ *
+ * @return void
+ */
+protected function commands()
+{
+    require base_path('routes/console.php');
+}
+```
+
+即使此檔案未定義 HTTP 路由，但它定義了基於控制台的應用程式入口點（路由）。在此檔案中，您可以使用 `Artisan::command` 方法定義所有基於閉包的路由。`command` 方法接受兩個引數：[命令簽名](#defining-input-expectations) 和一個接收命令引數和選項的閉包：
+
+```php
+Artisan::command('build {project}', function ($project) {
+    $this->info("Building {$project}!");
+});
+```
+
+閉包綁定到底層命令實例，因此您可以完全訪問所有輔助方法，就像在完整命令類別上一樣。
+
+#### 型別提示依賴
+
+除了接收命令引數和選項外，命令閉包還可以對您希望從[服務容器](/docs/{{version}}/container)中解析的其他依賴進行型別提示：
+
+```php
+use App\DripEmailer;
+use App\User;
+
+Artisan::command('email:send {user}', function (DripEmailer $drip, $user) {
+    $drip->send(User::find($user));
+});
+```
+
+#### 閉包命令描述
+
+在定義基於閉包的命令時，您可以使用 `describe` 方法為命令添加描述。當您運行 `php artisan list` 或 `php artisan help` 命令時，將顯示此描述：
+
+```php
+Artisan::command('build {project}', function ($project) {
+    $this->info("Building {$project}!");
+})->describe('建立專案');
+```
+
+<a name="defining-input-expectations"></a>
+## 定義輸入期望
+
+在編寫控制台命令時，通常通過引數或選項從用戶那裡收集輸入是很常見的。Laravel 使得非常方便定義您從用戶那裡期望的輸入，使用您的命令上的 `signature` 屬性。`signature` 屬性允許您以單一、表達性強的路由樣式語法定義命令的名稱、引數和選項。
+
+<a name="arguments"></a>
+### 引數
+
+所有用戶提供的引數和選項都包裹在大括號中。在以下示例中，命令定義了一個**必需**引數：`user`：
+
+```markdown
+/**
+ * 控制台命令的名稱和簽名。
+ *
+ * @var string
+ */
+protected $signature = 'email:send {user}';
+```
+
+您也可以將引數設為可選，並為引數定義默認值：
+
+```markdown
+// 可選引數...
+email:send {user?}
+
+// 帶有默認值的可選引數...
+email:send {user=foo}
+```
 
 <a name="options"></a>
 ### 選項
 
-選項類似參數，是另一種使用者輸入的格式。當指令列指定選項時會以兩個字符 (`--`) 做為前綴。有兩種類型的選項：可接受值與不可接受值，不接受值的選項可作為布林值的「開關」，讓我們看看這種類型選項的例子：
+選項與引數一樣，是用戶輸入的另一種形式。在命令行上指定選項時，選項前面加上兩個連字符（`--`）。有兩種類型的選項：接收值的選項和不接收值的選項。不接收值的選項用作布爾型“開關”。讓我們看一個這種類型選項的示例：
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'email:send {user} {--queue}';
+```markdown
+/**
+ * 控制台命令的名稱和簽名。
+ *
+ * @var string
+ */
+protected $signature = 'email:send {user} {--queue}';
+```
 
-在這個範例中，可以在呼叫 Artisan 指令時指定 `--queue` 開關，如果有輸入 `--queue`，選項的值會被設為 `true`，沒有的話則會被設為 `false`：
+在此示例中，當調用 Artisan 命令時，可以指定 `--queue` 開關。如果傳遞了 `--queue` 開關，則該選項的值將為 `true`。否則，值將為 `false`：
 
-    php artisan email:send 1 --queue
+```markdown
+php artisan email:send 1 --queue
+```
 
 <a name="options-with-values"></a>
-#### 附值的選項
+#### 帶值的選項
 
-接下來讓我們看看一個附值的選項，如果使用者要為選項指定值，需要在選項名稱後面加上 `=` 符號：
+接下來，讓我們看一個期望值的選項。如果用戶必須為選項指定值，則在選項名稱後面加上 `=` 符號：
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'email:send {user} {--queue=}';
+```markdown
+/**
+ * 控制台命令的名稱和簽名。
+ *
+ * @var string
+ */
+protected $signature = 'email:send {user} {--queue=}';
+```
 
-在這個範例中，使用者可以像這樣輸入選項的值：
+在此示例中，用戶可以這樣為選項傳遞值：
 
-    php artisan email:send 1 --queue=default
+```markdown
+php artisan email:send 1 --queue=default
+```
 
-你可以在選項名稱後指定預設值，如果使用者沒有輸入選項的值，將會使用預設值：
+您可以通過在選項名稱後指定默認值來為選項分配默認值。如果用戶未傳遞選項值，將使用默認值：
 
-    email:send {user} {--queue=default}
+```markdown
+email:send {user} {--queue=default}
+```
 
 <a name="option-shortcuts"></a>
-#### 選項簡寫
+#### 選項快捷鍵
 
-要在定義選項時指定簡寫，你可以在選項名稱前指定它，並使用 | 分隔符號和完整的名稱隔開：
+在定義選項時指定快捷鍵，您可以在選項名稱之前指定它，並使用 | 分隔符將快捷鍵與完整選項名稱分開：
 
-    email:send {user} {--Q|queue}
+```markdown
+email:send {user} {--Q|queue}
+```
+
 
 <a name="input-arrays"></a>
 ### 輸入陣列
 
-如果在定義參數或選項時預期使用者輸入陣列，你可以使用 `*` 符號，首先讓我們看看一個陣列參數的範例：
+如果您想要定義期望陣列輸入的引數或選項，您可以使用 `*` 字元。首先，讓我們看一個指定陣列引數的範例：
 
     email:send {user*}
 
-當呼叫這個方法時，可以把 `user` 參數傳給指令列，比如說，以下的指令會把 `user` 的值設為 `['foo', 'bar']`：
+在呼叫此方法時，`user` 引數可以按照順序傳遞到命令列。例如，以下命令將把 `user` 的值設置為 `['foo', 'bar']`：
 
     php artisan email:send foo bar
 
-當定義一個預期輸入陣列的參數時，傳給指令的每個選項值都應該加上選項名稱的前綴：
+當定義一個期望陣列輸入的選項時，傳遞給命令的每個選項值都應該以選項名稱為前綴：
 
     email:send {user} {--id=*}
 
     php artisan email:send --id=1 --id=2
 
 <a name="input-descriptions"></a>
-### 輸入說明
+### 輸入描述
 
-你可以透過冒號為輸入的參數和選項個別說明如何使用，如果你需要一些額外的空間來定義你的指令，可以隨意分開成多行：
+您可以通過使用冒號將參數與描述分開來為輸入引數和選項分配描述。如果您需要一點額外的空間來定義您的命令，請隨意將定義擴展到多行：
 
     /**
-     * The name and signature of the console command.
+     * 控制台命令的名稱和簽名。
      *
      * @var string
      */
     protected $signature = 'email:send
-                            {user : The ID of the user}
-                            {--queue= : Whether the job should be queued}';
+                            {user : 用戶的ID}
+                            {--queue= : 工作是否應該排隊}';
 
 <a name="command-io"></a>
-## 指令 I/O
+## 命令輸出/輸入
 
 <a name="retrieving-input"></a>
-### 取得輸入
+### 檢索輸入
 
-在指令執行時，顯然你需要存取指令接受的參數和選項，你可以使用 `argument` 和 `option` 方法來做到：
+當您的命令正在執行時，您顯然需要訪問命令接受的引數和選項的值。為此，您可以使用 `argument` 和 `option` 方法：
 
     /**
-     * Execute the console command.
+     * 執行控制台命令。
      *
      * @return mixed
      */
@@ -297,224 +322,264 @@ Tinker 利用白名單來確認哪些 Artisan 指令能在 shell 上執行，預
         //
     }
 
-如果你需要以 `array` 的方式取得所有的參數，呼叫 `arguments` 方法：
+如果您需要將所有引數作為 `array` 檢索，請調用 `arguments` 方法：
 
     $arguments = $this->arguments();
 
-藉由 `option` 方法，你可以像取得參數一樣輕鬆的取得選項。可以呼叫 `options` 方法以陣列的方式取得所有選項：
+選項可以像引數一樣輕鬆檢索，使用 `option` 方法。要將所有選項作為陣列檢索，請調用 `options` 方法：
 
-    // Retrieve a specific option...
+    // 檢索特定選項...
     $queueName = $this->option('queue');
 
-    // Retrieve all options...
-    $options = $this->options();
+### 要求輸入
 
-如果參數或選項不存在，將會回傳 `null`。
+除了顯示輸出之外，您還可以在執行命令期間要求用戶提供輸入。`ask` 方法將提示用戶回答給定的問題，接受他們的輸入，然後將用戶的輸入返回給您的命令：
 
-<a name="prompting-for-input"></a>
-### 互動式輸入
+```php
+/**
+ * 執行控制台命令。
+ *
+ * @return mixed
+ */
+public function handle()
+{
+    $name = $this->ask('你叫什麼名字？');
+}
+```
 
-除了顯示輸出以外，你還可以要求使用者在執行指令時提供輸入。`ask` 方法將用給定的問題提示使用者，接受輸入，並將使用者的輸入回傳到你的指令：
+`secret` 方法類似於 `ask`，但用戶在控制台輸入時不會看到他們的輸入。當要求敏感信息（如密碼）時，此方法很有用：
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        $name = $this->ask('What is your name?');
-    }
+```php
+$password = $this->secret('請輸入密碼：');
+```
 
-`secret` 方法類似 `ask`，但使用者的輸入並不會顯示在終端上，這個方法很適合用在要求使用者輸入密碼之類的敏感資訊：
+#### 要求確認
 
-    $password = $this->secret('What is the password?');
+如果您需要要求用戶進行簡單確認，可以使用 `confirm` 方法。默認情況下，此方法將返回 `false`。但是，如果用戶對提示輸入 `y` 或 `yes`，該方法將返回 `true`。
 
-#### 請求確認
+```php
+if ($this->confirm('您是否要繼續？')) {
+    //
+}
+```
 
-如果你需要對使用者進行簡單的確認，你可以使用 `confirm` 方法。在預設情況，這個方法會回傳 `false`，但如果使用者在提示中輸入 `y` 或 `yes` 則會回傳 `true`。
+#### 自動完成
 
-    if ($this->confirm('Do you wish to continue?')) {
-        //
-    }
+`anticipate` 方法可用於為可能的選擇提供自動完成。用戶仍然可以選擇任何答案，而不受自動完成提示的限制：
 
-#### 自動補全
+```php
+$name = $this->anticipate('你叫什麼名字？', ['Taylor', 'Dayle']);
+```
 
-`anticipate` 方法可以用來提供自動補全可能的選項，無論自動補全是否提示，使用者仍然可以選擇任何答案：
+或者，您可以將 Closure 作為 `anticipate` 方法的第二個參數。每次用戶輸入字符時，將調用 Closure。 Closure 應該接受包含用戶迄今輸入的字符串參數，並返回用於自動完成的選項陣列：
 
-    $name = $this->anticipate('What is your name?', ['Taylor', 'Dayle']);
+```php
+$name = $this->anticipate('你叫什麼名字？', function ($input) {
+    // 返回自動完成選項...
+});
+```
 
-或者你可以將閉包做為第二個參數傳到 `anticipate` 方法，這個閉包會在每一次使用者輸入字元時被呼叫，它應該接受一個包含使用者輸入的字串參數，並回傳一個用於自動補全的選項陣列：
+#### 多選問題
 
-    $name = $this->anticipate('What is your name?', function ($input) {
-        // Return auto-completion options...
-    });
+如果您需要給用戶一組預定義的選擇，可以使用 `choice` 方法。如果未選擇任何選項，您可以將默認值的陣列索引設置為返回的值：
 
-#### 選擇題
+```php
+$name = $this->choice('你叫什麼名字？', ['Taylor', 'Dayle'], $defaultIndex);
+```
 
-如果你需要給使用者預先定義好的選項，你可以使用 `choice` 方法。你還可以設置一個陣列的索引，它會在沒有選項被選擇時被當作預設值：
+此外，`choice` 方法接受第四和第五個可選引數，用於確定選擇有效回應的最大嘗試次數以及是否允許多個選擇：
 
-    $name = $this->choice('What is your name?', ['Taylor', 'Dayle'], $defaultIndex);
-
-除此之外，`choice` 方法接受可選的第四和第五個參數，用於確認選擇有效回應的最大嘗試次數以及是否允許多選：
-
-    $name = $this->choice(
-        'What is your name?',
-        ['Taylor', 'Dayle'],
-        $defaultIndex,
-        $maxAttempts = null,
-        $allowMultipleSelections = false
-    );
+```php
+$name = $this->choice(
+    '你叫什麼名字？',
+    ['Taylor', 'Dayle'],
+    $defaultIndex,
+    $maxAttempts = null,
+    $allowMultipleSelections = false
+);
+```
 
 <a name="writing-output"></a>
-### 自訂輸出
+### 輸出內容
 
-使用 `line`、`info`、`comment`、`question` 和 `error` 方法來傳送輸出到終端，每個方法都會使用適合的 ANSI 顏色來表達他們的目的。例如，讓我們向使用者顯示一些一般資訊，通常會使用 `info` 方法，它會在終端中顯示綠色的文字：
+要將輸出發送到終端，請使用 `line`、`info`、`comment`、`question` 和 `error` 方法。每個方法將根據其用途使用適當的 ANSI 顏色。例如，讓我們向用戶顯示一些一般信息。通常，`info` 方法將以綠色文字顯示在終端中：
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        $this->info('Display this on the screen');
-    }
+```php
+/**
+ * 執行終端命令。
+ *
+ * @return mixed
+ */
+public function handle()
+{
+    $this->info('在螢幕上顯示這個');
+}
+```
 
-要顯示錯誤訊息，可以使用 `error` 方法，錯誤訊息一般以紅色顯示：
+要顯示錯誤訊息，請使用 `error` 方法。錯誤訊息文本通常以紅色顯示：
 
-    $this->error('Something went wrong!');
+```php
+$this->error('出了些問題！');
+```
 
-如果你想顯示沒有顏色的終端輸出，可以使用 `line` 方法：
+如果您想顯示未經著色的終端輸出，請使用 `line` 方法：
 
-    $this->line('Display this on the screen');
+```php
+$this->line('在螢幕上顯示這個');
+```
 
 #### 表格佈局
 
-`table` 方法讓更輕鬆地正確格式化多行/列的資料，只需要傳送標題和行，它會根據給定的資料動態計算出長寬：
+`table` 方法使得正確格式化多行/列數據變得容易。只需將標題和行傳遞給該方法。寬度和高度將根據給定的數據動態計算：
 
-    $headers = ['Name', 'Email'];
+```php
+$headers = ['名稱', '電子郵件'];
 
-    $users = App\User::all(['name', 'email'])->toArray();
+$users = App\User::all(['name', 'email'])->toArray();
 
-    $this->table($headers, $users);
+$this->table($headers, $users);
+```
 
 #### 進度條
 
-對於長時間執行的任務，顯示進度條會很有幫助。使用輸出物件，我們可以開始、前進和停止進度條。先定義整個過程中過經過的步驟數量，然後處理完每個項目後再推進進度條：
+對於運行時間較長的任務，顯示進度指示器可能很有幫助。使用輸出對象，我們可以啟動、前進和停止進度條。首先，定義進程將遍歷的總步驟數。然後，在處理每個項目後前進進度條：
 
-    $users = App\User::all();
+```php
+$users = App\User::all();
 
-    $bar = $this->output->createProgressBar(count($users));
+$bar = $this->output->createProgressBar(count($users));
 
-    $bar->start();
+$bar->start();
+```
 
-    foreach ($users as $user) {
-        $this->performTask($user);
+```php
+foreach ($users as $user) {
+    $this->performTask($user);
 
-        $bar->advance();
-    }
+    $bar->advance();
+}
 
-    $bar->finish();
+$bar->finish();
+```
 
-更多進階選項，請查閱 [Symfony 進度條元件文件](https://symfony.com/doc/current/components/console/helpers/progressbar.html)
+要查看更多進階選項，請參閱[Symfony Progress Bar 元件文件](https://symfony.com/doc/current/components/console/helpers/progressbar.html)。
 
 <a name="registering-commands"></a>
 ## 註冊指令
 
-因為 `load` 方法呼叫了你在終端核心的 `commands` 方法，所有在 `app/Console/Commands` 資料夾中的指令都會自動註冊到 Artisan。事實上，你可以自由地呼叫 `load` 方法來掃描其他資料夾的 Artisan 指令：
+由於在您的控制台核心的 `commands` 方法中調用了 `load` 方法，`app/Console/Commands` 目錄中的所有指令將自動註冊到 Artisan。事實上，您可以自由地對 `load` 方法進行額外的調用，以掃描其他目錄中的 Artisan 指令：
 
-    /**
-     * Register the commands for the application.
-     *
-     * @return void
-     */
-    protected function commands()
-    {
-        $this->load(__DIR__.'/Commands');
-        $this->load(__DIR__.'/MoreCommands');
+```php
+/**
+ * 註冊應用程式的指令。
+ *
+ * @return void
+ */
+protected function commands()
+{
+    $this->load(__DIR__.'/Commands');
+    $this->load(__DIR__.'/MoreCommands');
 
-        // ...
-    }
+    // ...
+}
+```
 
-你還可以藉由把指令的名稱寫入 `app/Console/Kernel.php` 資料夾中的 `$commands` 屬性來手動註冊指令。當 Artisan 啟動時，所有被列在這個屬性中的指令會被[服務容器](/docs/{{version}}/container) 解析並註冊到 Artisan 上：
+您也可以通過將其類名添加到 `app/Console/Kernel.php` 檔案的 `$commands` 屬性中來手動註冊指令。當 Artisan 啟動時，此屬性中列出的所有指令將由[服務容器](/docs/{{version}}/container)解析並註冊到 Artisan：
 
-    protected $commands = [
-        Commands\SendEmails::class
-    ];
+```php
+protected $commands = [
+    Commands\SendEmails::class
+];
+```
 
 <a name="programmatically-executing-commands"></a>
-## 使用程式碼執行指令
+## 程式化執行指令
 
-有時候你會想要在指令列介面以外的地方執行 Artisan 指令。比如說，你希望在路由或控制器觸發 Artisan 指令，你可以使用`Artisan` facade 的 `call` 方法來達成。`call` 方法接受指令的名稱或類別做為第一個參數，指令參數的陣列作為第二個參數，並回傳退出碼：
+有時您可能希望在 CLI 之外執行 Artisan 指令。例如，您可能希望從路由或控制器觸發 Artisan 指令。您可以使用 `Artisan` Facade 上的 `call` 方法來實現這一點。`call` 方法接受指令的名稱或類別作為第一個引數，並將命令引數的陣列作為第二個引數。退出碼將被返回：
 
-    Route::get('/foo', function () {
-        $exitCode = Artisan::call('email:send', [
-            'user' => 1, '--queue' => 'default'
-        ]);
+```php
+Route::get('/foo', function () {
+    $exitCode = Artisan::call('email:send', [
+        'user' => 1, '--queue' => 'default'
+    ]);
 
-        //
-    });
+    //
+});
+```
 
-或者，你也可以將整個 Artisan 指令的字串傳入 `call` 方法：
+或者，您可以將整個 Artisan 指令作為字符串傳遞給 `call` 方法：
 
-    Artisan::call('email:send 1 --queue=default');
+```php
+Artisan::call('email:send 1 --queue=default');
+```
 
-`Artisan` facade 的 `queue` 方法可以將 Artisan 指令放進隊列裡，讓它由你的 [隊列進程](/docs/{{version}}/queues) 進行背景處理。在使用這個方法之前，請確保你已經設定好你的隊列和隊列監聽器：
+使用 `Artisan` 門面上的 `queue` 方法，您甚至可以將 Artisan 命令排入佇列，以便由您的 [佇列工作者](/docs/{{version}}/queues) 在背景中處理。在使用此方法之前，請確保已配置您的佇列並正在執行佇列監聽器：
 
-    Route::get('/foo', function () {
-        Artisan::queue('email:send', [
-            'user' => 1, '--queue' => 'default'
-        ]);
-
-        //
-    });
-
-你也可以指定要將 Artisan 指令分配到哪個連接或隊列：
-
+```php
+Route::get('/foo', function () {
     Artisan::queue('email:send', [
         'user' => 1, '--queue' => 'default'
-    ])->onConnection('redis')->onQueue('commands');
-
-#### 傳送陣列
-
-如果定義了接受陣列的指令，你可以將陣列值傳送給選項：
-
-    Route::get('/foo', function () {
-        $exitCode = Artisan::call('email:send', [
-            'user' => 1, '--id' => [5, 13]
-        ]);
-    });
-
-#### 傳送布林值
-
-如果你需要指定非字串選項的值，例如 `migrate:refresh` 指令的 `--force` 標記，可以傳送 `true` 或 `false`：
-
-    $exitCode = Artisan::call('migrate:refresh', [
-        '--force' => true,
     ]);
+
+    //
+});
+```
+
+您還可以指定要將 Artisan 命令調度到的連線或佇列：
+
+```php
+Artisan::queue('email:send', [
+    'user' => 1, '--queue' => 'default'
+])->onConnection('redis')->onQueue('commands');
+```
+
+#### 傳遞陣列值
+
+如果您的命令定義了一個接受陣列的選項，則可以將一組值傳遞給該選項：
+
+```php
+Route::get('/foo', function () {
+    $exitCode = Artisan::call('email:send', [
+        'user' => 1, '--id' => [5, 13]
+    ]);
+});
+```
+
+#### 傳遞布林值
+
+如果您需要指定不接受字串值的選項的值，例如 `migrate:refresh` 命令上的 `--force` 標誌，則應傳遞 `true` 或 `false`：
+
+```php
+$exitCode = Artisan::call('migrate:refresh', [
+    '--force' => true,
+]);
+```
 
 <a name="calling-commands-from-other-commands"></a>
-### 在指令中呼叫其他指令
+### 從其他命令呼叫命令
 
-有時候你希望在已經存在的 Artisan 指令中呼叫其他指令，你可以使用 `call` 方法。`call` 方法接受指令名稱和指令參數的陣列：
+有時您可能希望從現有的 Artisan 命令中呼叫其他命令。您可以使用 `call` 方法來執行此操作。此 `call` 方法接受命令名稱和命令參數的陣列：
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        $this->call('email:send', [
-            'user' => 1, '--queue' => 'default'
-        ]);
-
-        //
-    }
-
-如果你想要呼叫另一個終端指令且抑制所有輸出，你可以使用 `callSilent` 方法。`callSilent` 方法和 `call` 方法有一樣的使用方式：
-
-    $this->callSilent('email:send', [
+```php
+/**
+ * 執行控制台命令。
+ *
+ * @return mixed
+ */
+public function handle()
+{
+    $this->call('email:send', [
         'user' => 1, '--queue' => 'default'
     ]);
+
+    //
+}
+```
+
+如果您想要呼叫另一個控制台命令並抑制其所有輸出，您可以使用 `callSilent` 方法。`callSilent` 方法與 `call` 方法具有相同的簽名：
+
+```php
+$this->callSilent('email:send', [
+    'user' => 1, '--queue' => 'default'
+]);
+```

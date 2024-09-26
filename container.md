@@ -1,280 +1,310 @@
-# Service Container
+# 服務容器
 
-- [Introduction](#introduction)
-- [Binding](#binding)
-    - [Binding Basics](#binding-basics)
-    - [Binding Interfaces To Implementations](#binding-interfaces-to-implementations)
-    - [Contextual Binding](#contextual-binding)
-    - [Tagging](#tagging)
-    - [Extending Bindings](#extending-bindings)
-- [Resolving](#resolving)
-    - [The Make Method](#the-make-method)
-    - [Automatic Injection](#automatic-injection)
-- [Container Events](#container-events)
+- [簡介](#introduction)
+- [綁定](#binding)
+    - [綁定基礎](#binding-basics)
+    - [將介面綁定到實作](#binding-interfaces-to-implementations)
+    - [情境綁定](#contextual-binding)
+    - [標記](#tagging)
+    - [擴展綁定](#extending-bindings)
+- [解析](#resolving)
+    - [make 方法](#the-make-method)
+    - [自動注入](#automatic-injection)
+- [容器事件](#container-events)
 - [PSR-11](#psr-11)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-The Laravel service container is a powerful tool for managing class dependencies and performing dependency injection. Dependency injection is a fancy phrase that essentially means this: class dependencies are "injected" into the class via the constructor or, in some cases, "setter" methods.
+Laravel 服務容器是一個強大的工具，用於管理類別之間的依賴關係並執行依賴注入。依賴注入是一個花俏的詞語，基本上意味著這樣：類別的依賴關係通過建構子或在某些情況下通過「setter」方法「注入」到類別中。
 
-Let's look at a simple example:
+讓我們看一個簡單的例子：
 
-    <?php
+```php
+namespace App\Http\Controllers;
 
-    namespace App\Http\Controllers;
+use App\Http\Controllers\Controller;
+use App\Repositories\UserRepository;
+use App\User;
 
-    use App\Http\Controllers\Controller;
-    use App\Repositories\UserRepository;
-    use App\User;
+class UserController extends Controller
+{
+    /**
+     * 使用者存儲庫的實作。
+     *
+     * @var UserRepository
+     */
+    protected $users;
 
-    class UserController extends Controller
+    /**
+     * 創建一個新的控制器實例。
+     *
+     * @param  UserRepository  $users
+     * @return void
+     */
+    public function __construct(UserRepository $users)
     {
-        /**
-         * The user repository implementation.
-         *
-         * @var UserRepository
-         */
-        protected $users;
-
-        /**
-         * Create a new controller instance.
-         *
-         * @param  UserRepository  $users
-         * @return void
-         */
-        public function __construct(UserRepository $users)
-        {
-            $this->users = $users;
-        }
-
-        /**
-         * Show the profile for the given user.
-         *
-         * @param  int  $id
-         * @return Response
-         */
-        public function show($id)
-        {
-            $user = $this->users->find($id);
-
-            return view('user.profile', ['user' => $user]);
-        }
+        $this->users = $users;
     }
 
-In this example, the `UserController` needs to retrieve users from a data source. So, we will **inject** a service that is able to retrieve users. In this context, our `UserRepository` most likely uses [Eloquent](/docs/{{version}}/eloquent) to retrieve user information from the database. However, since the repository is injected, we are able to easily swap it out with another implementation. We are also able to easily "mock", or create a dummy implementation of the `UserRepository` when testing our application.
+    /**
+     * 顯示給定使用者的個人資料。
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show($id)
+    {
+        $user = $this->users->find($id);
 
-A deep understanding of the Laravel service container is essential to building a powerful, large application, as well as for contributing to the Laravel core itself.
+        return view('user.profile', ['user' => $user]);
+    }
+}
+```
+
+在這個例子中，`UserController` 需要從資料來源檢索使用者。因此，我們將**注入**一個能夠檢索使用者的服務。在這個情況下，我們的 `UserRepository` 很可能使用 [Eloquent](/docs/{{version}}/eloquent) 從資料庫中檢索使用者資訊。然而，由於存儲庫是被注入的，我們可以輕鬆地將其替換為另一個實作。我們還可以輕鬆地「模擬」或在測試應用程式時創建 `UserRepository` 的虛擬實作。
+
+對 Laravel 服務容器有深入的了解對於建立強大的大型應用程式至關重要，同時也有助於為 Laravel 核心本身做出貢獻。
 
 <a name="binding"></a>
-## Binding
+## 綁定
 
 <a name="binding-basics"></a>
-### Binding Basics
+### 綁定基礎
 
-Almost all of your service container bindings will be registered within [service providers](/docs/{{version}}/providers), so most of these examples will demonstrate using the container in that context.
+幾乎所有的服務容器綁定都將在 [服務提供者](/docs/{{version}}/providers) 內註冊，因此這些示例大多數將展示在該上下文中使用容器。
 
-> {tip} There is no need to bind classes into the container if they do not depend on any interfaces. The container does not need to be instructed on how to build these objects, since it can automatically resolve these objects using reflection.
+> {tip} 如果類別不依賴任何介面，則無需將其綁定到容器中。容器不需要指示如何建構這些物件，因為它可以使用反射自動解析這些物件。
 
-#### Simple Bindings
+#### 簡單綁定
 
-Within a service provider, you always have access to the container via the `$this->app` property. We can register a binding using the `bind` method, passing the class or interface name that we wish to register along with a `Closure` that returns an instance of the class:
+在服務提供者內，您始終可以透過 `$this->app` 屬性訪問容器。我們可以使用 `bind` 方法註冊一個綁定，傳遞我們希望註冊的類別或介面名稱以及返回該類別實例的 `Closure`：
 
     $this->app->bind('HelpSpot\API', function ($app) {
         return new \HelpSpot\API($app->make('HttpClient'));
     });
 
-Note that we receive the container itself as an argument to the resolver. We can then use the container to resolve sub-dependencies of the object we are building.
+請注意，我們將容器本身作為解析器的參數接收。然後，我們可以使用容器來解析正在建構的物件的子依賴項。
 
-#### Binding A Singleton
+#### 綁定單例
 
-The `singleton` method binds a class or interface into the container that should only be resolved one time. Once a singleton binding is resolved, the same object instance will be returned on subsequent calls into the container:
+`singleton` 方法將一個只應解析一次的類別或介面綁定到容器中。一旦解析單例綁定，將在後續對容器的調用中返回相同的物件實例：
 
     $this->app->singleton('HelpSpot\API', function ($app) {
         return new \HelpSpot\API($app->make('HttpClient'));
     });
 
-#### Binding Instances
+#### 綁定實例
 
-You may also bind an existing object instance into the container using the `instance` method. The given instance will always be returned on subsequent calls into the container:
+您也可以使用 `instance` 方法將現有的物件實例綁定到容器中。給定的實例將始終在後續對容器的調用中返回：
 
     $api = new \HelpSpot\API(new HttpClient);
 
     $this->app->instance('HelpSpot\API', $api);
 
-#### Binding Primitives
+#### 綁定基本型別
 
-Sometimes you may have a class that receives some injected classes, but also needs an injected primitive value such as an integer. You may easily use contextual binding to inject any value your class may need:
+有時您可能有一個接收一些注入類別的類別，但也需要一個注入的基本型別值，例如整數。您可以輕鬆使用上下文綁定來注入您的類別可能需要的任何值：
 
-    $this->app->when('App\Http\Controllers\UserController')
+```php
+$this->app->when('App\Http\Controllers\UserController')
               ->needs('$variableName')
               ->give($value);
+```
 
 <a name="binding-interfaces-to-implementations"></a>
-### Binding Interfaces To Implementations
+### 綁定介面到實作
 
-A very powerful feature of the service container is its ability to bind an interface to a given implementation. For example, let's assume we have an `EventPusher` interface and a `RedisEventPusher` implementation. Once we have coded our `RedisEventPusher` implementation of this interface, we can register it with the service container like so:
+服務容器的一個非常強大的功能是將介面綁定到特定的實作。例如，假設我們有一個 `EventPusher` 介面和一個 `RedisEventPusher` 實作。一旦我們編寫了這個介面的 `RedisEventPusher` 實作，我們可以像這樣在服務容器中註冊它：
 
-    $this->app->bind(
-        'App\Contracts\EventPusher',
-        'App\Services\RedisEventPusher'
-    );
+```php
+$this->app->bind(
+    'App\Contracts\EventPusher',
+    'App\Services\RedisEventPusher'
+);
+```
 
-This statement tells the container that it should inject the `RedisEventPusher` when a class needs an implementation of `EventPusher`. Now we can type-hint the `EventPusher` interface in a constructor, or any other location where dependencies are injected by the service container:
+這個語句告訴容器，當一個類別需要一個 `EventPusher` 的實作時，應該注入 `RedisEventPusher`。現在我們可以在建構子中或服務容器注入依賴的任何其他位置中，使用 `EventPusher` 介面進行型別提示：
 
-    use App\Contracts\EventPusher;
+```php
+use App\Contracts\EventPusher;
 
-    /**
-     * Create a new class instance.
-     *
-     * @param  EventPusher  $pusher
-     * @return void
-     */
-    public function __construct(EventPusher $pusher)
-    {
-        $this->pusher = $pusher;
-    }
+/**
+ * 創建一個新的類別實例。
+ *
+ * @param  EventPusher  $pusher
+ * @return void
+ */
+public function __construct(EventPusher $pusher)
+{
+    $this->pusher = $pusher;
+}
+```
 
 <a name="contextual-binding"></a>
-### Contextual Binding
+### 上下文綁定
 
-Sometimes you may have two classes that utilize the same interface, but you wish to inject different implementations into each class. For example, two controllers may depend on different implementations of the `Illuminate\Contracts\Filesystem\Filesystem` [contract](/docs/{{version}}/contracts). Laravel provides a simple, fluent interface for defining this behavior:
+有時您可能有兩個使用相同介面的類別，但希望將不同的實作注入到每個類別中。例如，兩個控制器可能依賴於 `Illuminate\Contracts\Filesystem\Filesystem` [合約](/docs/{{version}}/contracts) 的不同實作。Laravel 提供了一個簡單、流暢的接口來定義這種行為：
 
-    use App\Http\Controllers\PhotoController;
-    use App\Http\Controllers\UploadController;
-    use App\Http\Controllers\VideoController;
-    use Illuminate\Contracts\Filesystem\Filesystem;
-    use Illuminate\Support\Facades\Storage;
+```php
+use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\VideoController;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Storage;
 
-    $this->app->when(PhotoController::class)
+$this->app->when(PhotoController::class)
               ->needs(Filesystem::class)
               ->give(function () {
                   return Storage::disk('local');
               });
+```
 
-    $this->app->when([VideoController::class, UploadController::class])
-              ->needs(Filesystem::class)
-              ->give(function () {
-                  return Storage::disk('s3');
-              });
+```php
+$this->app->when([VideoController::class, UploadController::class])
+          ->needs(Filesystem::class)
+          ->give(function () {
+              return Storage::disk('s3');
+          });
+```
 
 <a name="tagging"></a>
-### Tagging
+### 標記
 
-Occasionally, you may need to resolve all of a certain "category" of binding. For example, perhaps you are building a report aggregator that receives an array of many different `Report` interface implementations. After registering the `Report` implementations, you can assign them a tag using the `tag` method:
+偶爾，您可能需要解析某個特定“類別”綁定的所有內容。例如，也許您正在建立一個報告聚合器，該聚合器接收許多不同 `Report` 介面實作的陣列。在註冊 `Report` 實作之後，您可以使用 `tag` 方法為它們分配一個標記：
 
-    $this->app->bind('SpeedReport', function () {
-        //
-    });
+```php
+$this->app->bind('SpeedReport', function () {
+    //
+});
 
-    $this->app->bind('MemoryReport', function () {
-        //
-    });
+$this->app->bind('MemoryReport', function () {
+    //
+});
 
-    $this->app->tag(['SpeedReport', 'MemoryReport'], 'reports');
+$this->app->tag(['SpeedReport', 'MemoryReport'], 'reports');
+```
 
-Once the services have been tagged, you may easily resolve them all via the `tagged` method:
+一旦服務已被標記，您可以輕鬆透過 `tagged` 方法解析它們全部：
 
-    $this->app->bind('ReportAggregator', function ($app) {
-        return new ReportAggregator($app->tagged('reports'));
-    });
+```php
+$this->app->bind('ReportAggregator', function ($app) {
+    return new ReportAggregator($app->tagged('reports'));
+});
+```
 
 <a name="extending-bindings"></a>
-### Extending Bindings
+### 擴展綁定
 
-The `extend` method allows the modification of resolved services. For example, when a service is resolved, you may run additional code to decorate or configure the service. The `extend` method accepts a Closure, which should return the modified service, as its only argument. The Closure receives the service being resolved and the container instance:
+`extend` 方法允許修改已解析的服務。例如，當解析服務時，您可以運行額外的程式碼以裝飾或配置服務。`extend` 方法接受一個閉包，該閉包應該返回修改後的服務，作為它唯一的引數。閉包接收正在解析的服務和容器實例：
 
-    $this->app->extend(Service::class, function ($service, $app) {
-        return new DecoratedService($service);
-    });
+```php
+$this->app->extend(Service::class, function ($service, $app) {
+    return new DecoratedService($service);
+});
+```
 
 <a name="resolving"></a>
-## Resolving
+## 解析
 
 <a name="the-make-method"></a>
-#### The `make` Method
+#### `make` 方法
 
-You may use the `make` method to resolve a class instance out of the container. The `make` method accepts the name of the class or interface you wish to resolve:
+您可以使用 `make` 方法從容器中解析出一個類別實例。`make` 方法接受您希望解析的類別或介面的名稱：
 
-    $api = $this->app->make('HelpSpot\API');
+```php
+$api = $this->app->make('HelpSpot\API');
+```
 
-If you are in a location of your code that does not have access to the `$app` variable, you may use the global `resolve` helper:
+如果您在代碼的某個位置無法存取 `$app` 變數，您可以使用全域的 `resolve` 助手：
 
-    $api = resolve('HelpSpot\API');
+```php
+$api = resolve('HelpSpot\API');
+```
 
-If some of your class' dependencies are not resolvable via the container, you may inject them by passing them as an associative array into the `makeWith` method:
+如果您的某些類別依賴無法透過容器解析，您可以通過將它們作為關聯陣列傳遞給 `makeWith` 方法來注入它們：
+```
 
-    $api = $this->app->makeWith('HelpSpot\API', ['id' => 1]);
+```php
+$api = $this->app->makeWith('HelpSpot\API', ['id' => 1]);
+```
 
 <a name="automatic-injection"></a>
-#### Automatic Injection
+#### 自動注入
 
-Alternatively, and importantly, you may "type-hint" the dependency in the constructor of a class that is resolved by the container, including [controllers](/docs/{{version}}/controllers), [event listeners](/docs/{{version}}/events), [middleware](/docs/{{version}}/middleware), and more. Additionally, you may type-hint dependencies in the `handle` method of [queued jobs](/docs/{{version}}/queues). In practice, this is how most of your objects should be resolved by the container.
+或者，更重要的是，您可以在由容器解析的類別的建構子中"型別提示"依賴項，包括[控制器](/docs/{{version}}/controllers)、[事件監聽器](/docs/{{version}}/events)、[中介層](/docs/{{version}}/middleware)等。此外，您可以在[佇列任務](/docs/{{version}}/queues)的`handle`方法中型別提示依賴項。在實踐中，這是大多數物件應由容器解析的方式。
 
-For example, you may type-hint a repository defined by your application in a controller's constructor. The repository will automatically be resolved and injected into the class:
+例如，您可以在控制器的建構子中型別提示應用程式定義的存儲庫。該存儲庫將自動解析並注入到類別中：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Users\Repository as UserRepository;
+use App\Users\Repository as UserRepository;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * 使用者存儲庫實例。
+     */
+    protected $users;
+
+    /**
+     * 創建一個新的控制器實例。
+     *
+     * @param  UserRepository  $users
+     * @return void
+     */
+    public function __construct(UserRepository $users)
     {
-        /**
-         * The user repository instance.
-         */
-        protected $users;
-
-        /**
-         * Create a new controller instance.
-         *
-         * @param  UserRepository  $users
-         * @return void
-         */
-        public function __construct(UserRepository $users)
-        {
-            $this->users = $users;
-        }
-
-        /**
-         * Show the user with the given ID.
-         *
-         * @param  int  $id
-         * @return Response
-         */
-        public function show($id)
-        {
-            //
-        }
+        $this->users = $users;
     }
 
+    /**
+     * 顯示具有給定ID的使用者。
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show($id)
+    {
+        //
+    }
+}
+```
+
 <a name="container-events"></a>
-## Container Events
+## 容器事件
 
-The service container fires an event each time it resolves an object. You may listen to this event using the `resolving` method:
+服務容器每次解析物件時都會觸發一個事件。您可以使用`resolving`方法來監聽此事件：
 
-    $this->app->resolving(function ($object, $app) {
-        // Called when container resolves object of any type...
-    });
+```php
+$this->app->resolving(function ($object, $app) {
+    // 當容器解析任何類型的物件時調用...
+});
 
-    $this->app->resolving(\HelpSpot\API::class, function ($api, $app) {
-        // Called when container resolves objects of type "HelpSpot\API"...
-    });
+$this->app->resolving(\HelpSpot\API::class, function ($api, $app) {
+    // 當容器解析類型為"HelpSpot\API"的物件時調用...
+});
+```
 
-As you can see, the object being resolved will be passed to the callback, allowing you to set any additional properties on the object before it is given to its consumer.
+如您所見，正在解析的物件將傳遞給回調函式，使您能夠在將其提供給其使用者之前設置物件上的任何其他屬性。
+
 
 <a name="psr-11"></a>
 ## PSR-11
 
-Laravel's service container implements the [PSR-11](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-11-container.md) interface. Therefore, you may type-hint the PSR-11 container interface to obtain an instance of the Laravel container:
+Laravel 的服務容器實作了 [PSR-11](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-11-container.md) 介面。因此，您可以型別提示 PSR-11 服務容器介面以獲取 Laravel 容器的實例：
 
-    use Psr\Container\ContainerInterface;
+```php
+use Psr\Container\ContainerInterface;
 
-    Route::get('/', function (ContainerInterface $container) {
-        $service = $container->get('Service');
+Route::get('/', function (ContainerInterface $container) {
+    $service = $container->get('Service');
 
-        //
-    });
+    //
+});
+```
 
-An exception is thrown if the given identifier can't be resolved. The exception will be an instance of `Psr\Container\NotFoundExceptionInterface` if the identifier was never bound. If the identifier was bound but was unable to be resolved, an instance of `Psr\Container\ContainerExceptionInterface` will be thrown.
+如果無法解析給定的識別符，將拋出例外。如果從未綁定該識別符，則例外將是 `Psr\Container\NotFoundExceptionInterface` 的實例。如果綁定了識別符但無法解析，則將拋出 `Psr\Container\ContainerExceptionInterface` 的實例。

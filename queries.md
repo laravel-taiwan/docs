@@ -1,42 +1,42 @@
-# Database: Query Builder
+# 資料庫：查詢產生器
 
-- [Introduction](#introduction)
-- [Retrieving Results](#retrieving-results)
-    - [Chunking Results](#chunking-results)
-    - [Aggregates](#aggregates)
-- [Selects](#selects)
-- [Raw Expressions](#raw-expressions)
-- [Joins](#joins)
-- [Unions](#unions)
-- [Where Clauses](#where-clauses)
-    - [Parameter Grouping](#parameter-grouping)
-    - [Where Exists Clauses](#where-exists-clauses)
-    - [JSON Where Clauses](#json-where-clauses)
-- [Ordering, Grouping, Limit & Offset](#ordering-grouping-limit-and-offset)
-- [Conditional Clauses](#conditional-clauses)
-- [Inserts](#inserts)
-- [Updates](#updates)
-    - [Updating JSON Columns](#updating-json-columns)
-    - [Increment & Decrement](#increment-and-decrement)
-- [Deletes](#deletes)
-- [Pessimistic Locking](#pessimistic-locking)
-- [Debugging](#debugging)
+- [簡介](#introduction)
+- [擷取結果](#retrieving-results)
+    - [分塊結果](#chunking-results)
+    - [聚合](#aggregates)
+- [選擇](#selects)
+- [原始表達式](#raw-expressions)
+- [連接](#joins)
+- [聯集](#unions)
+- [條件子句](#where-clauses)
+    - [參數分組](#parameter-grouping)
+    - [存在條件子句](#where-exists-clauses)
+    - [JSON 條件子句](#json-where-clauses)
+- [排序、分組、限制和偏移](#ordering-grouping-limit-and-offset)
+- [條件子句](#conditional-clauses)
+- [插入](#inserts)
+- [更新](#updates)
+    - [更新 JSON 欄位](#updating-json-columns)
+    - [增加和減少](#increment-and-decrement)
+- [刪除](#deletes)
+- [悲觀鎖定](#pessimistic-locking)
+- [除錯](#debugging)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's database query builder provides a convenient, fluent interface to creating and running database queries. It can be used to perform most database operations in your application and works on all supported database systems.
+Laravel 的資料庫查詢產生器提供了一個方便、流暢的介面來創建和運行資料庫查詢。它可用於在應用程式中執行大多數資料庫操作，並且適用於所有支援的資料庫系統。
 
-The Laravel query builder uses PDO parameter binding to protect your application against SQL injection attacks. There is no need to clean strings being passed as bindings.
+Laravel 查詢產生器使用 PDO 參數綁定來保護您的應用程式免受 SQL 注入攻擊。不需要清理作為綁定傳遞的字串。
 
-> {note} PDO does not support binding column names. Therefore, you should never allow user input to dictate the column names referenced by your queries, including "order by" columns, etc. If you must allow the user to select certain columns to query against, always validate the column names against a white-list of allowed columns.
+> {note} PDO 不支援綁定欄位名稱。因此，您永遠不應允許使用者輸入來決定查詢中引用的欄位名稱，包括「order by」欄位等。如果必須允許使用者選擇某些欄位進行查詢，請始終對欄位名稱進行驗證，確保其在允許的欄位白名單中。
 
 <a name="retrieving-results"></a>
-## Retrieving Results
+## 擷取結果
 
-#### Retrieving All Rows From A Table
+#### 從表中擷取所有列
 
-You may use the `table` method on the `DB` facade to begin a query. The `table` method returns a fluent query builder instance for the given table, allowing you to chain more constraints onto the query and then finally get the results using the `get` method:
+您可以在 `DB` Facade 上使用 `table` 方法開始一個查詢。`table` 方法會為給定的表返回一個流暢的查詢產生器實例，允許您對查詢添加更多約束，然後最終使用 `get` 方法獲取結果：
 
     <?php
 
@@ -45,293 +45,354 @@ You may use the `table` method on the `DB` facade to begin a query. The `table` 
     use App\Http\Controllers\Controller;
     use Illuminate\Support\Facades\DB;
 
-    class UserController extends Controller
+```php
+class UserController extends Controller
+{
+    /**
+     * 顯示應用程式所有使用者的清單。
+     *
+     * @return Response
+     */
+    public function index()
     {
-        /**
-         * Show a list of all of the application's users.
-         *
-         * @return Response
-         */
-        public function index()
-        {
-            $users = DB::table('users')->get();
+        $users = DB::table('users')->get();
 
-            return view('user.index', ['users' => $users]);
-        }
+        return view('user.index', ['users' => $users]);
     }
+}
+```
 
-The `get` method returns an `Illuminate\Support\Collection` containing the results where each result is an instance of the PHP `stdClass` object. You may access each column's value by accessing the column as a property of the object:
+`get` 方法會回傳一個 `Illuminate\Support\Collection`，其中包含每個結果，每個結果都是 PHP `stdClass` 物件的實例。您可以透過將欄位視為物件的屬性來存取每個欄位的值：
 
-    foreach ($users as $user) {
-        echo $user->name;
-    }
-
-#### Retrieving A Single Row / Column From A Table
-
-If you just need to retrieve a single row from the database table, you may use the `first` method. This method will return a single `stdClass` object:
-
-    $user = DB::table('users')->where('name', 'John')->first();
-
+```php
+foreach ($users as $user) {
     echo $user->name;
+}
+```
 
-If you don't even need an entire row, you may extract a single value from a record using the `value` method. This method will return the value of the column directly:
+#### 從資料表檢索單一列 / 欄位
 
-    $email = DB::table('users')->where('name', 'John')->value('email');
+如果您只需要從資料庫表中檢索單一列，您可以使用 `first` 方法。此方法將返回單一的 `stdClass` 物件：
 
-To retrieve a single row by its `id` column value, use the `find` method:
+```php
+$user = DB::table('users')->where('name', 'John')->first();
 
-    $user = DB::table('users')->find(3);
+echo $user->name;
+```
 
-#### Retrieving A List Of Column Values
+如果您甚至不需要整個列，您可以使用 `value` 方法從記錄中提取單一值。此方法將直接返回欄位的值：
 
-If you would like to retrieve a Collection containing the values of a single column, you may use the `pluck` method. In this example, we'll retrieve a Collection of role titles:
+```php
+$email = DB::table('users')->where('name', 'John')->value('email');
+```
 
-    $titles = DB::table('roles')->pluck('title');
+要根據其 `id` 欄位值檢索單一列，請使用 `find` 方法：
 
-    foreach ($titles as $title) {
-        echo $title;
-    }
+```php
+$user = DB::table('users')->find(3);
+```
 
- You may also specify a custom key column for the returned Collection:
+#### 檢索列值清單
 
-    $roles = DB::table('roles')->pluck('title', 'name');
+如果您想要檢索包含單一欄位值的 Collection，您可以使用 `pluck` 方法。在此範例中，我們將檢索包含角色標題的 Collection：
 
-    foreach ($roles as $name => $title) {
-        echo $title;
-    }
+```php
+$titles = DB::table('roles')->pluck('title');
+
+foreach ($titles as $title) {
+    echo $title;
+}
+```
+
+您也可以為返回的 Collection 指定自訂鍵列：
+
+```php
+$roles = DB::table('roles')->pluck('title', 'name');
+
+foreach ($roles as $name => $title) {
+    echo $title;
+}
+```
 
 <a name="chunking-results"></a>
-### Chunking Results
+### 分批處理結果
 
-If you need to work with thousands of database records, consider using the `chunk` method. This method retrieves a small chunk of the results at a time and feeds each chunk into a `Closure` for processing. This method is very useful for writing [Artisan commands](/docs/{{version}}/artisan) that process thousands of records. For example, let's work with the entire `users` table in chunks of 100 records at a time:
+如果您需要處理數千條資料庫記錄，請考慮使用 `chunk` 方法。此方法每次檢索一小塊結果並將每個塊傳遞給一個 `Closure` 進行處理。這個方法對於編寫處理數千條記錄的 [Artisan commands](/docs/{{version}}/artisan) 非常有用。例如，讓我們以每次 100 條記錄的方式處理整個 `users` 表：
+```
 
-    DB::table('users')->orderBy('id')->chunk(100, function ($users) {
+```php
+DB::table('users')->orderBy('id')->chunk(100, function ($users) {
+    foreach ($users as $user) {
+        //
+    }
+});
+```
+
+您可以通過從 `Closure` 中返回 `false` 來停止進一步處理分塊：
+
+```php
+DB::table('users')->orderBy('id')->chunk(100, function ($users) {
+    // 處理記錄...
+
+    return false;
+});
+```
+
+如果您在處理分塊結果時更新資料庫記錄，您的分塊結果可能以意外方式更改。因此，在更新記錄時進行分塊時，最好始終使用 `chunkById` 方法。該方法將根據記錄的主鍵自動對結果進行分頁：
+
+```php
+DB::table('users')->where('active', false)
+    ->chunkById(100, function ($users) {
         foreach ($users as $user) {
-            //
+            DB::table('users')
+                ->where('id', $user->id)
+                ->update(['active' => true]);
         }
     });
+```
 
-You may stop further chunks from being processed by returning `false` from the `Closure`:
-
-    DB::table('users')->orderBy('id')->chunk(100, function ($users) {
-        // Process the records...
-
-        return false;
-    });
-
-If you are updating database records while chunking results, your chunk results could change in unexpected ways. So, when updating records while chunking, it is always best to use the `chunkById` method instead. This method will automatically paginate the results based on the record's primary key:
-
-    DB::table('users')->where('active', false)
-        ->chunkById(100, function ($users) {
-            foreach ($users as $user) {
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update(['active' => true]);
-            }
-        });
-
-> {note} When updating or deleting records inside the chunk callback, any changes to the primary key or foreign keys could affect the chunk query. This could potentially result in records not being included in the chunked results.
+> {note} 在分塊回調中更新或刪除記錄時，主鍵或外鍵的任何更改都可能影響分塊查詢。這可能導致記錄未包含在分塊結果中。
 
 <a name="aggregates"></a>
-### Aggregates
+### 聚合
 
-The query builder also provides a variety of aggregate methods such as `count`, `max`, `min`, `avg`, and `sum`. You may call any of these methods after constructing your query:
+查詢生成器還提供了各種聚合方法，如 `count`、`max`、`min`、`avg` 和 `sum`。您可以在構建查詢後調用這些方法之一：
 
-    $users = DB::table('users')->count();
+```php
+$users = DB::table('users')->count();
 
-    $price = DB::table('orders')->max('price');
+$price = DB::table('orders')->max('price');
+```
 
-You may combine these methods with other clauses:
+您可以將這些方法與其他子句結合使用：
 
-    $price = DB::table('orders')
-                    ->where('finalized', 1)
-                    ->avg('price');
+```php
+$price = DB::table('orders')
+                ->where('finalized', 1)
+                ->avg('price');
+```
 
-#### Determining If Records Exist
+#### 確定記錄是否存在
 
-Instead of using the `count` method to determine if any records exist that match your query's constraints, you may use the `exists` and `doesntExist` methods:
+您可以使用 `exists` 和 `doesntExist` 方法來確定是否存在與查詢約束條件匹配的記錄，而不是使用 `count` 方法：
 
-    return DB::table('orders')->where('finalized', 1)->exists();
+```php
+return DB::table('orders')->where('finalized', 1)->exists();
 
-    return DB::table('orders')->where('finalized', 1)->doesntExist();
+return DB::table('orders')->where('finalized', 1)->doesntExist();
+```
 
 <a name="selects"></a>
-## Selects
+## 選擇
 
-#### Specifying A Select Clause
+#### 指定選擇子句
+```
 
-You may not always want to select all columns from a database table. Using the `select` method, you can specify a custom `select` clause for the query:
+您可能並非總是需要從資料庫表格中選擇所有欄位。使用 `select` 方法，您可以為查詢指定自訂的 `select` 子句：
 
-    $users = DB::table('users')->select('name', 'email as user_email')->get();
+```php
+$users = DB::table('users')->select('name', 'email as user_email')->get();
+```
 
-The `distinct` method allows you to force the query to return distinct results:
+`distinct` 方法允許您強制查詢返回不同的結果：
 
-    $users = DB::table('users')->distinct()->get();
+```php
+$users = DB::table('users')->distinct()->get();
+```
 
-If you already have a query builder instance and you wish to add a column to its existing select clause, you may use the `addSelect` method:
+如果您已經有一個查詢建構器實例，並且希望將一個欄位添加到其現有的 select 子句中，您可以使用 `addSelect` 方法：
 
-    $query = DB::table('users')->select('name');
+```php
+$query = DB::table('users')->select('name');
 
-    $users = $query->addSelect('age')->get();
+$users = $query->addSelect('age')->get();
+```
 
 <a name="raw-expressions"></a>
-## Raw Expressions
+## 原始表達式
 
-Sometimes you may need to use a raw expression in a query. To create a raw expression, you may use the `DB::raw` method:
+有時您可能需要在查詢中使用原始表達式。要創建原始表達式，您可以使用 `DB::raw` 方法：
 
-    $users = DB::table('users')
-                         ->select(DB::raw('count(*) as user_count, status'))
-                         ->where('status', '<>', 1)
-                         ->groupBy('status')
-                         ->get();
+```php
+$users = DB::table('users')
+                     ->select(DB::raw('count(*) as user_count, status'))
+                     ->where('status', '<>', 1)
+                     ->groupBy('status')
+                     ->get();
+```
 
-> {note} Raw statements will be injected into the query as strings, so you should be extremely careful to not create SQL injection vulnerabilities.
+> {note} 原始陳述將作為字串注入到查詢中，因此您應該非常小心，以免造成 SQL 注入漏洞。
 
 <a name="raw-methods"></a>
-### Raw Methods
+### 原始方法
 
-Instead of using `DB::raw`, you may also use the following methods to insert a raw expression into various parts of your query.
+除了使用 `DB::raw`，您還可以使用以下方法將原始表達式插入到查詢的各個部分中。
 
 #### `selectRaw`
 
-The `selectRaw` method can be used in place of `addSelect(DB::raw(...))`. This method accepts an optional array of bindings as its second argument:
+`selectRaw` 方法可用於取代 `addSelect(DB::raw(...))`。此方法接受一個可選的綁定陣列作為其第二個引數：
 
-    $orders = DB::table('orders')
-                    ->selectRaw('price * ? as price_with_tax', [1.0825])
-                    ->get();
+```php
+$orders = DB::table('orders')
+                ->selectRaw('price * ? as price_with_tax', [1.0825])
+                ->get();
+```
 
 #### `whereRaw / orWhereRaw`
 
-The `whereRaw` and `orWhereRaw` methods can be used to inject a raw `where` clause into your query. These methods accept an optional array of bindings as their second argument:
+`whereRaw` 和 `orWhereRaw` 方法可用於將原始 `where` 子句注入到您的查詢中。這些方法接受一個可選的綁定陣列作為其第二個引數：
 
-    $orders = DB::table('orders')
-                    ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
-                    ->get();
+```php
+$orders = DB::table('orders')
+                ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
+                ->get();
+```
 
 #### `havingRaw / orHavingRaw`
 
-The `havingRaw` and `orHavingRaw` methods may be used to set a raw string as the value of the `having` clause. These methods accept an optional array of bindings as their second argument:
+`havingRaw` 和 `orHavingRaw` 方法可用於將原始字串設置為 `having` 子句的值。這些方法接受一個可選的綁定陣列作為其第二個引數：
 
-    $orders = DB::table('orders')
-                    ->select('department', DB::raw('SUM(price) as total_sales'))
-                    ->groupBy('department')
-                    ->havingRaw('SUM(price) > ?', [2500])
-                    ->get();
+```php
+$orders = DB::table('orders')
+                ->select('department', DB::raw('SUM(price) as total_sales'))
+                ->groupBy('department')
+                ->havingRaw('SUM(price) > ?', [2500])
+                ->get();
+```
 
 #### `orderByRaw`
 
-The `orderByRaw` method may be used to set a raw string as the value of the `order by` clause:
+`orderByRaw` 方法可用於將原始字符串設置為 `order by` 子句的值：
 
-    $orders = DB::table('orders')
-                    ->orderByRaw('updated_at - created_at DESC')
-                    ->get();
+```php
+$orders = DB::table('orders')
+                ->orderByRaw('updated_at - created_at DESC')
+                ->get();
+```
 
 ### `groupByRaw`
 
-The `groupByRaw` method may be used to set a raw string as the value of the `group by` clause:
+`groupByRaw` 方法可用於將原始字符串設置為 `group by` 子句的值：
 
-    $orders = DB::table('orders')
-                    ->select('city', 'state')
-                    ->groupByRaw('city, state')
-                    ->get();
+```php
+$orders = DB::table('orders')
+                ->select('city', 'state')
+                ->groupByRaw('city, state')
+                ->get();
+```
 
 <a name="joins"></a>
-## Joins
+## 連接
 
-#### Inner Join Clause
+#### 內部連接子句
 
-The query builder may also be used to write join statements. To perform a basic "inner join", you may use the `join` method on a query builder instance. The first argument passed to the `join` method is the name of the table you need to join to, while the remaining arguments specify the column constraints for the join. You can even join to multiple tables in a single query:
+查詢構建器也可用於編寫連接語句。要執行基本的“內部連接”，您可以在查詢構建器實例上使用 `join` 方法。傳遞給 `join` 方法的第一個參數是您需要連接的表的名稱，而其餘參數指定連接的列約束。您甚至可以在單個查詢中連接多個表：
 
-    $users = DB::table('users')
-                ->join('contacts', 'users.id', '=', 'contacts.user_id')
-                ->join('orders', 'users.id', '=', 'orders.user_id')
-                ->select('users.*', 'contacts.phone', 'orders.price')
-                ->get();
+```php
+$users = DB::table('users')
+            ->join('contacts', 'users.id', '=', 'contacts.user_id')
+            ->join('orders', 'users.id', '=', 'orders.user_id')
+            ->select('users.*', 'contacts.phone', 'orders.price')
+            ->get();
+```
 
-#### Left Join / Right Join Clause
+#### 左連接 / 右連接子句
 
-If you would like to perform a "left join" or "right join" instead of an "inner join", use the `leftJoin` or `rightJoin` methods. These methods have the same signature as the `join` method:
+如果您想執行“左連接”或“右連接”而不是“內部連接”，請使用 `leftJoin` 或 `rightJoin` 方法。這些方法與 `join` 方法具有相同的簽名：
 
-    $users = DB::table('users')
-                ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
-                ->get();
-
-    $users = DB::table('users')
-                ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
-                ->get();
-
-#### Cross Join Clause
-
-To perform a "cross join" use the `crossJoin` method with the name of the table you wish to cross join to. Cross joins generate a cartesian product between the first table and the joined table:
-
-    $users = DB::table('sizes')
-                ->crossJoin('colors')
-                ->get();
-
-#### Advanced Join Clauses
-
-You may also specify more advanced join clauses. To get started, pass a `Closure` as the second argument into the `join` method. The `Closure` will receive a `JoinClause` object which allows you to specify constraints on the `join` clause:
-
-    DB::table('users')
-            ->join('contacts', function ($join) {
-                $join->on('users.id', '=', 'contacts.user_id')->orOn(...);
-            })
+```php
+$users = DB::table('users')
+            ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
             ->get();
 
-If you would like to use a "where" style clause on your joins, you may use the `where` and `orWhere` methods on a join. Instead of comparing two columns, these methods will compare the column against a value:
-
-    DB::table('users')
-            ->join('contacts', function ($join) {
-                $join->on('users.id', '=', 'contacts.user_id')
-                     ->where('contacts.user_id', '>', 5);
-            })
+$users = DB::table('users')
+            ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
             ->get();
+```
 
-#### Subquery Joins
+#### 交叉連接子句
 
-You may use the `joinSub`, `leftJoinSub`, and `rightJoinSub` methods to join a query to a subquery. Each of these methods receive three arguments: the subquery, its table alias, and a Closure that defines the related columns:
+要執行“交叉連接”，請使用 `crossJoin` 方法與您希望與之交叉連接的表的名稱。交叉連接在第一個表和連接表之間生成笛卡爾乘積：
+```
 
-    $latestPosts = DB::table('posts')
-                       ->select('user_id', DB::raw('MAX(created_at) as last_post_created_at'))
-                       ->where('is_published', true)
-                       ->groupBy('user_id');
+```php
+$users = DB::table('sizes')
+            ->crossJoin('colors')
+            ->get();
+```
 
-    $users = DB::table('users')
-            ->joinSub($latestPosts, 'latest_posts', function ($join) {
-                $join->on('users.id', '=', 'latest_posts.user_id');
-            })->get();
+#### 進階連接子句
+
+您也可以指定更複雜的連接子句。要開始，將`Closure`作為第二個參數傳遞給`join`方法。`Closure`將接收一個`JoinClause`物件，讓您可以在`join`子句上指定約束條件：
+
+```php
+DB::table('users')
+        ->join('contacts', function ($join) {
+            $join->on('users.id', '=', 'contacts.user_id')->orOn(...);
+        })
+        ->get();
+```
+
+如果您想在連接中使用“where”樣式子句，可以在連接上使用`where`和`orWhere`方法。這些方法將比較列與值而不是比較兩個列：
+
+```php
+DB::table('users')
+        ->join('contacts', function ($join) {
+            $join->on('users.id', '=', 'contacts.user_id')
+                 ->where('contacts.user_id', '>', 5);
+        })
+        ->get();
+```
+
+#### 子查詢連接
+
+您可以使用`joinSub`、`leftJoinSub`和`rightJoinSub`方法將查詢連接到子查詢。這些方法中的每一個都接收三個參數：子查詢、其表別名和定義相關列的`Closure`：
+
+```php
+$latestPosts = DB::table('posts')
+                   ->select('user_id', DB::raw('MAX(created_at) as last_post_created_at'))
+                   ->where('is_published', true)
+                   ->groupBy('user_id');
+
+$users = DB::table('users')
+        ->joinSub($latestPosts, 'latest_posts', function ($join) {
+            $join->on('users.id', '=', 'latest_posts.user_id');
+        })->get();
+```
 
 <a name="unions"></a>
-## Unions
+## 聯集
 
-The query builder also provides a quick way to "union" two queries together. For example, you may create an initial query and use the `union` method to union it with a second query:
+查詢生成器還提供了一種快速將兩個查詢“聯集”在一起的方法。例如，您可以創建一個初始查詢，然後使用`union`方法將其與第二個查詢聯集：
 
-    $first = DB::table('users')
-                ->whereNull('first_name');
+```php
+$first = DB::table('users')
+            ->whereNull('first_name');
 
-    $users = DB::table('users')
-                ->whereNull('last_name')
-                ->union($first)
-                ->get();
+$users = DB::table('users')
+            ->whereNull('last_name')
+            ->union($first)
+            ->get();
+```
 
-> {tip} The `unionAll` method is also available and has the same method signature as `union`.
+> {tip} `unionAll` 方法也可用，並且具有與 `union` 相同的方法簽名。
 
 <a name="where-clauses"></a>
-## Where Clauses
+## 查詢條件
 
-#### Simple Where Clauses
+#### 簡單的查詢條件
 
-You may use the `where` method on a query builder instance to add `where` clauses to the query. The most basic call to `where` requires three arguments. The first argument is the name of the column. The second argument is an operator, which can be any of the database's supported operators. Finally, the third argument is the value to evaluate against the column.
+您可以在查詢構建器實例上使用 `where` 方法來向查詢添加 `where` 條件。對 `where` 的最基本調用需要三個引數。第一個引數是列的名稱。第二個引數是一個運算符，可以是數據庫支持的任何運算符。最後，第三個引數是要與列進行評估的值。
 
-For example, here is a query that verifies the value of the "votes" column is equal to 100:
+例如，這是一個驗證 "votes" 列的值是否等於 100 的查詢：
 
     $users = DB::table('users')->where('votes', '=', 100)->get();
 
-For convenience, if you want to verify that a column is equal to a given value, you may pass the value directly as the second argument to the `where` method:
+為了方便起見，如果您想要驗證一列是否等於給定的值，您可以將該值直接作為 `where` 方法的第二個引數傳遞：
 
     $users = DB::table('users')->where('votes', 100)->get();
 
-You may use a variety of other operators when writing a `where` clause:
+在編寫 `where` 條件時，您可以使用各種其他運算符：
 
     $users = DB::table('users')
                     ->where('votes', '>=', 100)
@@ -345,23 +406,23 @@ You may use a variety of other operators when writing a `where` clause:
                     ->where('name', 'like', 'T%')
                     ->get();
 
-You may also pass an array of conditions to the `where` function:
+您還可以將一組條件傳遞給 `where` 函數：
 
     $users = DB::table('users')->where([
         ['status', '=', '1'],
         ['subscribed', '<>', '1'],
     ])->get();
 
-#### Or Statements
+#### 或條件
 
-You may chain where constraints together as well as add `or` clauses to the query. The `orWhere` method accepts the same arguments as the `where` method:
+您可以將 where 約束連接在一起，並向查詢添加 `or` 條件。`orWhere` 方法接受與 `where` 方法相同的引數：
 
     $users = DB::table('users')
                         ->where('votes', '>', 100)
                         ->orWhere('name', 'John')
                         ->get();
 
-If you need to group an "or" condition within parentheses, you may pass a Closure as the first argument to the `orWhere` method:
+如果您需要在括號內分組 "or" 條件，您可以將 Closure 作為 `orWhere` 方法的第一個引數傳遞：
 
     $users = DB::table('users')
                 ->where('votes', '>', 100)
@@ -371,13 +432,14 @@ If you need to group an "or" condition within parentheses, you may pass a Closur
                 })
                 ->get();
 
+```markdown
     // SQL: select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 
-#### Additional Where Clauses
+#### 額外的 Where 條件
 
 **whereBetween / orWhereBetween**
 
-The `whereBetween` method verifies that a column's value is between two values:
+`whereBetween` 方法驗證一個欄位的值是否在兩個值之間：
 
     $users = DB::table('users')
                ->whereBetween('votes', [1, 100])
@@ -385,7 +447,7 @@ The `whereBetween` method verifies that a column's value is between two values:
 
 **whereNotBetween / orWhereNotBetween**
 
-The `whereNotBetween` method verifies that a column's value lies outside of two values:
+`whereNotBetween` 方法驗證一個欄位的值是否在兩個值之外：
 
     $users = DB::table('users')
                         ->whereNotBetween('votes', [1, 100])
@@ -393,13 +455,13 @@ The `whereNotBetween` method verifies that a column's value lies outside of two 
 
 **whereIn / whereNotIn / orWhereIn / orWhereNotIn**
 
-The `whereIn` method verifies that a given column's value is contained within the given array:
+`whereIn` 方法驗證給定欄位的值是否包含在給定的陣列中：
 
     $users = DB::table('users')
                         ->whereIn('id', [1, 2, 3])
                         ->get();
 
-The `whereNotIn` method verifies that the given column's value is **not** contained in the given array:
+`whereNotIn` 方法驗證給定欄位的值是否**不**包含在給定的陣列中：
 
     $users = DB::table('users')
                         ->whereNotIn('id', [1, 2, 3])
@@ -407,13 +469,13 @@ The `whereNotIn` method verifies that the given column's value is **not** contai
 
 **whereNull / whereNotNull / orWhereNull / orWhereNotNull**
 
-The `whereNull` method verifies that the value of the given column is `NULL`:
+`whereNull` 方法驗證給定欄位的值是否為 `NULL`：
 
     $users = DB::table('users')
                         ->whereNull('updated_at')
                         ->get();
 
-The `whereNotNull` method verifies that the column's value is not `NULL`:
+`whereNotNull` 方法驗證欄位的值是否不為 `NULL`：
 
     $users = DB::table('users')
                         ->whereNotNull('updated_at')
@@ -421,138 +483,157 @@ The `whereNotNull` method verifies that the column's value is not `NULL`:
 
 **whereDate / whereMonth / whereDay / whereYear / whereTime**
 
-The `whereDate` method may be used to compare a column's value against a date:
+`whereDate` 方法可用於將欄位的值與日期進行比較：
 
     $users = DB::table('users')
                     ->whereDate('created_at', '2016-12-31')
                     ->get();
 
-The `whereMonth` method may be used to compare a column's value against a specific month of a year:
+`whereMonth` 方法可用於將欄位的值與一年中特定月份進行比較：
 
     $users = DB::table('users')
                     ->whereMonth('created_at', '12')
                     ->get();
 
-The `whereDay` method may be used to compare a column's value against a specific day of a month:
+`whereDay` 方法可用於將欄位的值與一個月中特定日期進行比較：
+```
 
-    $users = DB::table('users')
-                    ->whereDay('created_at', '31')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereDay('created_at', '31')
+                ->get();
+```
 
-The `whereYear` method may be used to compare a column's value against a specific year:
+`whereYear` 方法可用於將列的值與特定年份進行比較：
 
-    $users = DB::table('users')
-                    ->whereYear('created_at', '2016')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereYear('created_at', '2016')
+                ->get();
+```
 
-The `whereTime` method may be used to compare a column's value against a specific time:
+`whereTime` 方法可用於將列的值與特定時間進行比較：
 
-    $users = DB::table('users')
-                    ->whereTime('created_at', '=', '11:20:45')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereTime('created_at', '=', '11:20:45')
+                ->get();
+```
 
 **whereColumn / orWhereColumn**
 
-The `whereColumn` method may be used to verify that two columns are equal:
+`whereColumn` 方法可用於驗證兩個列是否相等：
 
-    $users = DB::table('users')
-                    ->whereColumn('first_name', 'last_name')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereColumn('first_name', 'last_name')
+                ->get();
+```
 
-You may also pass a comparison operator to the method:
+您也可以將比較運算子傳遞給該方法：
 
-    $users = DB::table('users')
-                    ->whereColumn('updated_at', '>', 'created_at')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereColumn('updated_at', '>', 'created_at')
+                ->get();
+```
 
-The `whereColumn` method can also be passed an array of multiple conditions. These conditions will be joined using the `and` operator:
+`whereColumn` 方法還可以傳遞包含多個條件的陣列。這些條件將使用 `and` 運算子進行連接：
 
-    $users = DB::table('users')
-                    ->whereColumn([
-                        ['first_name', '=', 'last_name'],
-                        ['updated_at', '>', 'created_at'],
-                    ])->get();
+```php
+$users = DB::table('users')
+                ->whereColumn([
+                    ['first_name', '=', 'last_name'],
+                    ['updated_at', '>', 'created_at'],
+                ])->get();
+```
 
 <a name="parameter-grouping"></a>
-### Parameter Grouping
+### 參數分組
 
-Sometimes you may need to create more advanced where clauses such as "where exists" clauses or nested parameter groupings. The Laravel query builder can handle these as well. To get started, let's look at an example of grouping constraints within parenthesis:
+有時您可能需要創建更高級的 where 子句，例如 "where exists" 子句或嵌套的參數分組。Laravel 查詢建構器也可以處理這些情況。首先，讓我們看一個在括號內分組約束的示例：
 
-    $users = DB::table('users')
-               ->where('name', '=', 'John')
-               ->where(function ($query) {
-                   $query->where('votes', '>', 100)
-                         ->orWhere('title', '=', 'Admin');
-               })
-               ->get();
+```php
+$users = DB::table('users')
+           ->where('name', '=', 'John')
+           ->where(function ($query) {
+               $query->where('votes', '>', 100)
+                     ->orWhere('title', '=', 'Admin');
+           })
+           ->get();
+```
 
-As you can see, passing a `Closure` into the `where` method instructs the query builder to begin a constraint group. The `Closure` will receive a query builder instance which you can use to set the constraints that should be contained within the parenthesis group. The example above will produce the following SQL:
+如您所見，將 `Closure` 傳遞給 `where` 方法會指示查詢建構器開始約束組。`Closure` 將接收一個查詢建構器實例，您可以使用該實例來設置應包含在括號組內的約束。上面的示例將生成以下 SQL：
 
+```sql
     select * from users where name = 'John' and (votes > 100 or title = 'Admin')
+```
 
-> {tip} You should always group `orWhere` calls in order to avoid unexpected behavior when global scopes are applied.
+> {tip} 您應該始終將 `orWhere` 調用分組，以避免在應用全局範圍時出現意外行為。
 
 <a name="where-exists-clauses"></a>
-### Where Exists Clauses
+### 存在子句
 
-The `whereExists` method allows you to write `where exists` SQL clauses. The `whereExists` method accepts a `Closure` argument, which will receive a query builder instance allowing you to define the query that should be placed inside of the "exists" clause:
+`whereExists` 方法允許您編寫 `where exists` SQL 子句。`whereExists` 方法接受一個 `Closure` 引數，該引數將接收一個查詢構建器實例，使您能夠定義應放置在 "exists" 子句內的查詢：
 
-    $users = DB::table('users')
-               ->whereExists(function ($query) {
-                   $query->select(DB::raw(1))
-                         ->from('orders')
-                         ->whereRaw('orders.user_id = users.id');
-               })
-               ->get();
+```php
+$users = DB::table('users')
+           ->whereExists(function ($query) {
+               $query->select(DB::raw(1))
+                     ->from('orders')
+                     ->whereRaw('orders.user_id = users.id');
+           })
+           ->get();
+```
 
-The query above will produce the following SQL:
+上面的查詢將產生以下 SQL：
 
-    select * from users
-    where exists (
-        select 1 from orders where orders.user_id = users.id
-    )
+```sql
+select * from users
+where exists (
+    select 1 from orders where orders.user_id = users.id
+)
+```
 
 <a name="json-where-clauses"></a>
-### JSON Where Clauses
+### JSON Where 子句
 
-Laravel also supports querying JSON column types on databases that provide support for JSON column types. Currently, this includes MySQL 5.7, PostgreSQL, SQL Server 2016, and SQLite 3.9.0 (with the [JSON1 extension](https://www.sqlite.org/json1.html)). To query a JSON column, use the `->` operator:
+Laravel 也支持在提供對 JSON 列類型支持的數據庫上查詢 JSON 列類型。目前，這包括 MySQL 5.7、PostgreSQL、SQL Server 2016 和 SQLite 3.9.0（帶有 [JSON1 擴展](https://www.sqlite.org/json1.html)）。要查詢 JSON 列，請使用 `->` 運算符：
 
-    $users = DB::table('users')
-                    ->where('options->language', 'en')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->where('options->language', 'en')
+                ->get();
 
-    $users = DB::table('users')
-                    ->where('preferences->dining->meal', 'salad')
-                    ->get();
+$users = DB::table('users')
+                ->where('preferences->dining->meal', 'salad')
+                ->get();
+```
 
-You may use `whereJsonContains` to query JSON arrays (not supported on SQLite):
+您可以使用 `whereJsonContains` 來查詢 JSON 數組（在 SQLite 上不受支持）：
 
-    $users = DB::table('users')
-                    ->whereJsonContains('options->languages', 'en')
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereJsonContains('options->languages', 'en')
+                ->get();
+```
 
-MySQL and PostgreSQL support `whereJsonContains` with multiple values:
+MySQL 和 PostgreSQL 支持使用多個值的 `whereJsonContains`：
 
-    $users = DB::table('users')
-                    ->whereJsonContains('options->languages', ['en', 'de'])
-                    ->get();
+```php
+$users = DB::table('users')
+                ->whereJsonContains('options->languages', ['en', 'de'])
+                ->get();
+```
 
-You may use `whereJsonLength` to query JSON arrays by their length:
-
-    $users = DB::table('users')
-                    ->whereJsonLength('options->languages', 0)
-                    ->get();
-
-    $users = DB::table('users')
-                    ->whereJsonLength('options->languages', '>', 1)
-                    ->get();
+您可以使用 `whereJsonLength` 來按其長度查詢 JSON 數組：
 
 <a name="ordering-grouping-limit-and-offset"></a>
-## Ordering, Grouping, Limit & Offset
+## 排序、分組、限制和偏移
 
 #### orderBy
 
-The `orderBy` method allows you to sort the result of the query by a given column. The first argument to the `orderBy` method should be the column you wish to sort by, while the second argument controls the direction of the sort and may be either `asc` or `desc`:
+`orderBy` 方法允許您按照給定的列對查詢結果進行排序。`orderBy` 方法的第一個引數應該是您希望按照其排序的列，而第二個引數控制排序的方向，可以是 `asc` 或 `desc`：
 
     $users = DB::table('users')
                     ->orderBy('name', 'desc')
@@ -560,7 +641,7 @@ The `orderBy` method allows you to sort the result of the query by a given colum
 
 #### latest / oldest
 
-The `latest` and `oldest` methods allow you to easily order results by date. By default, result will be ordered by the `created_at` column. Or, you may pass the column name that you wish to sort by:
+`latest` 和 `oldest` 方法允許您輕鬆地按日期排序結果。默認情況下，結果將按照 `created_at` 列排序。或者，您可以傳遞您希望按照其排序的列名：
 
     $user = DB::table('users')
                     ->latest()
@@ -568,7 +649,7 @@ The `latest` and `oldest` methods allow you to easily order results by date. By 
 
 #### inRandomOrder
 
-The `inRandomOrder` method may be used to sort the query results randomly. For example, you may use this method to fetch a random user:
+`inRandomOrder` 方法可用於將查詢結果隨機排序。例如，您可以使用此方法來獲取隨機用戶：
 
     $randomUser = DB::table('users')
                     ->inRandomOrder()
@@ -576,131 +657,152 @@ The `inRandomOrder` method may be used to sort the query results randomly. For e
 
 #### groupBy / having
 
-The `groupBy` and `having` methods may be used to group the query results. The `having` method's signature is similar to that of the `where` method:
+`groupBy` 和 `having` 方法可用於對查詢結果進行分組。`having` 方法的簽名與 `where` 方法類似：
 
     $users = DB::table('users')
                     ->groupBy('account_id')
                     ->having('account_id', '>', 100)
                     ->get();
 
-You may pass multiple arguments to the `groupBy` method to group by multiple columns:
+您可以將多個引數傳遞給 `groupBy` 方法，以按多個列進行分組：
 
     $users = DB::table('users')
                     ->groupBy('first_name', 'status')
                     ->having('account_id', '>', 100)
                     ->get();
 
-For more advanced `having` statements, see the [`havingRaw`](#raw-methods) method.
+有關更高級的 `having` 陳述，請參見 [`havingRaw`](#raw-methods) 方法。
 
 #### skip / take
 
-To limit the number of results returned from the query, or to skip a given number of results in the query, you may use the `skip` and `take` methods:
+為了限制從查詢返回的結果數量，或者跳過查詢中給定數量的結果，您可以使用 `skip` 和 `take` 方法：
 
-    $users = DB::table('users')->skip(10)->take(5)->get();
+```php
+$users = DB::table('users')->skip(10)->take(5)->get();
+```
 
-Alternatively, you may use the `limit` and `offset` methods:
+或者，您可以使用 `limit` 和 `offset` 方法：
 
-    $users = DB::table('users')
-                    ->offset(10)
-                    ->limit(5)
-                    ->get();
+```php
+$users = DB::table('users')
+                ->offset(10)
+                ->limit(5)
+                ->get();
+```
 
 <a name="conditional-clauses"></a>
-## Conditional Clauses
+## 條件子句
 
-Sometimes you may want clauses to apply to a query only when something else is true. For instance you may only want to apply a `where` statement if a given input value is present on the incoming request. You may accomplish this using the `when` method:
+有時候，您可能希望條件僅在某些情況下應用於查詢。例如，您可能只想在傳入請求中存在特定輸入值時應用 `where` 陳述。您可以使用 `when` 方法來實現這一點：
 
-    $role = $request->input('role');
+```php
+$role = $request->input('role');
 
-    $users = DB::table('users')
-                    ->when($role, function ($query, $role) {
-                        return $query->where('role_id', $role);
-                    })
-                    ->get();
+$users = DB::table('users')
+                ->when($role, function ($query, $role) {
+                    return $query->where('role_id', $role);
+                })
+                ->get();
+```
 
-The `when` method only executes the given Closure when the first parameter is `true`. If the first parameter is `false`, the Closure will not be executed.
+`when` 方法僅在第一個參數為 `true` 時執行給定的閉包。如果第一個參數為 `false`，則不會執行閉包。
 
-You may pass another Closure as the third parameter to the `when` method. This Closure will execute if the first parameter evaluates as `false`. To illustrate how this feature may be used, we will use it to configure the default sorting of a query:
+您可以將另一個閉包作為 `when` 方法的第三個參數傳遞。如果第一個參數評估為 `false`，則此閉包將被執行。為了說明如何使用此功能，我們將用它來配置查詢的默認排序：
 
-    $sortBy = null;
+```php
+$sortBy = null;
 
-    $users = DB::table('users')
-                    ->when($sortBy, function ($query, $sortBy) {
-                        return $query->orderBy($sortBy);
-                    }, function ($query) {
-                        return $query->orderBy('name');
-                    })
-                    ->get();
+$users = DB::table('users')
+                ->when($sortBy, function ($query, $sortBy) {
+                    return $query->orderBy($sortBy);
+                }, function ($query) {
+                    return $query->orderBy('name');
+                })
+                ->get();
+```
 
 <a name="inserts"></a>
-## Inserts
+## 插入
 
-The query builder also provides an `insert` method for inserting records into the database table. The `insert` method accepts an array of column names and values:
+查詢生成器還提供了一個 `insert` 方法，用於將記錄插入到數據庫表中。`insert` 方法接受一個包含列名和值的數組：
 
-    DB::table('users')->insert(
-        ['email' => 'john@example.com', 'votes' => 0]
-    );
+```php
+DB::table('users')->insert(
+    ['email' => 'john@example.com', 'votes' => 0]
+);
+```
 
-You may even insert several records into the table with a single call to `insert` by passing an array of arrays. Each array represents a row to be inserted into the table:
+您甚至可以通過將數組的數組傳遞給 `insert` 一次將多個記錄插入到表中。每個數組代表要插入到表中的一行：
 
-    DB::table('users')->insert([
-        ['email' => 'taylor@example.com', 'votes' => 0],
-        ['email' => 'dayle@example.com', 'votes' => 0]
-    ]);
+```php
+DB::table('users')->insert([
+    ['email' => 'taylor@example.com', 'votes' => 0],
+    ['email' => 'dayle@example.com', 'votes' => 0]
+]);
+```
 
-The `insertOrIgnore` method will ignore duplicate record errors while inserting records into the database:
+`insertOrIgnore` 方法在將記錄插入資料庫時會忽略重複記錄錯誤：
 
-    DB::table('users')->insertOrIgnore([
-        ['id' => 1, 'email' => 'taylor@example.com'],
-        ['id' => 2, 'email' => 'dayle@example.com']
-    ]);
+```php
+DB::table('users')->insertOrIgnore([
+    ['id' => 1, 'email' => 'taylor@example.com'],
+    ['id' => 2, 'email' => 'dayle@example.com']
+]);
+```
 
-#### Auto-Incrementing IDs
+#### 自動增量 ID
 
-If the table has an auto-incrementing id, use the `insertGetId` method to insert a record and then retrieve the ID:
+如果表具有自動增量 id，請使用 `insertGetId` 方法來插入記錄並檢索 ID：
 
-    $id = DB::table('users')->insertGetId(
-        ['email' => 'john@example.com', 'votes' => 0]
-    );
+```php
+$id = DB::table('users')->insertGetId(
+    ['email' => 'john@example.com', 'votes' => 0]
+);
+```
 
-> {note} When using PostgreSQL the `insertGetId` method expects the auto-incrementing column to be named `id`. If you would like to retrieve the ID from a different "sequence", you may pass the column name as the second parameter to the `insertGetId` method.
+> {note} 在使用 PostgreSQL 時，`insertGetId` 方法預期自動增量列的名稱為 `id`。如果您想從不同的 "序列" 檢索 ID，可以將列名作為第二個參數傳遞給 `insertGetId` 方法。
 
 <a name="updates"></a>
-## Updates
+## 更新
 
-In addition to inserting records into the database, the query builder can also update existing records using the `update` method. The `update` method, like the `insert` method, accepts an array of column and value pairs containing the columns to be updated. You may constrain the `update` query using `where` clauses:
+除了將記錄插入資料庫外，查詢建構器還可以使用 `update` 方法更新現有記錄。`update` 方法與 `insert` 方法一樣，接受包含要更新的列和值對的陣列。您可以使用 `where` 子句來限制 `update` 查詢：
 
-    $affected = DB::table('users')
-                  ->where('id', 1)
-                  ->update(['votes' => 1]);
+```php
+$affected = DB::table('users')
+              ->where('id', 1)
+              ->update(['votes' => 1]);
+```
 
-#### Update Or Insert
+#### 更新或插入
 
-Sometimes you may want to update an existing record in the database or create it if no matching record exists. In this scenario, the `updateOrInsert` method may be used. The `updateOrInsert` method accepts two arguments: an array of conditions by which to find the record, and an array of column and value pairs containing the columns to be updated.
+有時您可能希望更新資料庫中的現有記錄，或者如果沒有匹配的記錄存在則創建它。在這種情況下，可以使用 `updateOrInsert` 方法。`updateOrInsert` 方法接受兩個參數：一個條件陣列，用於查找記錄，以及一個包含要更新的列和值對的陣列。
 
-The `updateOrInsert` method will first attempt to locate a matching database record using the first argument's column and value pairs. If the record exists, it will be updated with the values in the second argument. If the record can not be found, a new record will be inserted with the merged attributes of both arguments:
+`updateOrInsert` 方法首先嘗試使用第一個參數的列和值對來定位匹配的資料庫記錄。如果記錄存在，則將使用第二個參數中的值進行更新。如果找不到記錄，將使用兩個參數的合併屬性插入新記錄：
 
-    DB::table('users')
-        ->updateOrInsert(
-            ['email' => 'john@example.com', 'name' => 'John'],
-            ['votes' => '2']
-        );
+```php
+DB::table('users')
+    ->updateOrInsert(
+        ['email' => 'john@example.com', 'name' => 'John'],
+        ['votes' => '2']
+    );
+```
+
 
 <a name="updating-json-columns"></a>
-### Updating JSON Columns
+### 更新 JSON 欄位
 
-When updating a JSON column, you should use `->` syntax to access the appropriate key in the JSON object. This operation is supported on MySQL 5.7+ and PostgreSQL 9.5+:
+在更新 JSON 欄位時，您應該使用 `->` 語法來訪問 JSON 物件中的適當鍵。此操作支援 MySQL 5.7+ 和 PostgreSQL 9.5+：
 
     $affected = DB::table('users')
                   ->where('id', 1)
                   ->update(['options->enabled' => true]);
 
 <a name="increment-and-decrement"></a>
-### Increment & Decrement
+### 增加與減少
 
-The query builder also provides convenient methods for incrementing or decrementing the value of a given column. This is a shortcut, providing a more expressive and terse interface compared to manually writing the `update` statement.
+查詢建構器還提供了方便的方法來增加或減少給定列的值。這是一個捷徑，提供了比手動編寫 `update` 陳述式更具表達力和簡潔的介面。
 
-Both of these methods accept at least one argument: the column to modify. A second argument may optionally be passed to control the amount by which the column should be incremented or decremented:
+這兩種方法都至少接受一個引數：要修改的列。第二個引數可以選擇性地傳遞，以控制應增加或減少列的數量：
 
     DB::table('users')->increment('votes');
 
@@ -710,39 +812,43 @@ Both of these methods accept at least one argument: the column to modify. A seco
 
     DB::table('users')->decrement('votes', 5);
 
-You may also specify additional columns to update during the operation:
+您也可以在操作期間指定要更新的其他列：
 
     DB::table('users')->increment('votes', 1, ['name' => 'John']);
 
 <a name="deletes"></a>
-## Deletes
+## 刪除
 
-The query builder may also be used to delete records from the table via the `delete` method. You may constrain `delete` statements by adding `where` clauses before calling the `delete` method:
+查詢建構器也可用於通過 `delete` 方法從表中刪除記錄。您可以通過在調用 `delete` 方法之前添加 `where` 條件來限制 `delete` 陳述式：
 
     DB::table('users')->delete();
 
     DB::table('users')->where('votes', '>', 100)->delete();
 
-If you wish to truncate the entire table, which will remove all rows and reset the auto-incrementing ID to zero, you may use the `truncate` method:
+如果您希望截斷整個表，即刪除所有行並將自動增量 ID 重置為零，您可以使用 `truncate` 方法：
 
     DB::table('users')->truncate();
 
 <a name="pessimistic-locking"></a>
-## Pessimistic Locking
+## 悲觀鎖定
 
-The query builder also includes a few functions to help you do "pessimistic locking" on your `select` statements. To run the statement with a "shared lock", you may use the `sharedLock` method on a query. A shared lock prevents the selected rows from being modified until your transaction commits:
+查詢建構器還包括一些功能，可幫助您在 `select` 陳述式上執行 "悲觀鎖定"。要在查詢上使用 "共享鎖定" 運行陳述式，您可以在查詢上使用 `sharedLock` 方法。共享鎖定可防止所選行在您的交易提交之前被修改：
 
-    DB::table('users')->where('votes', '>', 100)->sharedLock()->get();
+```php
+DB::table('users')->where('votes', '>', 100)->sharedLock()->get();
 
-Alternatively, you may use the `lockForUpdate` method. A "for update" lock prevents the rows from being modified or from being selected with another shared lock:
+或者，您可以使用 `lockForUpdate` 方法。"for update" 鎖定會防止行被修改或被另一個共享鎖定選擇：
 
-    DB::table('users')->where('votes', '>', 100)->lockForUpdate()->get();
+DB::table('users')->where('votes', '>', 100)->lockForUpdate()->get();
+```
 
 <a name="debugging"></a>
-## Debugging
+## 調試
 
-You may use the `dd` or `dump` methods while building a query to dump the query bindings and SQL. The `dd` method will display the debug information and then stop executing the request. The `dump` method will display the debug information but allow the request to keep executing:
+在構建查詢時，您可以使用 `dd` 或 `dump` 方法來輸出查詢綁定和 SQL。`dd` 方法將顯示調試信息，然後停止執行請求。`dump` 方法將顯示調試信息，但允許請求繼續執行：
 
-    DB::table('users')->where('votes', '>', 100)->dd();
+```php
+DB::table('users')->where('votes', '>', 100)->dd();
 
-    DB::table('users')->where('votes', '>', 100)->dump();
+DB::table('users')->where('votes', '>', 100)->dump();
+```

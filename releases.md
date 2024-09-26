@@ -1,53 +1,53 @@
-# Release Notes
+# 發行說明
 
-- [Versioning Scheme](#versioning-scheme)
-- [Support Policy](#support-policy)
+- [版本控制方案](#versioning-scheme)
+- [支援政策](#support-policy)
 - [Laravel 6](#laravel-6)
 
 <a name="versioning-scheme"></a>
-## Versioning Scheme
+## 版本控制方案
 
-Laravel and its other first-party packages follow [Semantic Versioning](https://semver.org). Major framework releases are released every six months (February and August), while minor and patch releases may be released as often as every week. Minor and patch releases should **never** contain breaking changes.
+Laravel 及其其他第一方套件遵循[語義化版本](https://semver.org)。主要框架版本每六個月發布一次（二月和八月），而次要和修補版本可能每週發布一次。次要和修補版本**絕對不應**包含破壞性變更。
 
-When referencing the Laravel framework or its components from your application or package, you should always use a version constraint such as `^6.0`, since major releases of Laravel do include breaking changes. However, we strive to always ensure you may update to a new major release in one day or less.
+當從您的應用程式或套件中引用 Laravel 框架或其組件時，您應始終使用版本約束，如 `^6.0`，因為 Laravel 的主要版本確實包含破壞性變更。但是，我們始終努力確保您可以在一天或更短的時間內更新到新的主要版本。
 
 <a name="support-policy"></a>
-## Support Policy
+## 支援政策
 
-For LTS releases, such as Laravel 6, bug fixes are provided for 2 years and security fixes are provided for 3 years. These releases provide the longest window of support and maintenance. For general releases, bug fixes are provided for 6 months and security fixes are provided for 1 year. For all additional libraries, including Lumen, only the latest release receives bug fixes. In addition, please review the database versions [supported by Laravel](/docs/{{version}}/database#introduction).
+對於 LTS 版本，例如 Laravel 6，提供 2 年的錯誤修復和 3 年的安全修復。這些版本提供了最長的支援和維護窗口。對於一般版本，提供 6 個月的錯誤修復和 1 年的安全修復。對於所有其他庫，包括 Lumen，僅最新版本接收錯誤修復。此外，請查看 Laravel 支援的[資料庫版本](/docs/{{version}}/database#introduction)。
 
-| Version | Release | Bug Fixes Until | Security Fixes Until |
+| 版本 | 發布日期 | 錯誤修復截止日期 | 安全修復截止日期 |
 | --- | --- | --- | --- |
-| 5.5 (LTS) | August 30th, 2017 | August 30th, 2019 | August 30th, 2020 |
-| 5.6 | February 7th, 2018 | August 7th, 2018 | February 7th, 2019 |
-| 5.7 | September 4th, 2018 | March 4th, 2019 | September 4th, 2019 |
-| 5.8 | February 26th, 2019 | August 26th, 2019 | February 26th, 2020 |
-| 6 (LTS) | September 3rd, 2019 | September 3rd, 2021 | September 3rd, 2022 |
+| 5.5（LTS） | 2017 年 8 月 30 日 | 2019 年 8 月 30 日 | 2020 年 8 月 30 日 |
+| 5.6 | 2018 年 2 月 7 日 | 2018 年 8 月 7 日 | 2019 年 2 月 7 日 |
+| 5.7 | 2018 年 9 月 4 日 | 2019 年 3 月 4 日 | 2019 年 9 月 4 日 |
+| 5.8 | 2019 年 2 月 26 日 | 2019 年 8 月 26 日 | 2020 年 2 月 26 日 |
+| 6（LTS） | 2019 年 9 月 3 日 | 2021 年 9 月 3 日 | 2022 年 9 月 3 日 |
 
 <a name="laravel-6"></a>
 ## Laravel 6
 
-Laravel 6 (LTS) continues the improvements made in Laravel 5.8 by introducing semantic versioning, compatibility with [Laravel Vapor](https://vapor.laravel.com), improved authorization responses, job middleware, lazy collections, subquery improvements, the extraction of frontend scaffolding to the `laravel/ui` Composer package, and a variety of other bug fixes and usability improvements.
+Laravel 6（LTS）在 Laravel 5.8 中引入語義化版本控制的基礎上進行了改進，與[Laravel Vapor](https://vapor.laravel.com)兼容，改進了授權回應、作業中介層、延遲集合、子查詢改進、將前端腳手架提取到 `laravel/ui` Composer 套件中，以及各種其他錯誤修復和易用性改進。
 
-### Semantic Versioning
+### 語義化版本控制
 
-The Laravel framework (`laravel/framework`) package now follows the [semantic versioning](https://semver.org/) standard. This makes the framework consistent with the other first-party Laravel packages which already followed this versioning standard. The Laravel release cycle will remain unchanged.
+Laravel 框架 (`laravel/framework`) 套件現在遵循 [語義化版本控制](https://semver.org/) 標準。這使得該框架與其他已遵循此版本控制標準的 Laravel 官方套件保持一致。Laravel 的發布週期將保持不變。
 
-### Laravel Vapor Compatibility
+### Laravel Vapor 相容性
 
-_Laravel Vapor was built by [Taylor Otwell](https://github.com/taylorotwell)_.
+_Laravel Vapor 是由 [Taylor Otwell](https://github.com/taylorotwell) 開發的_。
 
-Laravel 6 provides compatibility with [Laravel Vapor](https://vapor.laravel.com), an auto-scaling serverless deployment platform for Laravel. Vapor abstracts the complexity of managing Laravel applications on AWS Lambda, as well as interfacing those applications with SQS queues, databases, Redis clusters, networks, CloudFront CDN, and more.
+Laravel 6 與 [Laravel Vapor](https://vapor.laravel.com) 相容，這是一個針對 Laravel 的自動擴展伺服器無縫部署平台。Vapor 抽象了在 AWS Lambda 上管理 Laravel 應用程式的複雜性，以及將這些應用程式與 SQS 佇列、資料庫、Redis 集群、網路、CloudFront CDN 等進行接口連接。
 
-### Improved Exceptions Via Ignition
+### 透過 Ignition 改進例外狀況
 
-Laravel 6 ships with [Ignition](https://github.com/facade/ignition), a new open source exception detail page created by Freek Van der Herten and Marcel Pociot. Ignition offers many benefits over previous releases, such as improved Blade error file and line number handling, runnable solutions for common problems, code editing, exception sharing, and an improved UX.
+Laravel 6 隨附 [Ignition](https://github.com/facade/ignition)，這是一個由 Freek Van der Herten 和 Marcel Pociot 創建的新型開源例外狀況詳細頁面。Ignition 在許多方面優於先前版本，例如改進的 Blade 錯誤檔案和行號處理、常見問題的可執行解決方案、程式碼編輯、例外分享以及改進的使用者體驗。
 
-### Improved Authorization Responses
+### 改進的授權回應
 
-_Improved authorization responses were implemented by [Gary Green](https://github.com/garygreen)_.
+_改進的授權回應由 [Gary Green](https://github.com/garygreen) 實作_。
 
-In previous releases of Laravel, it was difficult to retrieve and expose custom authorization messages to end users. This made it difficult to explain to end-users exactly why a particular request was denied. In Laravel 6, this is now much easier using authorization response messages and the new `Gate::inspect` method. For example, given the following policy method:
+在 Laravel 先前版本中，很難檢索並向最終用戶公開自訂授權訊息。這使得難以向最終用戶解釋為何拒絕特定請求。在 Laravel 6 中，使用授權回應訊息和新的 `Gate::inspect` 方法現在變得更加容易。例如，給定以下策略方法：
 
     /**
      * Determine if the user can view the given flight.
@@ -58,165 +58,184 @@ In previous releases of Laravel, it was difficult to retrieve and expose custom 
      */
     public function view(User $user, Flight $flight)
     {
-        return $this->deny('Explanation of denial.');
+        return $this->deny('拒絕的解釋。');
     }
 
-The authorization policy's response and message may be easily retrieved using the `Gate::inspect` method:
+可以輕鬆使用 `Gate::inspect` 方法檢索授權策略的回應和訊息：
 
-    $response = Gate::inspect('view', $flight);
+```php
+$response = Gate::inspect('view', $flight);
 
-    if ($response->allowed()) {
-        // User is authorized to view the flight...
-    }
+if ($response->allowed()) {
+    // 使用者有權限檢視航班...
+}
 
-    if ($response->denied()) {
-        echo $response->message();
-    }
+if ($response->denied()) {
+    echo $response->message();
+}
 
-In addition, these custom messages will automatically be returned to your frontend when using helper methods such as `$this->authorize` or `Gate::authorize` from your routes or controllers.
+此外，當您從路由或控制器使用輔助方法如 `$this->authorize` 或 `Gate::authorize` 時，這些自訂訊息將自動返回到您的前端。
 
-### Job Middleware
+### 工作中介層
 
-_Job middleware were implemented by [Taylor Otwell](https://github.com/taylorotwell)_.
+_工作中介層由 [Taylor Otwell](https://github.com/taylorotwell) 實作_。
 
-Job middleware allow you to wrap custom logic around the execution of queued jobs, reducing boilerplate in the jobs themselves. For example, in previous releases of Laravel, you may have wrapped the logic of a job's `handle` method within a rate-limited callback:
+工作中介層允許您在排程工作的執行周圍包裹自訂邏輯，減少工作本身的樣板。例如，在 Laravel 先前的版本中，您可能已經將工作的 `handle` 方法邏輯包裹在速率限制的回呼函式中：
 
+```php
+/**
+ * 執行工作。
+ *
+ * @return void
+ */
+public function handle()
+{
+    Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
+        info('已取得鎖定...');
+
+        // 處理工作...
+    }, function () {
+        // 無法取得鎖定...
+
+        return $this->release(5);
+    });
+}
+```
+
+在 Laravel 6 中，此邏輯可以提取到一個工作中介層中，讓您的工作 `handle` 方法不需處理任何速率限制的責任：
+
+```php
+<?php
+
+namespace App\Jobs\Middleware;
+
+use Illuminate\Support\Facades\Redis;
+
+class RateLimited
+{
     /**
-     * Execute the job.
+     * 處理排程工作。
      *
-     * @return void
+     * @param  mixed  $job
+     * @param  callable  $next
+     * @return mixed
      */
-    public function handle()
+    public function handle($job, $next)
     {
-        Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
-            info('Lock obtained...');
+        Redis::throttle('key')
+                ->block(0)->allow(1)->every(5)
+                ->then(function () use ($job, $next) {
+                    // 取得鎖定...
 
-            // Handle job...
-        }, function () {
-            // Could not obtain lock...
+                    $next($job);
+                }, function () use ($job) {
+                    // 無法取得鎖定...
 
-            return $this->release(5);
-        });
+                    $job->release(5);
+                });
     }
+}
+```
 
-In Laravel 6, this logic may be extracted into a job middleware, allowing you to keep your job's `handle` method free of any rate limiting responsibilities:
+在建立中介層後，可以通過從工作的 `middleware` 方法返回它們來將它們附加到工作：
 
-    <?php
+```php
+use App\Jobs\Middleware\RateLimited;
 
-    namespace App\Jobs\Middleware;
+/**
+ * 獲取工作應通過的中介層。
+ *
+ * @return array
+ */
+public function middleware()
+{
+    return [new RateLimited];
+}
+```
 
-    use Illuminate\Support\Facades\Redis;
+### 懶惰集合
 
-    class RateLimited
-    {
-        /**
-         * Process the queued job.
-         *
-         * @param  mixed  $job
-         * @param  callable  $next
-         * @return mixed
-         */
-        public function handle($job, $next)
-        {
-            Redis::throttle('key')
-                    ->block(0)->allow(1)->every(5)
-                    ->then(function () use ($job, $next) {
-                        // Lock obtained...
+_懶惰集合是由 [Joseph Silber](https://github.com/JosephSilber)_ 實現的。
 
-                        $next($job);
-                    }, function () use ($job) {
-                        // Could not obtain lock...
+許多開發人員已經喜歡 Laravel 強大的 [集合方法](https://laravel.com/docs/collections)。為了補充已經強大的 `Collection` 類，Laravel 6 引入了 `LazyCollection`，它利用 PHP 的 [生成器](https://www.php.net/manual/en/language.generators.overview.php) 讓您在保持內存使用量低的同時處理非常大的數據集。
 
-                        $job->release(5);
-                    });
-        }
+例如，想像一下，您的應用程序需要處理一個多GB的日誌文件，同時利用 Laravel 的集合方法來解析日誌。與一次將整個文件讀入內存不同，可以使用懶惰集合來一次只保留文件的一小部分在內存中：
+
+```php
+use App\LogEntry;
+use Illuminate\Support\LazyCollection;
+
+LazyCollection::make(function () {
+    $handle = fopen('log.txt', 'r');
+
+    while (($line = fgets($handle)) !== false) {
+        yield $line;
     }
+})
+->chunk(4)
+->map(function ($lines) {
+    return LogEntry::fromLines($lines);
+})
+->each(function (LogEntry $logEntry) {
+    // 處理日誌條目...
+});
+```
 
-After creating middleware, they may be attached to a job by returning them from the job's `middleware` method:
+或者，想像一下您需要遍歷 10,000 個 Eloquent 模型。當使用傳統的 Laravel 集合時，所有 10,000 個 Eloquent 模型必須同時加載到內存中：
 
-    use App\Jobs\Middleware\RateLimited;
+```php
+$users = App\User::all()->filter(function ($user) {
+    return $user->id > 500;
+});
+```
 
-    /**
-     * Get the middleware the job should pass through.
-     *
-     * @return array
-     */
-    public function middleware()
-    {
-        return [new RateLimited];
-    }
+然而，從 Laravel 6 開始，查詢構建器的 `cursor` 方法已經更新為返回一個 `LazyCollection` 實例。這使您仍然只能對數據庫運行一個查詢，但同時只保留一個 Eloquent 模型在內存中。在此示例中，只有在實際遍歷每個用戶時才執行 `filter` 回調，從而大幅減少內存使用量。
 
-### Lazy Collections
+```php
+$users = App\User::cursor()->filter(function ($user) {
+    return $user->id > 500;
+});
 
-_Lazy collections were implemented by [Joseph Silber](https://github.com/JosephSilber)_.
+foreach ($users as $user) {
+    echo $user->id;
+}
+```
 
-Many developers already enjoy Laravel's powerful [Collection methods](https://laravel.com/docs/collections). To supplement the already powerful `Collection` class, Laravel 6 introduces a `LazyCollection`, which leverages PHP's [generators](https://www.php.net/manual/en/language.generators.overview.php) to allow you to work with very large datasets while keeping memory usage low.
+### Eloquent 子查詢增強
 
-For example, imagine your application needs to process a multi-gigabyte log file while taking advantage of Laravel's collection methods to parse the logs. Instead of reading the entire file into memory at once, lazy collections may be used to keep only a small part of the file in memory at a given time:
+_Eloquent 子查詢增強由 [Jonathan Reinink](https://github.com/reinink) 實現_。
 
-    use App\LogEntry;
-    use Illuminate\Support\LazyCollection;
+Laravel 6 引入了對數據庫子查詢支持的多項新增和改進。例如，假設我們有一個航班 `destinations` 表和一個到達目的地的 `flights` 表。`flights` 表包含一個 `arrived_at` 列，指示航班何時到達目的地。
 
-    LazyCollection::make(function () {
-        $handle = fopen('log.txt', 'r');
+使用 Laravel 6 中的新子查詢選擇功能，我們可以通過單個查詢選擇所有 `destinations` 和最近到達該目的地的航班的名稱：
 
-        while (($line = fgets($handle)) !== false) {
-            yield $line;
-        }
-    })
-    ->chunk(4)
-    ->map(function ($lines) {
-        return LogEntry::fromLines($lines);
-    })
-    ->each(function (LogEntry $logEntry) {
-        // Process the log entry...
-    });
+```php
+return Destination::addSelect(['last_flight' => Flight::select('name')
+    ->whereColumn('destination_id', 'destinations.id')
+    ->orderBy('arrived_at', 'desc')
+    ->limit(1)
+])->get();
+```
 
-Or, imagine you need to iterate through 10,000 Eloquent models. When using traditional Laravel collections, all 10,000 Eloquent models must be loaded into memory at the same time:
+此外，我們可以使用添加到查詢構建器的 `orderBy` 函數的新子查詢功能，根據最後一次到達該目的地的航班時間對所有目的地進行排序。同樣，這可以在執行單個查詢時完成：
 
-    $users = App\User::all()->filter(function ($user) {
-        return $user->id > 500;
-    });
-
-However, beginning in Laravel 6, the query builder's `cursor` method has been updated to return a `LazyCollection` instance. This allows you to still only run a single query against the database but also only keep one Eloquent model loaded in memory at a time. In this example, the `filter` callback is not executed until we actually iterate over each user individually, allowing for a drastic reduction in memory usage:
-
-    $users = App\User::cursor()->filter(function ($user) {
-        return $user->id > 500;
-    });
-
-    foreach ($users as $user) {
-        echo $user->id;
-    }
-
-### Eloquent Subquery Enhancements
-
-_Eloquent subquery enhancements were implemented by [Jonathan Reinink](https://github.com/reinink)_.
-
-Laravel 6 introduces several new enhancements and improvements to database subquery support. For example, let's imagine that we have a table of flight `destinations` and a table of `flights` to destinations. The `flights` table contains an `arrived_at` column which indicates when the flight arrived at the destination.
-
-Using the new subquery select functionality in Laravel 6, we can select all of the `destinations` and the name of the flight that most recently arrived at that destination using a single query:
-
-    return Destination::addSelect(['last_flight' => Flight::select('name')
+```php
+return Destination::orderByDesc(
+    Flight::select('arrived_at')
         ->whereColumn('destination_id', 'destinations.id')
         ->orderBy('arrived_at', 'desc')
         ->limit(1)
-    ])->get();
-
-In addition, we can use new subquery features added to the query builder's `orderBy` function to sort all destinations based on when the last flight arrived at that destination. Again, this may be done while executing a single query against the database:
-
-    return Destination::orderByDesc(
-        Flight::select('arrived_at')
-            ->whereColumn('destination_id', 'destinations.id')
-            ->orderBy('arrived_at', 'desc')
-            ->limit(1)
-    )->get();
+)->get();
+```
 
 ### Laravel UI
 
-The frontend scaffolding typically provided with previous releases of Laravel has been extracted into a `laravel/ui` Composer package. This allows the first-party UI scaffolding to be developed and versioned separately from the primary framework. As a result of this change, no Bootstrap or Vue code is present in default framework scaffolding, and the `make:auth` command has been extracted from the framework as well.
+通常與 Laravel 先前版本提供的前端脚手架已提取到 `laravel/ui` Composer 套件中。這使得第一方 UI 脚手架可以與主要框架分開開發和版本化。由於這一變更，默認框架脚手架中不包含 Bootstrap 或 Vue 代碼，`make:auth` 命令也已從框架中提取。
 
-In order to restore the traditional Vue / Bootstrap scaffolding present in previous releases of Laravel, you may install the `laravel/ui` package and use the `ui` Artisan command to install the frontend scaffolding:
+為了恢復先前版本 Laravel 中存在的傳統 Vue / Bootstrap 脚手架，您可以安裝 `laravel/ui` 套件並使用 `ui` Artisan 命令來安裝前端脚手架：```
 
+```markdown
     composer require laravel/ui "^1.0" --dev
 
     php artisan ui vue --auth
+```

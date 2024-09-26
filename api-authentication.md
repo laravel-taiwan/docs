@@ -1,151 +1,169 @@
-# API Authentication
+# API 認證
 
-- [介紹](#introduction)
-- [設定](#configuration)
+- [簡介](#introduction)
+- [組態設定](#configuration)
     - [資料庫準備](#database-preparation)
-- [產生 Tokens](#generating-tokens)
-    - [Hashing Tokens](#hashing-tokens)
-- [路由保護](#protecting-routes)
-- [請求中傳送 Tokens](#passing-tokens-in-requests)
+- [生成標記](#generating-tokens)
+    - [雜湊標記](#hashing-tokens)
+- [保護路由](#protecting-routes)
+- [在請求中傳遞標記](#passing-tokens-in-requests)
 
 <a name="introduction"></a>
-## 介紹
+## 簡介
 
-預設情況下，Laravel 為 API 認證提供一種簡單的解決方案──透過分配一個隨機 token 給你的應用程式中的使用者。在你的 `config/auth.php` 設定檔中，已經定義了一個 `api` guard 並且使用 `token` 驅動。這個驅動負責檢查傳入請求的 API token 並驗證它是否符合資料庫中分配給使用者的 token。
+預設情況下，Laravel 通過為應用程式的每個使用者分配一個隨機標記來提供簡單的 API 認證解決方案。在您的 `config/auth.php` 組態檔案中，已經定義了一個 `api` 保衛並使用了一個 `token` 驅動程式。該驅動程式負責檢查傳入請求中的 API 標記並驗證其是否與資料庫中分配給使用者的標記相匹配。
 
-> **注意：** 儘管 Laravel 提供了簡單的、基於 token 的驗證保護，我們仍強烈建議你考慮以 [Laravel Passport](/docs/{{version}}/passport) 來實現一個提供 API 認證的健全的、可用於生產的應用程式。
+> **注意：** 雖然 Laravel 提供了一個簡單的基於標記的認證保衛，但我們強烈建議您考慮在提供 API 認證的強大、生產應用程式中使用 [Laravel Passport](/docs/{{version}}/passport)。
 
 <a name="configuration"></a>
-## 設定
+## 組態設定
 
 <a name="database-preparation"></a>
 ### 資料庫準備
 
-在使用 `token` 驅動之前，你需要先[創建一個遷移檔](/docs/{{version}}/migrations)，這個遷移檔在你的 `users` 資料表中新增一個 `api_token` 欄位。
+在使用 `token` 驅動程式之前，您需要[創建一個遷移](/docs/{{version}}/migrations)，將一個 `api_token` 欄位添加到您的 `users` 資料表中：
 
-    Schema::table('users', function ($table) {
-        $table->string('api_token', 80)->after('password')
-                            ->unique()
-                            ->nullable()
-                            ->default(null);
-    });
+```php
+Schema::table('users', function ($table) {
+    $table->string('api_token', 80)->after('password')
+                        ->unique()
+                        ->nullable()
+                        ->default(null);
+});
+```
 
-創建遷移檔之後，執行 `migrate` Artisan 指令。
+遷移創建後，執行 `migrate` Artisan 指令。
 
-> {tip} 如果你選擇使用不同的欄位名稱，請確保在 `config/auth.php` 設定檔中更新 API 的 `storage_key` 設定選項。
+> {tip} 如果您選擇使用不同的欄位名稱，請務必在 `config/auth.php` 組態檔案中更新您的 API 的 `storage_key` 組態選項。
 
 <a name="generating-tokens"></a>
-## 產生 Tokens
+## 生成標記
 
-將 `api_token` 欄位新增到你的 `users` 資料表後，你就可以將隨機的 API tokens 分配給每一個註冊你的應用程式的使用者了。你應該在註冊期間 `User` 模型被建立時分配這些 tokens。當使用 `laravel/ui` Composer 套件提供的[認證框架](/docs/{{version}}/authentication#authentication-quickstart)時，可以在 `RegisterController` 中的 `create` 方法中完成此操作：
+一旦將 `api_token` 欄位添加到您的 `users` 資料表中，您就可以為每個註冊應用程式的使用者分配隨機 API 標記。在註冊期間為使用者創建 `User` 模型時，應分配這些標記。當使用 `laravel/ui` Composer 套件提供的[身分驗證腳手架](/docs/{{version}}/authentication#authentication-quickstart)時，這可以在 `RegisterController` 的 `create` 方法中完成。
 
-    use Illuminate\Support\Facades\Hash;
-    use Illuminate\Support\Str;
+```php
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\User
-     */
-    protected function create(array $data)
-    {
-        return User::forceCreate([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'api_token' => Str::random(80),
-        ]);
-    }
+/**
+ * 在有效的註冊後建立新使用者實例。
+ *
+ * @param  array  $data
+ * @return \App\User
+ */
+protected function create(array $data)
+{
+    return User::forceCreate([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'api_token' => Str::random(80),
+    ]);
+}
+```
 
 <a name="hashing-tokens"></a>
-### Hashing Tokens
+### 雜湊標記
 
-在上面的範例中，API tokens 以純文字的方式被儲存在你的資料庫中。如果你想要用 SHA-256 雜湊演算法來 hash 你的 API tokens，可以將你的 `api` guard 設定中的 `hash` 選項設為 `true`。`api` guard 被定義在你的 `config/auth.php` 設定檔：
+在上述範例中，API 標記以明文形式存儲在您的資料庫中。如果您希望使用 SHA-256 雜湊來雜湊您的 API 標記，您可以將您的 `api` 保護配置的 `hash` 選項設置為 `true`。`api` 保護是在您的 `config/auth.php` 配置文件中定義的：
 
-    'api' => [
-        'driver' => 'token',
-        'provider' => 'users',
-        'hash' => true,
-    ],
+```php
+'api' => [
+    'driver' => 'token',
+    'provider' => 'users',
+    'hash' => true,
+],
+```
 
-#### 產生 Hashed Tokens
+#### 生成雜湊標記
 
-當使用 hashed API tokens 時，你不應該在使用者註冊階段產生API tokens。作為替代，你需要在你的應用程式中實做自己的 API token 管理頁面。這個頁面應該要允許使用者初始化和刷新他們的 API token。當使用者發出初始化或刷新 token 的請求時，你應該要將一份 token 的 hash 副本存在資料庫中，並且返回純文字的 token 副本給 view / 前端客戶端進行一次性的顯示。
+當使用雜湊的 API 標記時，您不應該在使用者註冊期間生成 API 標記。相反，您需要在應用程序內實現自己的 API 標記管理頁面。此頁面應該允許用戶初始化和刷新其 API 標記。當用戶發出初始化或刷新其標記的請求時，您應將標記的雜湊副本存儲在資料庫中，並將標記的明文副本返回給視圖 / 前端客戶端以供一次性顯示。
 
-舉個例子，一個用於初始化/刷新給定用戶的 token 並以 JSON 回應的格式返回純文字 token 的控制器方法可能類似以下內容：
+例如，初始化 / 刷新給定使用者標記並將明文標記作為 JSON 回應返回的控制器方法可能如下所示：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
-    class ApiTokenController extends Controller
+class ApiTokenController extends Controller
+{
+    /**
+     * 更新已驗證用戶的 API 標記。
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function update(Request $request)
     {
-        /**
-         * Update the authenticated user's API token.
-         *
-         * @param  \Illuminate\Http\Request  $request
-         * @return array
-         */
-        public function update(Request $request)
-        {
-            $token = Str::random(80);
+        $token = Str::random(80);
+```
 
-            $request->user()->forceFill([
-                'api_token' => hash('sha256', $token),
-            ])->save();
+```php
+$request->user()->forceFill([
+    'api_token' => hash('sha256', $token),
+])->save();
 
-            return ['token' => $token];
-        }
-    }
+return ['token' => $token];
+```
 
-> {tip} 由於上面範例中的 API tokens 具有足夠的熵(entropy，最初起源於物理學，用於度量一個熱力學系統的無序程度。後被延伸至資訊與密碼領域，熵越高代表攜帶的資訊量越多，意味著更難以被預測)，創建「彩虹表」查找 hashed token 原始值是不切實際的，所以並不需要如 `bcrypt` 的 slow hashing 方法。
+> {tip} 由於上述範例中的 API 令牌具有足夠的熵，因此創建“彩虹表”以查找雜湊令牌的原始值是不切實際的。因此，像 `bcrypt` 這樣的慢雜湊方法是不必要的。
 
 <a name="protecting-routes"></a>
-## 路由保護
+## 保護路由
 
-Laravel 包含一個[認證保護](/docs/{{version}}/authentication#adding-custom-guards)，它將自動驗證傳入請求的 API tokens。你只需要在任何要求有效的訪問 token 的路由上指定 `auth:api` 中介層：
+Laravel 包含一個[身份驗證守衛](/docs/{{version}}/authentication#adding-custom-guards)，將自動驗證傳入請求中的 API 令牌。您只需要在需要有效訪問令牌的任何路由上指定 `auth:api` 中介層：
 
-    use Illuminate\Http\Request;
+```php
+use Illuminate\Http\Request;
 
-    Route::middleware('auth:api')->get('/user', function (Request $request) {
-        return $request->user();
-    });
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
+```
 
 <a name="passing-tokens-in-requests"></a>
-## 請求中傳送 Tokens
+## 在請求中傳遞令牌
 
-有幾個方法可以傳送 API token 到你的應用程式。我們將在使用 Guzzle HTTP 函式庫展示他們的用法時去討論這些方法，你可以根據應用程式的需求選擇其中任何一種。
+有幾種方法可以將 API 令牌傳遞給您的應用程序。我們將討論每種方法，並使用 Guzzle HTTP 函式庫來演示它們的使用。您可以根據應用程序的需求選擇其中任何一種方法。
 
-#### 請求參數
+#### 查詢字符串
 
-你的應用程式的 API 使用者可以將其 token 指定為 `api_token` 查詢字串：
+您的應用程序的 API 使用者可以將其令牌指定為 `api_token` 查詢字符串值：
 
-    $response = $client->request('GET', '/api/user?api_token='.$token);
+```php
+$response = $client->request('GET', '/api/user?api_token='.$token);
+```
 
-#### 請求內容
+#### 請求有效載荷
 
-你的應用程式的 API 使用者可以將其 API token 做為 `api_token` 包含在請求的表單參數中：
+您的應用程序的 API 使用者可以將其 API 令牌包含在請求的表單參數中，作為 `api_token`：
 
-    $response = $client->request('POST', '/api/user', [
-        'headers' => [
-            'Accept' => 'application/json',
-        ],
-        'form_params' => [
-            'api_token' => $token,
-        ],
-    ]);
+```php
+$response = $client->request('POST', '/api/user', [
+    'headers' => [
+        'Accept' => 'application/json',
+    ],
+    'form_params' => [
+        'api_token' => $token,
+    ],
+]);
+```
 
-#### Bearer Token
+#### 持票人令牌
 
-你的應用程式的 API 使用者可以在請求的 `Authorization` 標頭中提供其 API token 做為 `Bearer` token：
+您的應用程序的 API 使用者可以在請求的 `Authorization` 標頭中以 `Bearer` 令牌的形式提供其 API 令牌：
 
-    $response = $client->request('POST', '/api/user', [
-        'headers' => [
-            'Authorization' => 'Bearer '.$token,
-            'Accept' => 'application/json',
-        ],
-    ]);
+```php
+$response = $client->request('POST', '/api/user', [
+    'headers' => [
+        'Authorization' => 'Bearer '.$token,
+        'Accept' => 'application/json',
+    ],
+]);
+```
+
+I'm ready to translate. Please paste the Markdown content for me to work on.

@@ -1,99 +1,96 @@
 # Laravel Cashier
 
-- [Introduction](#introduction)
-- [Upgrading Cashier](#upgrading-cashier)
-- [Installation](#installation)
-- [Configuration](#configuration)
-    - [Billable Model](#billable-model)
-    - [API Keys](#api-keys)
-    - [Currency Configuration](#currency-configuration)
-    - [Logging](#logging)
-- [Customers](#customers)
-    - [Retrieving Customers](#retrieving-customers)
-    - [Creating Customers](#creating-customers)
-    - [Updating Customers](#updating-customers)
-    - [Custom Email Addresses](#custom-email-addresses)
-- [Payment Methods](#payment-methods)
-    - [Storing Payment Methods](#storing-payment-methods)
-    - [Retrieving Payment Methods](#retrieving-payment-methods)
-    - [Determining If A User Has A Payment Method](#check-for-a-payment-method)
-    - [Updating The Default Payment Method](#updating-the-default-payment-method)
-    - [Adding Payment Methods](#adding-payment-methods)
-    - [Deleting Payment Methods](#deleting-payment-methods)
-- [Subscriptions](#subscriptions)
-    - [Creating Subscriptions](#creating-subscriptions)
-    - [Checking Subscription Status](#checking-subscription-status)
-    - [Changing Plans](#changing-plans)
-    - [Subscription Quantity](#subscription-quantity)
-    - [Subscription Taxes](#subscription-taxes)
-    - [Subscription Anchor Date](#subscription-anchor-date)
-    - [Cancelling Subscriptions](#cancelling-subscriptions)
-    - [Resuming Subscriptions](#resuming-subscriptions)
-- [Subscription Trials](#subscription-trials)
-    - [With Payment Method Up Front](#with-payment-method-up-front)
-    - [Without Payment Method Up Front](#without-payment-method-up-front)
-    - [Extending Trials](#extending-trials)
-- [Handling Stripe Webhooks](#handling-stripe-webhooks)
-    - [Defining Webhook Event Handlers](#defining-webhook-event-handlers)
-    - [Failed Subscriptions](#handling-failed-subscriptions)
-    - [Verifying Webhook Signatures](#verifying-webhook-signatures)
-- [Single Charges](#single-charges)
-    - [Simple Charge](#simple-charge)
-    - [Charge With Invoice](#charge-with-invoice)
-    - [Refunding Charges](#refunding-charges)
-- [Invoices](#invoices)
-    - [Generating Invoice PDFs](#generating-invoice-pdfs)
-- [Strong Customer Authentication (SCA)](#strong-customer-authentication)
-    - [Payments Requiring Additional Confirmation](#payments-requiring-additional-confirmation)
-    - [Off-session Payment Notifications](#off-session-payment-notifications)
+- [簡介](#introduction)
+- [升級 Cashier](#upgrading-cashier)
+- [安裝](#installation)
+- [組態設定](#configuration)
+    - [可計費模型](#billable-model)
+    - [API 金鑰](#api-keys)
+    - [貨幣組態](#currency-configuration)
+    - [記錄](#logging)
+- [顧客](#customers)
+    - [檢索顧客](#retrieving-customers)
+    - [建立顧客](#creating-customers)
+    - [更新顧客](#updating-customers)
+    - [自訂電子郵件地址](#custom-email-addresses)
+- [付款方式](#payment-methods)
+    - [儲存付款方式](#storing-payment-methods)
+    - [檢索付款方式](#retrieving-payment-methods)
+    - [確認使用者是否有付款方式](#check-for-a-payment-method)
+    - [更新預設付款方式](#updating-the-default-payment-method)
+    - [新增付款方式](#adding-payment-methods)
+    - [刪除付款方式](#deleting-payment-methods)
+- [訂閱](#subscriptions)
+    - [建立訂閱](#creating-subscriptions)
+    - [檢查訂閱狀態](#checking-subscription-status)
+    - [變更方案](#changing-plans)
+    - [訂閱數量](#subscription-quantity)
+    - [訂閱稅金](#subscription-taxes)
+    - [訂閱錨定日期](#subscription-anchor-date)
+    - [取消訂閱](#cancelling-subscriptions)
+    - [恢復訂閱](#resuming-subscriptions)
+- [訂閱試用](#subscription-trials)
+    - [提前使用付款方式](#with-payment-method-up-front)
+    - [不使用付款方式提前](#without-payment-method-up-front)
+    - [延長試用](#extending-trials)
+- [處理 Stripe Webhooks](#handling-stripe-webhooks)
+    - [定義 Webhook 事件處理程序](#defining-webhook-event-handlers)
+    - [失敗的訂閱](#handling-failed-subscriptions)
+    - [驗證 Webhook 簽名](#verifying-webhook-signatures)
+- [單次收費](#single-charges)
+    - [簡單收費](#simple-charge)
+    - [帶有發票的收費](#charge-with-invoice)
+    - [退款收費](#refunding-charges)
+- [發票](#invoices)
+    - [生成發票 PDF](#generating-invoice-pdfs)
+- [強制客戶認證 (SCA)](#strong-customer-authentication)
+    - [需要額外確認的付款](#payments-requiring-additional-confirmation)
+    - [離線付款通知](#off-session-payment-notifications)
 - [Stripe SDK](#stripe-sdk)
 
-<a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel Cashier provides an expressive, fluent interface to [Stripe's](https://stripe.com) subscription billing services. It handles almost all of the boilerplate subscription billing code you are dreading writing. In addition to basic subscription management, Cashier can handle coupons, swapping subscription, subscription "quantities", cancellation grace periods, and even generate invoice PDFs.
+Laravel Cashier 提供了一個表達豐富、流暢的介面，用於 [Stripe](https://stripe.com) 的訂閱計費服務。它處理了幾乎所有您不敢寫的樣板訂閱計費代碼。除了基本的訂閱管理外，Cashier 還可以處理優惠券、更換訂閱、訂閱「數量」、取消寬限期，甚至生成發票 PDF。
 
-<a name="upgrading-cashier"></a>
-## Upgrading Cashier
+## 升級 Cashier
 
-When upgrading to a new version of Cashier, it's important that you carefully review [the upgrade guide](https://github.com/laravel/cashier/blob/master/UPGRADE.md).
+升級到 Cashier 的新版本時，重要的是仔細查看 [升級指南](https://github.com/laravel/cashier/blob/master/UPGRADE.md)。
 
-> {note} To prevent breaking changes, Cashier uses a fixed Stripe API version. Cashier 10.1 utilizes Stripe API version `2019-08-14`. The Stripe API version will be updated on minor releases in order to make use of new Stripe features and improvements.
+> {note} 為了避免破壞性更改，Cashier 使用固定的 Stripe API 版本。Cashier 10.1 使用的是 Stripe API 版本 `2019-08-14`。Stripe API 版本將在次要版本中進行更新，以利用新的 Stripe 功能和改進。
 
-<a name="installation"></a>
-## Installation
+## 安裝
 
-First, require the Cashier package for Stripe with Composer:
+首先，使用 Composer 要求 Stripe 的 Cashier 套件：
 
     composer require laravel/cashier
 
-> {note} To ensure Cashier properly handles all Stripe events, remember to [set up Cashier's webhook handling](#handling-stripe-webhooks).
+> {note} 為了確保 Cashier 正確處理所有 Stripe 事件，請記得[設置 Cashier 的 webhook 處理](#handling-stripe-webhooks)。
 
-#### Database Migrations
+#### 資料庫遷移
 
-The Cashier service provider registers its own database migration directory, so remember to migrate your database after installing the package. The Cashier migrations will add several columns to your `users` table as well as create a new `subscriptions` table to hold all of your customer's subscriptions:
+Cashier 服務提供者註冊了自己的資料庫遷移目錄，因此在安裝套件後記得遷移您的資料庫。Cashier 的遷移將向您的 `users` 表添加幾個列，並創建一個新的 `subscriptions` 表來保存所有客戶的訂閱：
 
     php artisan migrate
 
-If you need to overwrite the migrations that ship with the Cashier package, you can publish them using the `vendor:publish` Artisan command:
+如果您需要覆蓋 Cashier 套件中提供的遷移，可以使用 `vendor:publish` Artisan 命令來發布它們：
 
     php artisan vendor:publish --tag="cashier-migrations"
 
-If you would like to prevent Cashier's migrations from running entirely, you may use the `ignoreMigrations` provided by Cashier. Typically, this method should be called in the `register` method of your `AppServiceProvider`:
+如果您希望完全阻止 Cashier 的遷移運行，可以使用 Cashier 提供的 `ignoreMigrations` 方法。通常，應該在您的 `AppServiceProvider` 的 `register` 方法中調用此方法：
 
     use Laravel\Cashier\Cashier;
 
     Cashier::ignoreMigrations();
 
-> {note} Stripe recommends that any column used for storing Stripe identifiers should be case-sensitive. Therefore, you should ensure the column collation for the `stripe_id` column is set to, for example, `utf8_bin` in MySQL. More info can be found [in the Stripe documentation](https://stripe.com/docs/upgrades#what-changes-does-stripe-consider-to-be-backwards-compatible).
+> {note} Stripe 建議用於存儲 Stripe 識別符的任何列應該區分大小寫。因此，您應確保 `stripe_id` 列的列校對在 MySQL 中設置為，例如，`utf8_bin`。更多信息可以在 [Stripe 文檔](https://stripe.com/docs/upgrades#what-changes-does-stripe-consider-to-be-backwards-compatible) 中找到。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
 <a name="billable-model"></a>
-### Billable Model
+### 可計費模型
 
-Before using Cashier, add the `Billable` trait to your model definition. This trait provides various methods to allow you to perform common billing tasks, such as creating subscriptions, applying coupons, and updating payment method information:
+在使用 Cashier 之前，請將 `Billable` Trait 添加到您的模型定義中。此 Trait 提供各種方法，允許您執行常見的計費任務，例如創建訂閱、應用優惠券和更新付款方式信息：
 
     use Laravel\Cashier\Billable;
 
@@ -102,81 +99,82 @@ Before using Cashier, add the `Billable` trait to your model definition. This tr
         use Billable;
     }
 
-Cashier assumes your Billable model will be the `App\User` class that ships with Laravel. If you wish to change this you can specify a different model in your `.env` file:
+Cashier 假設您的可計費模型將是 Laravel 隨附的 `App\User` 類別。如果您希望更改此設置，可以在您的 `.env` 文件中指定不同的模型：
 
     CASHIER_MODEL=App\User
 
-> {note} If you're using a model other than Laravel's supplied `App\User` model, you'll need to publish and alter the [migrations](#installation) provided to match your alternative model's table name.
+> {note} 如果您使用的模型不是 Laravel 提供的 `App\User` 模型，您需要發布並修改 [遷移](#installation) 以匹配您的替代模型的表名。
 
 <a name="api-keys"></a>
-### API Keys
+### API 金鑰
 
-Next, you should configure your Stripe key in your `.env` file. You can retrieve your Stripe API keys from the Stripe control panel.
+接下來，您應在您的 `.env` 文件中配置您的 Stripe 金鑰。您可以從 Stripe 控制面板檢索您的 Stripe API 金鑰。
 
     STRIPE_KEY=your-stripe-key
     STRIPE_SECRET=your-stripe-secret
 
 <a name="currency-configuration"></a>
-### Currency Configuration
+### 貨幣設定
 
-The default Cashier currency is United States Dollars (USD). You can change the default currency by setting the `CASHIER_CURRENCY` environment variable:
+Cashier 的默認貨幣是美元 (USD)。您可以通過設置 `CASHIER_CURRENCY` 環境變量來更改默認貨幣：
 
     CASHIER_CURRENCY=eur
 
-In addition to configuring Cashier's currency, you may also specify a locale to be used when formatting money values for display on invoices. Internally, Cashier utilizes [PHP's `NumberFormatter` class](https://www.php.net/manual/en/class.numberformatter.php) to set the currency locale:
+除了配置 Cashier 的貨幣外，您還可以指定在發票上顯示金額時要使用的語言環境。在內部，Cashier 使用 [PHP 的 `NumberFormatter` 類](https://www.php.net/manual/en/class.numberformatter.php) 來設置貨幣語言環境：
 
     CASHIER_CURRENCY_LOCALE=nl_BE
 
-> {note} In order to use locales other than `en`, ensure the `ext-intl` PHP extension is installed and configured on your server.
+> {note} 為了使用除 `en` 外的語言環境，請確保您的伺服器上已安裝並配置了 `ext-intl` PHP 擴展。
+
 
 <a name="logging"></a>
-#### Logging
+#### 記錄
 
-Cashier allows you to specify the log channel to be used when logging all Stripe related exceptions. You may specify the log channel using the `CASHIER_LOGGER` environment variable:
+Cashier 允許您指定在記錄所有與 Stripe 相關的異常時使用的日誌通道。您可以使用 `CASHIER_LOGGER` 環境變數來指定日誌通道：
 
     CASHIER_LOGGER=stack
 
 <a name="customers"></a>
-## Customers
+## 顧客
 
 <a name="retrieving-customers"></a>
-### Retrieving Customers
+### 檢索顧客
 
-You can retrieve a customer by their Stripe ID using the `Cashier::findBillable` method. This will return an instance of the Billable model:
+您可以使用 `Cashier::findBillable` 方法按其 Stripe ID 檢索顧客。這將返回一個 Billable 模型的實例：
 
     use Laravel\Cashier\Cashier;
 
     $user = Cashier::findBillable($stripeId);
 
 <a name="creating-customers"></a>
-### Creating Customers
+### 創建顧客
 
-Occasionally, you may wish to create a Stripe customer without beginning a subscription. You may accomplish this using the `createAsStripeCustomer` method:
+偶爾，您可能希望創建一個 Stripe 顧客而不開始訂閱。您可以使用 `createAsStripeCustomer` 方法來實現這一點：
 
     $stripeCustomer = $user->createAsStripeCustomer();
 
-Once the customer has been created in Stripe, you may begin a subscription at a later date. You can also use an optional `$options` array to pass in any additional parameters which are supported by the Stripe API:
+一旦在 Stripe 中創建了顧客，您可以在以後的某個日期開始訂閱。您還可以使用可選的 `$options` 陣列來傳遞任何 Stripe API 支持的其他參數：
 
     $stripeCustomer = $user->createAsStripeCustomer($options);
 
-You may also use the `createOrGetStripeCustomer` method if you want to return the customer object if the billable entity is already a customer within Stripe.
+如果要返回客戶對象，則可以使用 `createOrGetStripeCustomer` 方法，如果可計費實體已經是 Stripe 中的客戶。
 
     $stripeCustomer = $user->createOrGetStripeCustomer();
 
 <a name="updating-customers"></a>
-### Updating Customers
+### 更新顧客
 
-Occasionally, you may wish to update the Stripe customer directly with additional information. You may accomplish this using the `updateStripeCustomer` method:
+偶爾，您可能希望直接使用其他信息更新 Stripe 顧客。您可以使用 `updateStripeCustomer` 方法來實現這一點：
 
     $stripeCustomer = $user->updateStripeCustomer($options);
 
 <a name="custom-email-addresses"></a>
-### Custom Email Addresses
+### 自定義電子郵件地址
 
-By default, Cashier will use the `email` attribute on your Billable model to create customers within Stripe. You can override this using the `stripeEmail` method:
+默認情況下，Cashier 將使用您的 Billable 模型上的 `email` 屬性來在 Stripe 中創建客戶。您可以使用 `stripeEmail` 方法覆蓋此行為：
 
     /**
-     * Get the email address used to create the customer in Stripe.
+     * 獲取用於在 Stripe 中創建客戶的電子郵件地址。
      *
      * @return string|null
      */
@@ -185,36 +183,37 @@ By default, Cashier will use the `email` attribute on your Billable model to cre
         return $this->email;
     }
 
-You can also choose to return `null` since an email address isn't required for creating a customer within Stripe. If you do not provide an email address, features within Stripe like dunning emails, failed payment reminders, and other email related features will not be available.
+您也可以選擇返回 `null`，因為在 Stripe 中創建客戶時不需要電子郵件地址。如果您不提供電子郵件地址，Stripe 內的功能，如催繳郵件、付款失敗提醒和其他與電子郵件相關的功能將不可用。
 
-<a name="payment-methods"></a>
-## Payment Methods
 
-<a name="storing-payment-methods"></a>
-### Storing Payment Methods
+<a name="付款方式"></a>
+## 付款方式
 
-In order to create subscriptions or perform "one off" charges with Stripe, you will need to store a payment method and retrieve its identifier from Stripe. The approach used to accomplish differs based on whether you plan to use the payment method for subscriptions or single charges, so we will examine both below.
+<a name="儲存付款方式"></a>
+### 儲存付款方式
 
-#### Payment Methods For Subscriptions
+為了使用 Stripe 創建訂閱或執行「一次性」收費，您需要儲存一個付款方式並從 Stripe 檢索其識別符。根據您計劃將付款方式用於訂閱還是單次收費，實珅的方法有所不同，因此我們將在下面分別討論。
 
-When storing credit cards to a customer for future use, the Stripe Setup Intents API must be used to securely gather the customer's payment method details. A "Setup Intent" indicates to Stripe the intention to charge a customer's payment method. Cashier's `Billable` trait includes the `createSetupIntent` to easily create a new Setup Intent. You should call this method from the route or controller that will render the form which gathers your customer's payment method details:
+#### 訂閱的付款方式
+
+當為將來使用的客戶儲存信用卡時，必須使用 Stripe 設置意向 API 安全地收集客戶的付款方式詳細信息。「設置意向」向 Stripe 表示打算向客戶的付款方式收費。Cashier 的 `Billable` 特性包括 `createSetupIntent`，可輕鬆創建新的設置意向。您應該從將呈現收集客戶付款方式詳細信息的表單的路由或控制器中調用此方法：
 
     return view('update-payment-method', [
         'intent' => $user->createSetupIntent()
     ]);
 
-After you have created the Setup Intent and passed it to the view, you should attach its secret to the element that will gather the payment method. For example, consider this "update payment method" form:
+在創建設置意向並將其傳遞給視圖後，您應將其密鑰附加到將收集付款方式的元素上。例如，考慮這個「更新付款方式」表單：
 
     <input id="card-holder-name" type="text">
 
-    <!-- Stripe Elements Placeholder -->
+    <!-- Stripe 元素占位符 -->
     <div id="card-element"></div>
 
     <button id="card-button" data-secret="{{ $intent->client_secret }}">
-        Update Payment Method
+        更新付款方式
     </button>
 
-Next, the Stripe.js library may be used to attach a Stripe Element to the form and securely gather the customer's payment details:
+接下來，可以使用 Stripe.js 庫將 Stripe 元素附加到表單並安全地收集客戶的付款詳細信息：
 
     <script src="https://js.stripe.com/v3/"></script>
 
@@ -227,359 +226,398 @@ Next, the Stripe.js library may be used to attach a Stripe Element to the form a
         cardElement.mount('#card-element');
     </script>
 
-Next, the card can be verified and a secure "payment method identifier" can be retrieved from Stripe using [Stripe's `confirmCardSetup` method](https://stripe.com/docs/js/setup_intents/confirm_card_setup):
+接下來，可以驗證卡片並使用 [Stripe 的 `confirmCardSetup` 方法](https://stripe.com/docs/js/setup_intents/confirm_card_setup) 從 Stripe 檢索安全的「付款方式識別符」。
 
-    const cardHolderName = document.getElementById('card-holder-name');
-    const cardButton = document.getElementById('card-button');
-    const clientSecret = cardButton.dataset.secret;
+```javascript
+const cardHolderName = document.getElementById('card-holder-name');
+const cardButton = document.getElementById('card-button');
+const clientSecret = cardButton.dataset.secret;
 
-    cardButton.addEventListener('click', async (e) => {
-        const { setupIntent, error } = await stripe.confirmCardSetup(
-            clientSecret, {
-                payment_method: {
-                    card: cardElement,
-                    billing_details: { name: cardHolderName.value }
-                }
-            }
-        );
-
-        if (error) {
-            // Display "error.message" to the user...
-        } else {
-            // The card has been verified successfully...
-        }
-    });
-
-After the card has been verified by Stripe, you may pass the resulting `setupIntent.payment_method` identifier to your Laravel application, where it can be attached to the customer. The payment method can either be [added as a new payment method](#adding-payment-methods) or [used to update the default payment method](#updating-the-default-payment-method). You can also immediately use the payment method identifier to [create a new subscription](#creating-subscriptions).
-
-> {tip} If you would like more information about Setup Intents and gathering customer payment details please [review this overview provided by Stripe](https://stripe.com/docs/payments/save-and-reuse#php).
-
-#### Payment Methods For Single Charges
-
-Of course, when making a single charge against a customer's payment method we'll only need to use a payment method identifier a single time. Due to Stripe limitations, you may not use the stored default payment method of a customer for single charges. You must allow the customer to enter their payment method details using the Stripe.js library. For example, consider the following form:
-
-    <input id="card-holder-name" type="text">
-
-    <!-- Stripe Elements Placeholder -->
-    <div id="card-element"></div>
-
-    <button id="card-button">
-        Process Payment
-    </button>
-
-Next, the Stripe.js library may be used to attach a Stripe Element to the form and securely gather the customer's payment details:
-
-    <script src="https://js.stripe.com/v3/"></script>
-
-    <script>
-        const stripe = Stripe('stripe-public-key');
-
-        const elements = stripe.elements();
-        const cardElement = elements.create('card');
-
-        cardElement.mount('#card-element');
-    </script>
-
-Next, the card can be verified and a secure "payment method identifier" can be retrieved from Stripe using [Stripe's `createPaymentMethod` method](https://stripe.com/docs/stripe-js/reference#stripe-create-payment-method):
-
-    const cardHolderName = document.getElementById('card-holder-name');
-    const cardButton = document.getElementById('card-button');
-
-    cardButton.addEventListener('click', async (e) => {
-        const { paymentMethod, error } = await stripe.createPaymentMethod(
-            'card', cardElement, {
+cardButton.addEventListener('click', async (e) => {
+    const { setupIntent, error } = await stripe.confirmCardSetup(
+        clientSecret, {
+            payment_method: {
+                card: cardElement,
                 billing_details: { name: cardHolderName.value }
             }
-        );
-
-        if (error) {
-            // Display "error.message" to the user...
-        } else {
-            // The card has been verified successfully...
         }
-    });
+    );
 
-If the card is verified successfully, you may pass the `paymentMethod.id` to your Laravel application and process a [single charge](#simple-charge).
+    if (error) {
+        // Display "error.message" to the user...
+    } else {
+        // The card has been verified successfully...
+    }
+});
+```
+
+當Stripe驗證卡片後，您可以將結果的`setupIntent.payment_method`識別符傳遞給您的Laravel應用程序，並將其附加到客戶端。付款方式可以是[新增付款方式](#adding-payment-methods)或[用於更新默認付款方式](#updating-the-default-payment-method)。您也可以立即使用付款方式識別符來[創建新訂閱](#creating-subscriptions)。
+
+> {tip} 如果您想獲取有關設置意圖和收集客戶付款詳細信息的更多信息，請[查看Stripe提供的概述](https://stripe.com/docs/payments/save-and-reuse#php)。
+
+#### 單次收費的付款方式
+
+當然，當對客戶的付款方式進行單次收費時，我們只需要一次使用付款方式識別符。由於Stripe的限制，您可能無法將客戶的存儲默認付款方式用於單次收費。您必須允許客戶使用Stripe.js庫輸入其付款方式詳細信息。例如，考慮以下表單：
+
+```html
+<input id="card-holder-name" type="text">
+
+<!-- Stripe Elements Placeholder -->
+<div id="card-element"></div>
+
+<button id="card-button">
+    處理付款
+</button>
+```
+
+接下來，可以使用Stripe.js庫將Stripe元素附加到表單中，並安全地收集客戶的付款詳細信息：```
+
+```html
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+    const stripe = Stripe('stripe-public-key');
+
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+
+    cardElement.mount('#card-element');
+</script>
+```
+
+接下來，可以通過 [Stripe 的 `createPaymentMethod` 方法](https://stripe.com/docs/stripe-js/reference#stripe-create-payment-method) 來驗證信用卡，並從 Stripe 獲取安全的 "付款方式識別碼"：
+
+```javascript
+const cardHolderName = document.getElementById('card-holder-name');
+const cardButton = document.getElementById('card-button');
+
+cardButton.addEventListener('click', async (e) => {
+    const { paymentMethod, error } = await stripe.createPaymentMethod(
+        'card', cardElement, {
+            billing_details: { name: cardHolderName.value }
+        }
+    );
+
+    if (error) {
+        // 顯示 "error.message" 給使用者...
+    } else {
+        // 信用卡驗證成功...
+    }
+});
+```
+
+如果信用卡驗證成功，您可以將 `paymentMethod.id` 傳遞給您的 Laravel 應用程序並處理 [單筆付款](#simple-charge)。
 
 <a name="retrieving-payment-methods"></a>
-### Retrieving Payment Methods
+### 檢索付款方式
 
-The `paymentMethods` method on the Billable model instance returns a collection of `Laravel\Cashier\PaymentMethod` instances:
+Billable 模型實例上的 `paymentMethods` 方法返回一個 `Laravel\Cashier\PaymentMethod` 實例的集合：
 
-    $paymentMethods = $user->paymentMethods();
+```php
+$paymentMethods = $user->paymentMethods();
+```
 
-To retrieve the default payment method, the `defaultPaymentMethod` method may be used:
+要檢索默認付款方式，可以使用 `defaultPaymentMethod` 方法：
 
-    $paymentMethod = $user->defaultPaymentMethod();
+```php
+$paymentMethod = $user->defaultPaymentMethod();
+```
 
-You can also retrieve a specific payment method that is owned by the Billable model using the `findPaymentMethod` method:
+您還可以使用 `findPaymentMethod` 方法檢索屬於 Billable 模型的特定付款方式：
 
-    $paymentMethod = $user->findPaymentMethod($paymentMethodId);
+```php
+$paymentMethod = $user->findPaymentMethod($paymentMethodId);
+```
 
 <a name="check-for-a-payment-method"></a>
-### Determining If A User Has A Payment Method
+### 確定用戶是否有付款方式
 
-To determine if a Billable model has a payment method attached to their account, use the `hasPaymentMethod` method:
+要確定 Billable 模型是否附加了付款方式到其帳戶，請使用 `hasPaymentMethod` 方法：
 
-    if ($user->hasPaymentMethod()) {
-        //
-    }
+```php
+if ($user->hasPaymentMethod()) {
+    //
+}
+```
 
-<a name="updating-the-default-payment-method"></a>
-### Updating The Default Payment Method
+### 更新預設付款方式
 
-The `updateDefaultPaymentMethod` method may be used to update a customer's default payment method information. This method accepts a Stripe payment method identifier and will assign the new payment method as the default billing payment method:
+`updateDefaultPaymentMethod` 方法可用於更新客戶的預設付款方式資訊。此方法接受 Stripe 付款方式識別符，並將新的付款方式指定為預設的帳單付款方式：
 
     $user->updateDefaultPaymentMethod($paymentMethod);
 
-To sync your default payment method information with the customer's default payment method information in Stripe, you may use the `updateDefaultPaymentMethodFromStripe` method:
+若要將您的預設付款方式資訊與 Stripe 中客戶的預設付款方式資訊同步，您可以使用 `updateDefaultPaymentMethodFromStripe` 方法：
 
     $user->updateDefaultPaymentMethodFromStripe();
 
-> {note} The default payment method on a customer can only be used for invoicing and creating new subscriptions. Due to limitations from Stripe, it may not be used for single charges.
+> {note} 客戶的預設付款方式僅可用於開立發票和建立新訂閱。由於 Stripe 的限制，可能無法用於單筆收費。
 
-<a name="adding-payment-methods"></a>
-### Adding Payment Methods
+### 新增付款方式
 
-To add a new payment method, you may call the `addPaymentMethod` method on the billable user, passing the payment method identifier:
+要新增新的付款方式，您可以在可開立帳單的使用者上調用 `addPaymentMethod` 方法，並傳遞付款方式識別符：
 
     $user->addPaymentMethod($paymentMethod);
 
-> {tip} To learn how to retrieve payment method identifiers please review the [payment method storage documentation](#storing-payment-methods).
+> {tip} 若要瞭解如何檢索付款方式識別符，請參閱[付款方式存儲文件](#storing-payment-methods)。
 
-<a name="deleting-payment-methods"></a>
-### Deleting Payment Methods
+### 刪除付款方式
 
-To delete a payment method, you may call the `delete` method on the `Laravel\Cashier\PaymentMethod` instance you wish to delete:
+要刪除付款方式，您可以在要刪除的 `Laravel\Cashier\PaymentMethod` 實例上調用 `delete` 方法：
 
     $paymentMethod->delete();
 
-The `deletePaymentMethods` method will delete all of the payment method information for the Billable model:
+`deletePaymentMethods` 方法將刪除 Billable 模型的所有付款方式資訊：
 
     $user->deletePaymentMethods();
 
-> {note} If a user has an active subscription, you should prevent them from deleting their default payment method.
+> {note} 如果使用者有有效訂閱，應防止他們刪除其預設付款方式。
 
-<a name="subscriptions"></a>
-## Subscriptions
+## 訂閱
 
-<a name="creating-subscriptions"></a>
-### Creating Subscriptions
+### 建立訂閱
 
-To create a subscription, first retrieve an instance of your billable model, which typically will be an instance of `App\User`. Once you have retrieved the model instance, you may use the `newSubscription` method to create the model's subscription:
+要建立訂閱，首先檢索您的可開立帳單模型的實例，通常這將是 `App\User` 的實例。一旦檢索到模型實例，您可以使用 `newSubscription` 方法來建立模型的訂閱：
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->newSubscription('default', 'premium')->create($paymentMethod);
+$user->newSubscription('default', 'premium')->create($paymentMethod);
+```
 
-The first argument passed to the `newSubscription` method should be the name of the subscription. If your application only offers a single subscription, you might call this `default` or `primary`. The second argument is the specific plan the user is subscribing to. This value should correspond to the plan's identifier in Stripe.
+`newSubscription` 方法的第一個引數應該是訂閱的名稱。如果您的應用程序只提供單一訂閱，您可以將其命名為 `default` 或 `primary`。第二個引數是用戶要訂閱的具體計劃。此值應對應於 Stripe 中計劃的識別符。
 
-The `create` method, which accepts [a Stripe payment method identifier](#storing-payment-methods) or Stripe `PaymentMethod` object, will begin the subscription as well as update your database with the customer ID and other relevant billing information.
+`create` 方法接受 [Stripe 付款方法識別符](#storing-payment-methods) 或 Stripe `PaymentMethod` 物件，將開始訂閱並更新您的數據庫，包括客戶 ID 和其他相關的帳單信息。
 
-> {note} Passing a payment method identifier directly to the `create()` subscription method will also automatically add it to the user's stored payment methods.
+> {note} 將付款方法識別符直接傳遞給 `create()` 訂閱方法也會自動將其添加到用戶存儲的付款方法中。
 
-#### Additional User Details
+#### 額外的用戶詳細信息
 
-If you would like to specify additional customer details, you may do so by passing them as the second argument to the `create` method:
+如果您想指定額外的客戶詳細信息，可以將它們作為第二個引數傳遞給 `create` 方法：
 
-    $user->newSubscription('default', 'monthly')->create($paymentMethod, [
-        'email' => $email,
-    ]);
+```php
+$user->newSubscription('default', 'monthly')->create($paymentMethod, [
+    'email' => $email,
+]);
+```
 
-To learn more about the additional fields supported by Stripe, check out Stripe's [documentation on customer creation](https://stripe.com/docs/api#create_customer).
+要了解 Stripe 支持的額外字段，請查看 Stripe 的 [客戶創建文檔](https://stripe.com/docs/api#create_customer)。
 
-#### Coupons
+#### 優惠券
 
-If you would like to apply a coupon when creating the subscription, you may use the `withCoupon` method:
+如果您想在創建訂閱時應用優惠券，可以使用 `withCoupon` 方法：
 
-    $user->newSubscription('default', 'monthly')
-         ->withCoupon('code')
-         ->create($paymentMethod);
+```php
+$user->newSubscription('default', 'monthly')
+     ->withCoupon('code')
+     ->create($paymentMethod);
+```
 
 <a name="checking-subscription-status"></a>
-### Checking Subscription Status
+### 檢查訂閱狀態
 
-Once a user is subscribed to your application, you may easily check their subscription status using a variety of convenient methods. First, the `subscribed` method returns `true` if the user has an active subscription, even if the subscription is currently within its trial period:
+一旦用戶訂閱了您的應用程序，您可以輕鬆地使用各種方便的方法檢查他們的訂閱狀態。首先，`subscribed` 方法如果用戶有有效的訂閱，即使訂閱目前處於試用期內，也會返回 `true`：
 
-    if ($user->subscribed('default')) {
-        //
+```php
+if ($user->subscribed('default')) {
+    //
+}
+```
+
+`subscribed` 方法還是一個很好的 [路由中介層](/docs/{{version}}/middleware) 候選者，允許您根據用戶的訂閱狀態篩選對路由和控制器的訪問。```
+
+```php
+public function handle($request, Closure $next)
+{
+    if ($request->user() && ! $request->user()->subscribed('default')) {
+        // This user is not a paying customer...
+        return redirect('billing');
     }
 
-The `subscribed` method also makes a great candidate for a [route middleware](/docs/{{version}}/middleware), allowing you to filter access to routes and controllers based on the user's subscription status:
+    return $next($request);
+}
+```
 
-    public function handle($request, Closure $next)
-    {
-        if ($request->user() && ! $request->user()->subscribed('default')) {
-            // This user is not a paying customer...
-            return redirect('billing');
-        }
+如果您想要確定用戶是否仍在試用期內，您可以使用 `onTrial` 方法。此方法可用於向用戶顯示警告，告知他們仍在試用期內：
 
-        return $next($request);
-    }
+```php
+if ($user->subscription('default')->onTrial()) {
+    //
+}
+```
 
-If you would like to determine if a user is still within their trial period, you may use the `onTrial` method. This method can be useful for displaying a warning to the user that they are still on their trial period:
+`subscribedToPlan` 方法可用於根據給定的 Stripe 計劃 ID 判斷用戶是否已訂閱特定計劃。在此示例中，我們將確定用戶的 `default` 訂閱是否已訂閱 `monthly` 計劃：
 
-    if ($user->subscription('default')->onTrial()) {
-        //
-    }
+```php
+if ($user->subscribedToPlan('monthly', 'default')) {
+    //
+}
+```
 
-The `subscribedToPlan` method may be used to determine if the user is subscribed to a given plan based on a given Stripe plan ID. In this example, we will determine if the user's `default` subscription is actively subscribed to the `monthly` plan:
+通過將陣列傳遞給 `subscribedToPlan` 方法，您可以確定用戶的 `default` 訂閱是否已訂閱 `monthly` 或 `yearly` 計劃：
 
-    if ($user->subscribedToPlan('monthly', 'default')) {
-        //
-    }
+```php
+if ($user->subscribedToPlan(['monthly', 'yearly'], 'default')) {
+    //
+}
+```
 
-By passing an array to the `subscribedToPlan` method, you may determine if the user's `default` subscription is actively subscribed to the `monthly` or the `yearly` plan:
+`recurring` 方法可用於確定用戶當前是否已訂閱並且不再處於試用期內：
 
-    if ($user->subscribedToPlan(['monthly', 'yearly'], 'default')) {
-        //
-    }
+```php
+if ($user->subscription('default')->recurring()) {
+    //
+}
+```
 
-The `recurring` method may be used to determine if the user is currently subscribed and is no longer within their trial period:
+#### 取消訂閱狀態
 
-    if ($user->subscription('default')->recurring()) {
-        //
-    }
+要確定用戶曾經是活躍訂閱者，但已取消訂閱，您可以使用 `cancelled` 方法：
 
-#### Cancelled Subscription Status
+```php
+if ($user->subscription('default')->cancelled()) {
+    //
+}
+```
 
-To determine if the user was once an active subscriber, but has cancelled their subscription, you may use the `cancelled` method:
+您還可以確定用戶是否已取消訂閱，但仍處於“寬限期”直到訂閱完全到期。例如，如果用戶在原定於 3 月 10 日到期的訂閱於 3 月 5 日取消訂閱，則用戶在 3 月 10 日之前處於“寬限期”。請注意，在此期間 `subscribed` 方法仍返回 `true`：
 
-    if ($user->subscription('default')->cancelled()) {
-        //
-    }
+```php
+if ($user->subscription('default')->onGracePeriod()) {
+    //
+}
+```
 
-You may also determine if a user has cancelled their subscription, but are still on their "grace period" until the subscription fully expires. For example, if a user cancels a subscription on March 5th that was originally scheduled to expire on March 10th, the user is on their "grace period" until March 10th. Note that the `subscribed` method still returns `true` during this time:
+要確定用戶是否已取消訂閱並不再處於「寬限期」內，您可以使用 `ended` 方法：
 
-    if ($user->subscription('default')->onGracePeriod()) {
-        //
-    }
-
-To determine if the user has cancelled their subscription and is no longer within their "grace period", you may use the `ended` method:
-
-    if ($user->subscription('default')->ended()) {
-        //
-    }
+```php
+if ($user->subscription('default')->ended()) {
+    //
+}
+```
 
 <a name="incomplete-and-past-due-status"></a>
-#### Incomplete and Past Due Status
+#### 未完成和過期狀態
 
-If a subscription requires a secondary payment action after creation the subscription will be marked as `incomplete`. Subscription statuses are stored in the `stripe_status` column of Cashier's `subscriptions` database table.
+如果訂閱在創建後需要進行次要付款操作，則該訂閱將被標記為 `incomplete`。訂閱狀態存儲在 Cashier 的 `subscriptions` 數據庫表的 `stripe_status` 列中。
 
-Similarly, if a secondary payment action is required when swapping plans the subscription will be marked as `past_due`. When your subscription is in either of these states it will not be active until the customer has confirmed their payment. Checking if a subscription has an incomplete payment can be done using the `hasIncompletePayment` method on the Billable model or a subscription instance:
+同樣地，如果在更換計劃時需要進行次要付款操作，則該訂閱將被標記為 `past_due`。當您的訂閱處於這些狀態之一時，直到客戶確認付款為止，該訂閱將不處於活動狀態。您可以使用 Billable 模型或訂閱實例上的 `hasIncompletePayment` 方法來檢查訂閱是否存在未完成的付款：
 
-    if ($user->hasIncompletePayment('default')) {
-        //
-    }
+```php
+if ($user->hasIncompletePayment('default')) {
+    //
+}
 
-    if ($user->subscription('default')->hasIncompletePayment()) {
-        //
-    }
+if ($user->subscription('default')->hasIncompletePayment()) {
+    //
+}
+```
 
-When a subscription has an incomplete payment, you should direct the user to Cashier's payment confirmation page, passing the `latestPayment` identifier. You may use the `latestPayment` method available on subscription instance to retrieve this identifier:
+當訂閱存在未完成的付款時，您應將用戶重定向到 Cashier 的付款確認頁面，傳遞 `latestPayment` 標識符。您可以使用訂閱實例上提供的 `latestPayment` 方法來檢索此標識符：
 
-    <a href="{{ route('cashier.payment', $subscription->latestPayment()->id) }}">
-        Please confirm your payment.
-    </a>
+```html
+<a href="{{ route('cashier.payment', $subscription->latestPayment()->id) }}">
+    請確認您的付款。
+</a>
+```
 
-If you would like the subscription to still be considered active when it's in a `past_due` state, you may use the `keepPastDueSubscriptionsActive` method provided by Cashier. Typically, this method should be called in the `register` method of your `AppServiceProvider`:
+如果您希望訂閱在處於 `past_due` 狀態時仍被視為活動狀態，您可以使用 Cashier 提供的 `keepPastDueSubscriptionsActive` 方法。通常，應在您的 `AppServiceProvider` 的 `register` 方法中調用此方法：
 
-    use Laravel\Cashier\Cashier;
+```php
+use Laravel\Cashier\Cashier;
 
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        Cashier::keepPastDueSubscriptionsActive();
-    }
+/**
+ * 註冊任何應用程序服務。
+ *
+ * @return void
+ */
+public function register()
+{
+    Cashier::keepPastDueSubscriptionsActive();
+}
+```
 
-> {note} When a subscription is in an `incomplete` state it cannot be changed until the payment is confirmed. Therefore, the `swap` and `updateQuantity` methods will throw an exception when the subscription is in an `incomplete` state.
+> {note} 當訂閱處於 `incomplete` 狀態時，直到付款確認之前無法對其進行更改。因此，當訂閱處於 `incomplete` 狀態時，`swap` 和 `updateQuantity` 方法將拋出異常。
 
-<a name="changing-plans"></a>
-### Changing Plans
 
-After a user is subscribed to your application, they may occasionally want to change to a new subscription plan. To swap a user to a new subscription, pass the plan's identifier to the `swap` method:
+### 變更計畫
+
+當使用者訂閱您的應用程式後，他們偶爾可能想要切換到新的訂閱計畫。要將使用者切換到新的訂閱，請將計畫的識別碼傳遞給 `swap` 方法：
 
     $user = App\User::find(1);
 
     $user->subscription('default')->swap('provider-plan-id');
 
-If the user is on trial, the trial period will be maintained. Also, if a "quantity" exists for the subscription, that quantity will also be maintained.
+如果使用者正在試用期間，試用期將被保留。此外，如果訂閱中存在 "數量"，該數量也將被保留。
 
-If you would like to swap plans and cancel any trial period the user is currently on, you may use the `skipTrial` method:
+如果您想要切換計畫並取消使用者目前正在進行的任何試用期，您可以使用 `skipTrial` 方法：
 
     $user->subscription('default')
             ->skipTrial()
             ->swap('provider-plan-id');
 
-If you would like to swap plans and immediately invoice the user instead of waiting for their next billing cycle, you may use the `swapAndInvoice` method:
+如果您想要切換計畫並立即向使用者開立發票，而不是等待他們的下一個結算週期，您可以使用 `swapAndInvoice` 方法：
 
     $user = App\User::find(1);
 
     $user->subscription('default')->swapAndInvoice('provider-plan-id');
 
-#### Prorations
+#### 部分計費
 
-By default, Stripe prorates charges when swapping between plans. The `noProrate` method may be used to update the subscription's without prorating the charges:
+預設情況下，當在不同計畫之間切換時，Stripe 會按比例收取費用。`noProrate` 方法可用於更新訂閱而不按比例收取費用：
 
     $user->subscription('default')->noProrate()->swap('provider-plan-id');
 
-For more information on subscription proration, consult the [Stripe documentation](https://stripe.com/docs/billing/subscriptions/prorations).
+有關訂閱按比例計費的更多資訊，請參考 [Stripe 文件](https://stripe.com/docs/billing/subscriptions/prorations)。
 
-<a name="subscription-quantity"></a>
-### Subscription Quantity
+### 訂閱數量
 
-Sometimes subscriptions are affected by "quantity". For example, your application might charge $10 per month **per user** on an account. To easily increment or decrement your subscription quantity, use the `incrementQuantity` and `decrementQuantity` methods:
+有時訂閱會受到 "數量" 的影響。例如，您的應用程式可能會按每個帳戶的使用者每月收取 $10。要輕鬆增加或減少訂閱數量，請使用 `incrementQuantity` 和 `decrementQuantity` 方法：
 
     $user = User::find(1);
 
     $user->subscription('default')->incrementQuantity();
 
-    // Add five to the subscription's current quantity...
+    // 將訂閱的當前數量增加五個...
     $user->subscription('default')->incrementQuantity(5);
 
     $user->subscription('default')->decrementQuantity();
 
-    // Subtract five to the subscription's current quantity...
-    $user->subscription('default')->decrementQuantity(5);
+    // 將訂閱的當前數量減少五個...
 
-Alternatively, you may set a specific quantity using the `updateQuantity` method:
+或者，您可以使用 `updateQuantity` 方法設置特定數量：
 
     $user->subscription('default')->updateQuantity(10);
 
-The `noProrate` method may be used to update the subscription's quantity without prorating the charges:
+`noProrate` 方法可用於更新訂閱的數量而不進行按比例計費：
 
     $user->subscription('default')->noProrate()->updateQuantity(10);
 
-For more information on subscription quantities, consult the [Stripe documentation](https://stripe.com/docs/subscriptions/quantities).
+有關訂閱數量的更多信息，請參考[Stripe 文檔](https://stripe.com/docs/subscriptions/quantities)。
 
 <a name="subscription-taxes"></a>
-### Subscription Taxes
+### 訂閱稅金
 
-To specify the tax percentage a user pays on a subscription, implement the `taxPercentage` method on your billable model, and return a numeric value between 0 and 100, with no more than 2 decimal places.
+要指定用戶在訂閱上支付的稅金百分比，請在您的可計費模型上實現 `taxPercentage` 方法，並返回一個介於 0 到 100 之間、最多有 2 位小數的數值。
 
     public function taxPercentage()
     {
         return 20;
     }
 
-The `taxPercentage` method enables you to apply a tax rate on a model-by-model basis, which may be helpful for a user base that spans multiple countries and tax rates.
+`taxPercentage` 方法使您能夠根據模型逐個模型應用稅率，這對於跨多個國家和稅率的用戶群可能很有幫助。
 
-> {note} The `taxPercentage` method only applies to subscription charges. If you use Cashier to make "one off" charges, you will need to manually specify the tax rate at that time.
+> {note} `taxPercentage` 方法僅適用於訂閱費用。如果您使用 Cashier 進行“一次性”收費，則需要在那時手動指定稅率。
 
-#### Syncing Tax Percentages
+#### 同步稅金百分比
 
-When changing the hard-coded value returned by the `taxPercentage` method, the tax settings on any existing subscriptions for the user will remain the same. If you wish to update the tax value for existing subscriptions with the returned `taxPercentage` value, you should call the `syncTaxPercentage` method on the user's subscription instance:
+當更改 `taxPercentage` 方法返回的硬編碼值時，用戶現有訂閱的稅金設置將保持不變。如果您希望將現有訂閱的稅金值更新為返回的 `taxPercentage` 值，您應該在用戶的訂閱實例上調用 `syncTaxPercentage` 方法：
 
     $user->subscription('default')->syncTaxPercentage();
 
 <a name="subscription-anchor-date"></a>
-### Subscription Anchor Date
+### 訂閱錨點日期
 
-By default, the billing cycle anchor is the date the subscription was created, or if a trial period is used, the date that the trial ends. If you would like to modify the billing anchor date, you may use the `anchorBillingCycleOn` method:
+默認情況下，計費週期錨點是訂閱創建日期，或者如果使用試用期，則是試用結束日期。如果您想要修改計費錨點日期，您可以使用 `anchorBillingCycleOn` 方法：
 
     use App\User;
     use Carbon\Carbon;
@@ -592,131 +630,144 @@ By default, the billing cycle anchor is the date the subscription was created, o
                 ->anchorBillingCycleOn($anchor->startOfDay())
                 ->create($paymentMethod);
 
-For more information on managing subscription billing cycles, consult the [Stripe billing cycle documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle)
+如需更多有關管理訂閱計費週期的資訊，請參考[Stripe 訂費週期文件](https://stripe.com/docs/billing/subscriptions/billing-cycle)
 
 <a name="cancelling-subscriptions"></a>
-### Cancelling Subscriptions
+### 取消訂閱
 
-To cancel a subscription, call the `cancel` method on the user's subscription:
+要取消訂閱，請在用戶的訂閱上調用 `cancel` 方法：
 
     $user->subscription('default')->cancel();
 
-When a subscription is cancelled, Cashier will automatically set the `ends_at` column in your database. This column is used to know when the `subscribed` method should begin returning `false`. For example, if a customer cancels a subscription on March 1st, but the subscription was not scheduled to end until March 5th, the `subscribed` method will continue to return `true` until March 5th.
+當訂閱被取消時，Cashier 將自動設置您的資料庫中的 `ends_at` 欄位。該欄位用於確定 `subscribed` 方法應該在何時開始返回 `false`。例如，如果客戶在3月1日取消訂閱，但訂閱原定於3月5日結束，`subscribed` 方法將繼續返回 `true` 直到3月5日。
 
-You may determine if a user has cancelled their subscription but are still on their "grace period" using the `onGracePeriod` method:
+您可以使用 `onGracePeriod` 方法來確定用戶是否已取消訂閱但仍處於「寬限期」：
 
     if ($user->subscription('default')->onGracePeriod()) {
         //
     }
 
-If you wish to cancel a subscription immediately, call the `cancelNow` method on the user's subscription:
+如果您希望立即取消訂閱，請在用戶的訂閱上調用 `cancelNow` 方法：
 
     $user->subscription('default')->cancelNow();
 
 <a name="resuming-subscriptions"></a>
-### Resuming Subscriptions
+### 恢復訂閱
 
-If a user has cancelled their subscription and you wish to resume it, use the `resume` method. The user **must** still be on their grace period in order to resume a subscription:
+如果用戶已取消訂閱並且您希望恢復訂閱，請使用 `resume` 方法。用戶**必須**仍處於寬限期才能恢復訂閱：
 
     $user->subscription('default')->resume();
 
-If the user cancels a subscription and then resumes that subscription before the subscription has fully expired, they will not be billed immediately. Instead, their subscription will be re-activated, and they will be billed on the original billing cycle.
+如果用戶取消訂閱然後在訂閱完全到期之前恢復該訂閱，則不會立即收取費用。相反，他們的訂閱將重新啟動，並且將按原始計費週期收費。
 
 <a name="subscription-trials"></a>
-## Subscription Trials
+## 訂閱試用
 
-> {note} Cashier manages trial dates for subscriptions and does not derive them from the Stripe plan. Therefore, you should configure your plan in Stripe to have a trial period of zero days so that Cashier can manage the trials instead.
+> {note} Cashier 管理訂閱的試用日期，並不是從 Stripe 計劃中派生。因此，您應該在 Stripe 中配置您的計劃以設置零天的試用期，以便 Cashier 可以管理試用。
 
 <a name="with-payment-method-up-front"></a>
-### With Payment Method Up Front
+### 具有預先付款方式
 
-If you would like to offer trial periods to your customers while still collecting payment method information up front, you should use the `trialDays` method when creating your subscriptions:
+如果您想要為客戶提供試用期，同時仍然在一開始收集付款方式資訊，您應該在創建訂閱時使用 `trialDays` 方法：
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->newSubscription('default', 'monthly')
-                ->trialDays(10)
-                ->create($paymentMethod);
+$user->newSubscription('default', 'monthly')
+            ->trialDays(10)
+            ->create($paymentMethod);
+```
 
-This method will set the trial period ending date on the subscription record within the database, as well as instruct Stripe to not begin billing the customer until after this date. When using the `trialDays` method, Cashier will overwrite any default trial period configured for the plan in Stripe.
+此方法將在資料庫中的訂閱記錄中設置試用期結束日期，同時指示 Stripe 在此日期之後才開始向客戶收費。使用 `trialDays` 方法時，Cashier 將覆蓋 Stripe 計劃中配置的任何默認試用期。
 
-> {note} If the customer's subscription is not cancelled before the trial ending date they will be charged as soon as the trial expires, so you should be sure to notify your users of their trial ending date.
+> {note} 如果客戶的訂閱在試用結束日期之前未取消，則他們將在試用到期後立即收費，因此您應該確保通知用戶其試用結束日期。
 
-The `trialUntil` method allows you to provide a `DateTime` instance to specify when the trial period should end:
+`trialUntil` 方法允許您提供 `DateTime` 實例來指定試用期應該何時結束：
 
-    use Carbon\Carbon;
+```php
+use Carbon\Carbon;
 
-    $user->newSubscription('default', 'monthly')
-                ->trialUntil(Carbon::now()->addDays(10))
-                ->create($paymentMethod);
+$user->newSubscription('default', 'monthly')
+            ->trialUntil(Carbon::now()->addDays(10))
+            ->create($paymentMethod);
+```
 
-You may determine if the user is within their trial period using either the `onTrial` method of the user instance, or the `onTrial` method of the subscription instance. The two examples below are identical:
+您可以使用使用者實例的 `onTrial` 方法或訂閱實例的 `onTrial` 方法來確定用戶是否在試用期內。以下兩個示例是相同的：
 
-    if ($user->onTrial('default')) {
-        //
-    }
+```php
+if ($user->onTrial('default')) {
+    //
+}
 
-    if ($user->subscription('default')->onTrial()) {
-        //
-    }
+if ($user->subscription('default')->onTrial()) {
+    //
+}
+```
 
-<a name="without-payment-method-up-front"></a>
-### Without Payment Method Up Front
+### 在一開始沒有付款方式的情況下
 
-If you would like to offer trial periods without collecting the user's payment method information up front, you may set the `trial_ends_at` column on the user record to your desired trial ending date. This is typically done during user registration:
+如果您想要提供試用期，而不需在一開始收集使用者的付款方式資訊，您可以將使用者記錄中的 `trial_ends_at` 欄位設置為您期望的試用結束日期。這通常在使用者註冊期間完成：
 
-    $user = User::create([
-        // Populate other user properties...
-        'trial_ends_at' => now()->addDays(10),
-    ]);
+```php
+$user = User::create([
+    // 填充其他使用者屬性...
+    'trial_ends_at' => now()->addDays(10),
+]);
+```
 
-> {note} Be sure to add a [date mutator](/docs/{{version}}/eloquent-mutators#date-mutators) for `trial_ends_at` to your model definition.
+> {note} 請確保在您的模型定義中為 `trial_ends_at` 添加一個 [日期變異器](/docs/{{version}}/eloquent-mutators#date-mutators)。
 
-Cashier refers to this type of trial as a "generic trial", since it is not attached to any existing subscription. The `onTrial` method on the `User` instance will return `true` if the current date is not past the value of `trial_ends_at`:
+收銀員將這種試用稱為“通用試用”，因為它不附屬於任何現有訂閱。`User` 實例上的 `onTrial` 方法將在當前日期未超過 `trial_ends_at` 的值時返回 `true`：
 
-    if ($user->onTrial()) {
-        // User is within their trial period...
-    }
+```php
+if ($user->onTrial()) {
+    // 使用者在試用期內...
+}
+```
 
-You may also use the `onGenericTrial` method if you wish to know specifically that the user is within their "generic" trial period and has not created an actual subscription yet:
+如果您希望明確知道使用者是否在其“通用”試用期內並且尚未建立實際訂閱，也可以使用 `onGenericTrial` 方法：
 
-    if ($user->onGenericTrial()) {
-        // User is within their "generic" trial period...
-    }
+```php
+if ($user->onGenericTrial()) {
+    // 使用者在其“通用”試用期內...
+}
+```
 
-Once you are ready to create an actual subscription for the user, you may use the `newSubscription` method as usual:
+當您準備為使用者建立實際訂閱時，可以像往常一樣使用 `newSubscription` 方法：
 
-    $user = User::find(1);
+```php
+$user = User::find(1);
 
-    $user->newSubscription('default', 'monthly')->create($paymentMethod);
+$user->newSubscription('default', 'monthly')->create($paymentMethod);
+```
 
-<a name="extending-trials"></a>
-### Extending Trials
+### 延長試用期
 
-The `extendTrial` method allows you to extend the trial period of a subscription after it's been created:
+`extendTrial` 方法允許您在創建後延長訂閱的試用期：
 
-    // End the trial 7 days from now...
-    $subscription->extendTrial(
-        now()->addDays(7)
-    );
+```php
+// 從現在起結束試用期 7 天...
+$subscription->extendTrial(
+    now()->addDays(7)
+);
 
-    // Add an additional 5 days to the trial...
-    $subscription->extendTrial(
-        $subscription->trial_ends_at->addDays(5)
-    );
+// 將試用期延長 5 天...
+$subscription->extendTrial(
+    $subscription->trial_ends_at->addDays(5)
+);
+```
 
-If the trial has already expired and the customer is already being billed for the subscription, you can still offer them an extended trial. The time spent within the trial period will be deducted from the customer's next invoice.
+如果試用期已過期並且客戶已經為訂閱付費，您仍然可以為他們提供延長的試用期。在試用期內的時間將從客戶的下一份發票中扣除。
 
-<a name="handling-stripe-webhooks"></a>
-## Handling Stripe Webhooks
+## 處理 Stripe Webhooks
 
-> {tip} You may use [the Stripe CLI](https://stripe.com/docs/stripe-cli) to help test webhooks during local development.
+> {tip} 您可以使用 [Stripe CLI](https://stripe.com/docs/stripe-cli) 在本地開發期間幫助測試 Webhooks。
 
-Stripe can notify your application of a variety of events via webhooks. By default, a route that points to Cashier's webhook controller is configured through the Cashier service provider. This controller will handle all incoming webhook requests.
+Stripe 可以通過 Webhooks 通知您的應用程序各種事件。默認情況下，通過 Cashier 服務提供者配置指向 Cashier Webhook 控制器的路由。此控制器將處理所有傳入的 Webhook 請求。
 
-By default, this controller will automatically handle cancelling subscriptions that have too many failed charges (as defined by your Stripe settings), customer updates, customer deletions, subscription updates, and payment method changes; however, as we'll soon discover, you can extend this controller to handle any webhook event you like.
+默認情況下，此控制器將自動處理取消訂閱（由您的 Stripe 設置定義的失敗付款次數過多）、客戶更新、客戶刪除、訂閱更新和付款方式更改；但是，正如我們很快會發現的那樣，您可以擴展此控制器以處理您喜歡的任何 Webhook 事件。
 
-To ensure your application can handle Stripe webhooks, be sure to configure the webhook URL in the Stripe control panel. The full list of all webhooks you should configure in the Stripe control panel are:
+為確保您的應用程式能夠處理 Stripe Webhooks，請務必在 Stripe 控制面板中配置 Webhook URL。您應該在 Stripe 控制面板中配置的所有 Webhooks 的完整清單如下：
 
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
@@ -724,20 +775,20 @@ To ensure your application can handle Stripe webhooks, be sure to configure the 
 - `customer.deleted`
 - `invoice.payment_action_required`
 
-> {note} Make sure you protect incoming requests with Cashier's included [webhook signature verification](/docs/{{version}}/billing#verifying-webhook-signatures) middleware.
+> {note} 請確保使用 Cashier 包含的 [Webhook 簽名驗證](/docs/{{version}}/billing#verifying-webhook-signatures) 中介層來保護傳入的請求。
 
-#### Webhooks & CSRF Protection
+#### Webhooks 與 CSRF 保護
 
-Since Stripe webhooks need to bypass Laravel's [CSRF protection](/docs/{{version}}/csrf), be sure to list the URI as an exception in your `VerifyCsrfToken` middleware or list the route outside of the `web` middleware group:
+由於 Stripe Webhooks 需要繞過 Laravel 的 [CSRF 保護](/docs/{{version}}/csrf)，請確保將 URI 列為您的 `VerifyCsrfToken` 中介層的例外，或將路由列為 `web` 中介層組之外的例外：
 
     protected $except = [
         'stripe/*',
     ];
 
 <a name="defining-webhook-event-handlers"></a>
-### Defining Webhook Event Handlers
+### 定義 Webhook 事件處理器
 
-Cashier automatically handles subscription cancellation on failed charges, but if you have additional webhook events you would like to handle, extend the Webhook controller. Your method names should correspond to Cashier's expected convention, specifically, methods should be prefixed with `handle` and the "camel case" name of the webhook you wish to handle. For example, if you wish to handle the `invoice.payment_succeeded` webhook, you should add a `handleInvoicePaymentSucceeded` method to the controller:
+Cashier 會自動處理因失敗付款而導致的訂閱取消，但如果您有其他 Webhook 事件需要處理，請擴展 Webhook 控制器。您的方法名應該符合 Cashier 預期的慣例，具體來說，方法應以 `handle` 開頭，並且應該是您希望處理的 Webhook 的 "駝峰式" 名稱。例如，如果您希望處理 `invoice.payment_succeeded` Webhook，您應該在控制器中添加一個名為 `handleInvoicePaymentSucceeded` 的方法：
 
     <?php
 
@@ -748,118 +799,134 @@ Cashier automatically handles subscription cancellation on failed charges, but i
     class WebhookController extends CashierController
     {
         /**
-         * Handle invoice payment succeeded.
+         * 處理發票付款成功。
          *
          * @param  array  $payload
          * @return \Symfony\Component\HttpFoundation\Response
          */
         public function handleInvoicePaymentSucceeded($payload)
         {
-            // Handle The Event
+            // 處理事件
         }
     }
 
-Next, define a route to your Cashier controller within your `routes/web.php` file. This will overwrite the default shipped route:
+接下來，在您的 `routes/web.php` 檔案中定義一個指向 Cashier 控制器的路由。這將覆蓋預設提供的路由：
 
-    Route::post(
-        'stripe/webhook',
-        '\App\Http\Controllers\WebhookController@handleWebhook'
-    );
+```php
+Route::post(
+    'stripe/webhook',
+    '\App\Http\Controllers\WebhookController@handleWebhook'
+);
+```
 
-Cashier emits a `Laravel\Cashier\Events\WebhookReceived` event when a webhook is received, and a `Laravel\Cashier\Events\WebhookHandled` event when a webhook was handled by Cashier. Both events contain the full payload of the Stripe webhook.
+Cashier 在接收到 webhook 時會觸發 `Laravel\Cashier\Events\WebhookReceived` 事件，並在 Cashier 處理 webhook 時觸發 `Laravel\Cashier\Events\WebhookHandled` 事件。這兩個事件都包含 Stripe webhook 的完整資料。
 
 <a name="handling-failed-subscriptions"></a>
-### Failed Subscriptions
+### 失敗的訂閱
 
-What if a customer's credit card expires? No worries - Cashier's Webhook controller will cancel the customer's subscription for you. Failed payments will automatically be captured and handled by the controller. The controller will cancel the customer's subscription when Stripe determines the subscription has failed (normally after three failed payment attempts).
+如果客戶的信用卡過期怎麼辦？沒問題 - Cashier 的 Webhook 控制器會自動為您取消客戶的訂閱。失敗的付款將自動被捕獲並由控制器處理。當 Stripe 確定訂閱失敗時（通常在三次失敗的付款嘗試後），控制器將取消客戶的訂閱。
 
 <a name="verifying-webhook-signatures"></a>
-### Verifying Webhook Signatures
+### 驗證 Webhook 簽名
 
-To secure your webhooks, you may use [Stripe's webhook signatures](https://stripe.com/docs/webhooks/signatures). For convenience, Cashier automatically includes a middleware which validates that the incoming Stripe webhook request is valid.
+為了保護您的 webhooks，您可以使用 [Stripe 的 webhook 簽名](https://stripe.com/docs/webhooks/signatures)。為了方便起見，Cashier 自動包含一個中介層，用於驗證傳入的 Stripe webhook 請求是否有效。
 
-To enable webhook verification, ensure that the `STRIPE_WEBHOOK_SECRET` environment variable is set in your `.env` file. The webhook `secret` may be retrieved from your Stripe account dashboard.
+要啟用 webhook 驗證，請確保在您的 `.env` 檔案中設置了 `STRIPE_WEBHOOK_SECRET` 環境變數。Webhook `secret` 可以從您的 Stripe 帳戶儀表板中獲取。
 
 <a name="single-charges"></a>
-## Single Charges
+## 單次收費
 
 <a name="simple-charge"></a>
-### Simple Charge
+### 簡單收費
 
-> {note} The `charge` method accepts the amount you would like to charge in the **lowest denominator of the currency used by your application**.
+> {note} `charge` 方法接受您想要以您的應用程式使用的貨幣的**最低單位**收取的金額。
 
-If you would like to make a "one off" charge against a subscribed customer's payment method, you may use the `charge` method on a billable model instance. You'll need to [provide a payment method identifier](#storing-payment-methods) as the second argument:
+如果您想對訂閱客戶的付款方式進行“一次性”收費，您可以在可計費的模型實例上使用 `charge` 方法。您需要將 [付款方式識別符](#storing-payment-methods) 作為第二個參數提供：
 
-    // Stripe Accepts Charges In Cents...
+    // Stripe 接受以分為單位的收費...
     $stripeCharge = $user->charge(100, $paymentMethod);
 
-The `charge` method accepts an array as its third argument, allowing you to pass any options you wish to the underlying Stripe charge creation. Consult the Stripe documentation regarding the options available to you when creating charges:
+`charge` 方法將一個陣列作為其第三個參數，允許您將任何選項傳遞給底層的 Stripe 收費創建。請參考 Stripe 文件以了解在創建收費時可用的選項：
+```
 
-    $user->charge(100, $paymentMethod, [
-        'custom_option' => $value,
-    ]);
+```php
+$user->charge(100, $paymentMethod, [
+    'custom_option' => $value,
+]);
+```
 
-The `charge` method will throw an exception if the charge fails. If the charge is successful, an instance of `Laravel\Cashier\Payment` will be returned from the method:
+`charge` 方法如果收費失敗將拋出一個例外。如果收費成功，將從該方法返回 `Laravel\Cashier\Payment` 的實例：
 
-    try {
-        $payment = $user->charge(100, $paymentMethod);
-    } catch (Exception $e) {
-        //
-    }
+```php
+try {
+    $payment = $user->charge(100, $paymentMethod);
+} catch (Exception $e) {
+    //
+}
+```
 
 <a name="charge-with-invoice"></a>
-### Charge With Invoice
+### 使用發票收費
 
-Sometimes you may need to make a one-time charge but also generate an invoice for the charge so that you may offer a PDF receipt to your customer. The `invoiceFor` method lets you do just that. For example, let's invoice the customer $5.00 for a "One Time Fee":
+有時您可能需要進行一次性收費，但也需要為收費生成一張發票，以便向客戶提供 PDF 收據。`invoiceFor` 方法讓您可以輕鬆實現這一點。例如，讓我們為客戶收取 $5.00 的“一次性費用”：
 
-    // Stripe Accepts Charges In Cents...
-    $user->invoiceFor('One Time Fee', 500);
+```php
+// Stripe 接受以分為單位的收費...
+$user->invoiceFor('一次性費用', 500);
+```
 
-The invoice will be charged immediately against the user's default payment method. The `invoiceFor` method also accepts an array as its third argument. This array contains the billing options for the invoice item. The fourth argument accepted by the method is also an array. This final argument accepts the billing options for the invoice itself:
+該發票將立即收取至用戶的默認付款方式。`invoiceFor` 方法還接受一個陣列作為其第三個引數。該陣列包含發票項目的計費選項。該方法接受的第四個引數也是一個陣列。該最後一個引數接受發票本身的計費選項：
 
-    $user->invoiceFor('Stickers', 500, [
-        'quantity' => 50,
-    ], [
-        'tax_percent' => 21,
-    ]);
+```php
+$user->invoiceFor('貼紙', 500, [
+    'quantity' => 50,
+], [
+    'tax_percent' => 21,
+]);
+```
 
-> {note} The `invoiceFor` method will create a Stripe invoice which will retry failed billing attempts. If you do not want invoices to retry failed charges, you will need to close them using the Stripe API after the first failed charge.
+> {note} `invoiceFor` 方法將創建一個 Stripe 發票，將重試失敗的計費嘗試。如果您不希望發票重試失敗的收費，您將需要在第一次失敗的收費後使用 Stripe API 關閉它們。
 
 <a name="refunding-charges"></a>
-### Refunding Charges
+### 退款收費
 
-If you need to refund a Stripe charge, you may use the `refund` method. This method accepts the Stripe Payment Intent ID as its first argument:
+如果您需要退款 Stripe 收費，您可以使用 `refund` 方法。該方法將接受 Stripe 付款意向 ID 作為其第一個引數：
 
-    $payment = $user->charge(100, $paymentMethod);
+```php
+$payment = $user->charge(100, $paymentMethod);
 
-    $user->refund($payment->id);
+$user->refund($payment->id);
+```
 
 <a name="invoices"></a>
-## Invoices
+## 發票
 
-You may easily retrieve an array of a billable model's invoices using the `invoices` method:
+您可以輕鬆通過 `invoices` 方法檢索可計費模型的發票陣列：
 
-    $invoices = $user->invoices();
+```php
+$invoices = $user->invoices();
 
-    // Include pending invoices in the results...
-    $invoices = $user->invoicesIncludingPending();
+// 在結果中包含待處理的發票...
+$invoices = $user->invoicesIncludingPending();
+```
 
-When listing the invoices for the customer, you may use the invoice's helper methods to display the relevant invoice information. For example, you may wish to list every invoice in a table, allowing the user to easily download any of them:
+在列出客戶的發票時，您可以使用發票的輔助方法來顯示相關的發票信息。例如，您可能希望在表格中列出每張發票，讓用戶輕鬆下載其中任何一張：```
 
-    <table>
-        @foreach ($invoices as $invoice)
-            <tr>
-                <td>{{ $invoice->date()->toFormattedDateString() }}</td>
-                <td>{{ $invoice->total() }}</td>
-                <td><a href="/user/invoice/{{ $invoice->id }}">Download</a></td>
-            </tr>
-        @endforeach
-    </table>
+```html
+<table>
+    @foreach ($invoices as $invoice)
+        <tr>
+            <td>{{ $invoice->date()->toFormattedDateString() }}</td>
+            <td>{{ $invoice->total() }}</td>
+            <td><a href="/user/invoice/{{ $invoice->id }}">下載</a></td>
+        </tr>
+    @endforeach
+</table>
 
 <a name="generating-invoice-pdfs"></a>
-### Generating Invoice PDFs
+### 生成發票 PDF
 
-From within a route or controller, use the `downloadInvoice` method to generate a PDF download of the invoice. This method will automatically generate the proper HTTP response to send the download to the browser:
+從路由或控制器內部，使用 `downloadInvoice` 方法來生成發票的 PDF 下載。此方法將自動生成適當的 HTTP 回應以將下載發送到瀏覽器：
 
     use Illuminate\Http\Request;
 
@@ -871,58 +938,60 @@ From within a route or controller, use the `downloadInvoice` method to generate 
     });
 
 <a name="strong-customer-authentication"></a>
-## Strong Customer Authentication
+## 強制客戶認證
 
-If your business is based in Europe you will need to abide by the Strong Customer Authentication (SCA) regulations. These regulations were imposed in September 2019 by the European Union to prevent payment fraud. Luckily, Stripe and Cashier are prepared for building SCA compliant applications.
+如果您的業務位於歐洲，您將需要遵守強制客戶認證（SCA）規定。這些規定是由歐盟於2019年9月實施的，旨在防止付款詐騙。幸運的是，Stripe 和 Cashier 已為構建符合 SCA 的應用程序做好準備。
 
-> {note} Before getting started, review [Stripe's guide on PSD2 and SCA](https://stripe.com/en-be/guides/strong-customer-authentication) as well as their [documentation on the new SCA API's](https://stripe.com/docs/strong-customer-authentication).
+> {note} 開始之前，請查看 [Stripe 關於 PSD2 和 SCA 的指南](https://stripe.com/en-be/guides/strong-customer-authentication) 以及他們關於新 SCA API 的 [文件](https://stripe.com/docs/strong-customer-authentication)。
 
 <a name="payments-requiring-additional-confirmation"></a>
-### Payments Requiring Additional Confirmation
+### 需要額外確認的付款
 
-SCA regulations often require extra verification in order to confirm and process a payment. When this happens, Cashier will throw an `IncompletePayment` exception that informs you that this extra verification is needed. After catching this exception, you have two options on how to proceed.
+SCA 規定通常需要額外的驗證來確認和處理付款。當發生這種情況時，Cashier 將拋出一個 `IncompletePayment` 例外，通知您需要進行額外驗證。在捕獲此例外後，您有兩種選擇如何繼續進行。
 
-First, you could redirect your customer to the dedicated payment confirmation page which is included with Cashier. This page already has an associated route that is registered via Cashier's service provider. So, you may catch the `IncompletePayment` exception and redirect to the payment confirmation page:
+首先，您可以將客戶重定向到 Cashier 中包含的專用付款確認頁面。此頁面已經有一個與 Cashier 服務提供者註冊的相關路由。因此，您可以捕獲 `IncompletePayment` 例外並重定向到付款確認頁面：
+```
 
-    use Laravel\Cashier\Exceptions\IncompletePayment;
+```php
+use Laravel\Cashier\Exceptions\IncompletePayment;
 
-    try {
-        $subscription = $user->newSubscription('default', $planId)
-                                ->create($paymentMethod);
-    } catch (IncompletePayment $exception) {
-        return redirect()->route(
-            'cashier.payment',
-            [$exception->payment->id, 'redirect' => route('home')]
-        );
-    }
+try {
+    $subscription = $user->newSubscription('default', $planId)
+                            ->create($paymentMethod);
+} catch (IncompletePayment $exception) {
+    return redirect()->route(
+        'cashier.payment',
+        [$exception->payment->id, 'redirect' => route('home')]
+    );
+}
+```
 
-On the payment confirmation page, the customer will be prompted to enter their credit card info again and perform any additional actions required by Stripe, such as "3D Secure" confirmation. After confirming their payment, the user will be redirected to the URL provided by the `redirect` parameter specified above.
+在付款確認頁面上，客戶將被提示再次輸入他們的信用卡資訊並執行 Stripe 所需的任何額外操作，例如 "3D Secure" 確認。確認付款後，用戶將被重定向到上面指定的 `redirect` 參數提供的 URL。
 
-Alternatively, you could allow Stripe to handle the payment confirmation for you. In this case, instead of redirecting to the payment confirmation page, you may [setup Stripe's automatic billing emails](https://dashboard.stripe.com/account/billing/automatic) in your Stripe dashboard. However, if an `IncompletePayment` exception is caught, you should still inform the user they will receive an email with further payment confirmation instructions.
+或者，您可以允許 Stripe 為您處理付款確認。在這種情況下，您可以在 Stripe 控制台中 [設置 Stripe 的自動帳單郵件](https://dashboard.stripe.com/account/billing/automatic) ，而不是重定向到付款確認頁面。但是，如果捕獲到 `IncompletePayment` 異常，您仍應通知用戶他們將收到進一步付款確認說明的電子郵件。
 
-Incomplete payment exceptions may be thrown for the following methods: `charge`, `invoiceFor`, and `invoice` on the `Billable` user. When handling subscriptions, the `create` method on the `SubscriptionBuilder`, and the `incrementAndInvoice` and `swapAndInvoice` methods on the `Subscription` model may throw exceptions.
+對於以下方法，可能會拋出不完整付款異常：`charge`、`invoiceFor` 和 `invoice` 在 `Billable` 用戶上。在處理訂閱時，`SubscriptionBuilder` 上的 `create` 方法，以及 `Subscription` 模型上的 `incrementAndInvoice` 和 `swapAndInvoice` 方法可能會拋出異常。
 
-#### Incomplete and Past Due State
+#### 不完整和過期狀態
 
-When a payment needs additional confirmation, the subscription will remain in an `incomplete` or `past_due` state as indicated by its `stripe_status` database column. Cashier will automatically activate the customer's subscription via a webhook as soon as payment confirmation is complete.
+當付款需要額外確認時，訂閱將保持在 `incomplete` 或 `past_due` 狀態，如其 `stripe_status` 數據庫列所示。一旦付款確認完成，Cashier 將自動通過 webhook 啟用客戶的訂閱。
 
-For more information on `incomplete` and `past_due` states, please refer to [our additional documentation](#incomplete-and-past-due-status).
+有關 `incomplete` 和 `past_due` 狀態的更多信息，請參閱[我們的其他文件](#incomplete-and-past-due-status)。
 
 <a name="off-session-payment-notifications"></a>
-### Off-Session Payment Notifications
+### 離線付款通知
 
-Since SCA regulations require customers to occasionally verify their payment details even while their subscription is active, Cashier can send a payment notification to the customer when off-session payment confirmation is required. For example, this may occur when a subscription is renewing. Cashier's payment notification can be enabled by setting the `CASHIER_PAYMENT_NOTIFICATION` environment variable to a notification class. By default, this notification is disabled. Of course, Cashier includes a notification class you may use for this purpose, but you are free to provide your own notification class if desired:
+由於 SCA 法規要求客戶偶爾驗證其付款詳細信息，即使他們的訂閱仍處於活動狀態，Cashier 可以在需要離線付款確認時向客戶發送付款通知。例如，當訂閱續訂時可能會發生這種情況。通過將 `CASHIER_PAYMENT_NOTIFICATION` 環境變數設置為通知類別，可以啟用 Cashier 的付款通知。默認情況下，此通知已禁用。當然，Cashier 包含一個您可以用於此目的的通知類別，但如果需要，您可以自行提供自己的通知類別：
+```
 
-    CASHIER_PAYMENT_NOTIFICATION=Laravel\Cashier\Notifications\ConfirmPayment
+為了確保離線付款確認通知能夠成功傳遞，請確認您的應用程式已經[設定了 Stripe Webhooks](#handling-stripe-webhooks)，並且在您的 Stripe 控制台中啟用了 `invoice.payment_action_required` Webhook。此外，您的 `Billable` 模型還應該使用 Laravel 的 `Illuminate\Notifications\Notifiable` 特性。
 
-To ensure that off-session payment confirmation notifications are delivered, verify that [Stripe webhooks are configured](#handling-stripe-webhooks) for your application and the `invoice.payment_action_required` webhook is enabled in your Stripe dashboard. In addition, your `Billable` model should also use Laravel's `Illuminate\Notifications\Notifiable` trait.
-
-> {note} Notifications will be sent even when customers are manually making a payment that requires additional confirmation. Unfortunately, there is no way for Stripe to know that the payment was done manually or "off-session". But, a customer will simply see a "Payment Successful" message if they visit the payment page after already confirming their payment. The customer will not be allowed to accidentally confirm the same payment twice and incur an accidental second charge.
+> {note} 即使客戶正在手動進行需要額外確認的付款，通知也會發送。不幸的是，Stripe 無法知道付款是手動完成還是"離線"完成。但是，如果客戶在確認付款後訪問付款頁面，他們將只會看到"付款成功"的訊息。客戶不會因為意外確認相同的付款而產生意外的第二筆費用。
 
 <a name="stripe-sdk"></a>
 ## Stripe SDK
 
-Many of Cashier's objects are wrappers around Stripe SDK objects. If you would like to interact with the Stripe objects directly, you may conveniently retrieve them using the `asStripe` method:
+Cashier 的許多物件都是 Stripe SDK 物件的包裝器。如果您想直接與 Stripe 物件互動，您可以使用 `asStripe` 方法方便地檢索它們：
 
     $stripeSubscription = $subscription->asStripeSubscription();
 

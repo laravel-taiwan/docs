@@ -1,88 +1,100 @@
-# HTTP Redirects
+# HTTP 重新導向
 
-- [Creating Redirects](#creating-redirects)
-- [Redirecting To Named Routes](#redirecting-named-routes)
-- [Redirecting To Controller Actions](#redirecting-controller-actions)
-- [Redirecting With Flashed Session Data](#redirecting-with-flashed-session-data)
+- [建立重新導向](#creating-redirects)
+- [重新導向至命名路由](#redirecting-named-routes)
+- [重新導向至控制器行為](#redirecting-controller-actions)
+- [重新導向並傳遞快閃的會話資料](#redirecting-with-flashed-session-data)
 
 <a name="creating-redirects"></a>
-## Creating Redirects
+## 建立重新導向
 
-Redirect responses are instances of the `Illuminate\Http\RedirectResponse` class, and contain the proper headers needed to redirect the user to another URL. There are several ways to generate a `RedirectResponse` instance. The simplest method is to use the global `redirect` helper:
+重新導向回應是 `Illuminate\Http\RedirectResponse` 類別的實例，包含將使用者重新導向至另一個 URL 所需的正確標頭。有幾種方法可以產生 `RedirectResponse` 實例。最簡單的方法是使用全域的 `redirect` 輔助函式：
 
     Route::get('dashboard', function () {
         return redirect('home/dashboard');
     });
 
-Sometimes you may wish to redirect the user to their previous location, such as when a submitted form is invalid. You may do so by using the global `back` helper function. Since this feature utilizes the [session](/docs/{{version}}/session), make sure the route calling the `back` function is using the `web` middleware group or has all of the session middleware applied:
+有時您可能希望將使用者重新導向至他們之前的位置，例如當提交的表單無效時。您可以使用全域的 `back` 輔助函式來實現。由於此功能使用了 [session](/docs/{{version}}/session)，請確保呼叫 `back` 函式的路由使用 `web` 中介軟體群組或應用了所有的會話中介軟體：
 
     Route::post('user/profile', function () {
-        // Validate the request...
+        // 驗證請求...
 
         return back()->withInput();
     });
 
 <a name="redirecting-named-routes"></a>
-## Redirecting To Named Routes
+## 重新導向至命名路由
 
-When you call the `redirect` helper with no parameters, an instance of `Illuminate\Routing\Redirector` is returned, allowing you to call any method on the `Redirector` instance. For example, to generate a `RedirectResponse` to a named route, you may use the `route` method:
+當您使用 `redirect` 輔助函式而沒有參數時，將返回 `Illuminate\Routing\Redirector` 的實例，允許您在 `Redirector` 實例上調用任何方法。例如，要產生到命名路由的 `RedirectResponse`，您可以使用 `route` 方法：
 
     return redirect()->route('login');
 
-If your route has parameters, you may pass them as the second argument to the `route` method:
+如果您的路由有參數，您可以將它們作為第二個參數傳遞給 `route` 方法：
 
-    // For a route with the following URI: profile/{id}
+    // 對於具有以下 URI 的路由：profile/{id}
 
     return redirect()->route('profile', ['id' => 1]);
 
-#### Populating Parameters Via Eloquent Models
+#### 透過 Eloquent 模型填充參數
 
-If you are redirecting to a route with an "ID" parameter that is being populated from an Eloquent model, you may pass the model itself. The ID will be extracted automatically:
+如果您正在重新導向至一個帶有從 Eloquent 模型填充的「ID」參數的路由，您可以傳遞模型本身。ID 將被自動提取：
 
-    // For a route with the following URI: profile/{id}
+    // 對於具有以下 URI 的路由：profile/{id}
 
-    return redirect()->route('profile', [$user]);
+```php
+return redirect()->route('profile', [$user]);
+```
 
-If you would like to customize the value that is placed in the route parameter, you should override the `getRouteKey` method on your Eloquent model:
+如果您想要自訂放入路由參數的值，您應該在您的 Eloquent 模型上覆寫 `getRouteKey` 方法：
 
-    /**
-     * Get the value of the model's route key.
-     *
-     * @return mixed
-     */
-    public function getRouteKey()
-    {
-        return $this->slug;
-    }
+```php
+/**
+ * 取得模型的路由鍵值。
+ *
+ * @return mixed
+ */
+public function getRouteKey()
+{
+    return $this->slug;
+}
+```
 
 <a name="redirecting-controller-actions"></a>
-## Redirecting To Controller Actions
+## 導向至控制器行為
 
-You may also generate redirects to [controller actions](/docs/{{version}}/controllers). To do so, pass the controller and action name to the `action` method. Remember, you do not need to specify the full namespace to the controller since Laravel's `RouteServiceProvider` will automatically set the base controller namespace:
+您也可以生成導向至[控制器行為](/docs/{{version}}/controllers)的重定向。為此，將控制器和行為名稱傳遞給 `action` 方法。請記住，您不需要指定控制器的完整命名空間，因為 Laravel 的 `RouteServiceProvider` 會自動設置基本控制器命名空間：
 
-    return redirect()->action('HomeController@index');
+```php
+return redirect()->action('HomeController@index');
+```
 
-If your controller route requires parameters, you may pass them as the second argument to the `action` method:
+如果您的控制器路由需要參數，您可以將它們作為 `action` 方法的第二個參數傳遞：
 
-    return redirect()->action(
-        'UserController@profile', ['id' => 1]
-    );
+```php
+return redirect()->action(
+    'UserController@profile', ['id' => 1]
+);
+```
 
 <a name="redirecting-with-flashed-session-data"></a>
-## Redirecting With Flashed Session Data
+## 導向並傳遞閃存的會話資料
 
-Redirecting to a new URL and [flashing data to the session](/docs/{{version}}/session#flash-data) are usually done at the same time. Typically, this is done after successfully performing an action when you flash a success message to the session. For convenience, you may create a `RedirectResponse` instance and flash data to the session in a single, fluent method chain:
+導向至新的 URL 並[將資料傳遞到會話](/docs/{{version}}/session#flash-data)通常是同時進行的。通常，在成功執行操作後，當您將成功訊息傳遞到會話時，會這樣做。為了方便起見，您可以創建一個 `RedirectResponse` 實例並在單一的流暢方法鏈中將資料傳遞到會話：
 
-    Route::post('user/profile', function () {
-        // Update the user's profile...
+```php
+Route::post('user/profile', function () {
+    // 更新使用者的個人資料...
 
-        return redirect('dashboard')->with('status', 'Profile updated!');
-    });
+    return redirect('dashboard')->with('status', '個人資料已更新！');
+});
+```
 
-After the user is redirected, you may display the flashed message from the [session](/docs/{{version}}/session). For example, using [Blade syntax](/docs/{{version}}/blade):
+在用戶被重新導向後，您可以從[會話](/docs/{{version}}/session)中顯示閃存的訊息。例如，使用[Blade 語法](/docs/{{version}}/blade)：
 
-    @if (session('status'))
-        <div class="alert alert-success">
-            {{ session('status') }}
-        </div>
-    @endif
+```php
+@if (session('status'))
+    <div class="alert alert-success">
+        {{ session('status') }}
+    </div>
+@endif
+```

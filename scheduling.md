@@ -1,210 +1,218 @@
-# Task Scheduling
+# 任務排程
 
-- [Introduction](#introduction)
-- [Defining Schedules](#defining-schedules)
-    - [Scheduling Artisan Commands](#scheduling-artisan-commands)
-    - [Scheduling Queued Jobs](#scheduling-queued-jobs)
-    - [Scheduling Shell Commands](#scheduling-shell-commands)
-    - [Schedule Frequency Options](#schedule-frequency-options)
-    - [Timezones](#timezones)
-    - [Preventing Task Overlaps](#preventing-task-overlaps)
-    - [Running Tasks On One Server](#running-tasks-on-one-server)
-    - [Background Tasks](#background-tasks)
-    - [Maintenance Mode](#maintenance-mode)
-- [Task Output](#task-output)
-- [Task Hooks](#task-hooks)
+- [簡介](#introduction)
+- [定義排程](#defining-schedules)
+    - [排程 Artisan 指令](#scheduling-artisan-commands)
+    - [排程佇列工作](#scheduling-queued-jobs)
+    - [排程 Shell 指令](#scheduling-shell-commands)
+    - [排程頻率選項](#schedule-frequency-options)
+    - [時區](#timezones)
+    - [避免任務重疊](#preventing-task-overlaps)
+    - [在單一伺服器上執行任務](#running-tasks-on-one-server)
+    - [背景任務](#background-tasks)
+    - [維護模式](#maintenance-mode)
+- [任務輸出](#task-output)
+- [任務鉤子](#task-hooks)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-In the past, you may have generated a Cron entry for each task you needed to schedule on your server. However, this can quickly become a pain, because your task schedule is no longer in source control and you must SSH into your server to add additional Cron entries.
+過去，您可能為每個需要在伺服器上排程的任務生成了一個 Cron 條目。但是，這可能很快變得繁瑣，因為您的任務排程不再在源代碼控制中，您必須 SSH 登錄到伺服器上添加額外的 Cron 條目。
 
-Laravel's command scheduler allows you to fluently and expressively define your command schedule within Laravel itself. When using the scheduler, only a single Cron entry is needed on your server. Your task schedule is defined in the `app/Console/Kernel.php` file's `schedule` method. To help you get started, a simple example is defined within the method.
+Laravel 的命令排程器允許您在 Laravel 內部流暢且表達性地定義您的命令排程。使用排程器時，只需要在伺服器上添加一個 Cron 條目。您的任務排程定義在 `app/Console/Kernel.php` 檔案的 `schedule` 方法中。為了幫助您入門，該方法中定義了一個簡單的示例。
 
-### Starting The Scheduler
+### 啟動排程器
 
-When using the scheduler, you only need to add the following Cron entry to your server. If you do not know how to add Cron entries to your server, consider using a service such as [Laravel Forge](https://forge.laravel.com) which can manage the Cron entries for you:
+使用排程器時，您只需要在伺服器上添加以下 Cron 條目。如果您不知道如何將 Cron 條目添加到伺服器上，請考慮使用像 [Laravel Forge](https://forge.laravel.com) 這樣的服務來為您管理 Cron 條目：
 
     * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
 
-This Cron will call the Laravel command scheduler every minute. When the `schedule:run` command is executed, Laravel will evaluate your scheduled tasks and runs the tasks that are due.
+此 Cron 將每分鐘調用 Laravel 命令排程器。當執行 `schedule:run` 命令時，Laravel 將評估您的排程任務並執行到期的任務。
 
 <a name="defining-schedules"></a>
-## Defining Schedules
+## 定義排程
 
-You may define all of your scheduled tasks in the `schedule` method of the `App\Console\Kernel` class. To get started, let's look at an example of scheduling a task. In this example, we will schedule a `Closure` to be called every day at midnight. Within the `Closure` we will execute a database query to clear a table:
+您可以在 `App\Console\Kernel` 類的 `schedule` 方法中定義所有排程任務。讓我們從排程任務的示例開始。在此示例中，我們將安排每天午夜執行一次 `Closure`。在 `Closure` 內部，我們將執行一個資料庫查詢以清除一個資料表：
 
-    <?php
+```php
+<?php
 
-    namespace App\Console;
+namespace App\Console;
 
-    use Illuminate\Console\Scheduling\Schedule;
-    use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-    use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\DB;
 
-    class Kernel extends ConsoleKernel
+class Kernel extends ConsoleKernel
+{
+    /**
+     * The Artisan commands provided by your application.
+     *
+     * @var array
+     */
+    protected $commands = [
+        //
+    ];
+
+    /**
+     * Define the application's command schedule.
+     *
+     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @return void
+     */
+    protected function schedule(Schedule $schedule)
     {
-        /**
-         * The Artisan commands provided by your application.
-         *
-         * @var array
-         */
-        protected $commands = [
-            //
-        ];
-
-        /**
-         * Define the application's command schedule.
-         *
-         * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
-         * @return void
-         */
-        protected function schedule(Schedule $schedule)
-        {
-            $schedule->call(function () {
-                DB::table('recent_users')->delete();
-            })->daily();
-        }
+        $schedule->call(function () {
+            DB::table('recent_users')->delete();
+        })->daily();
     }
+}
+```
 
-In addition to scheduling using Closures, you may also use [invokable objects](https://secure.php.net/manual/en/language.oop5.magic.php#object.invoke). Invokable objects are simple PHP classes that contain an `__invoke` method:
+除了使用閉包進行排程外，您還可以使用[可調用物件](https://secure.php.net/manual/en/language.oop5.magic.php#object.invoke)。 可調用物件是包含 `__invoke` 方法的簡單 PHP 類別：
 
-    $schedule->call(new DeleteRecentUsers)->daily();
+```php
+$schedule->call(new DeleteRecentUsers)->daily();
+```
 
 <a name="scheduling-artisan-commands"></a>
-### Scheduling Artisan Commands
+### 排程 Artisan 指令
 
-In addition to scheduling Closure calls, you may also schedule [Artisan commands](/docs/{{version}}/artisan) and operating system commands. For example, you may use the `command` method to schedule an Artisan command using either the command's name or class:
+除了排程閉包呼叫外，您還可以排程[Artisan 指令](/docs/{{version}}/artisan)和作業系統指令。 例如，您可以使用 `command` 方法來排程一個 Artisan 指令，可以使用指令的名稱或類別：
 
-    $schedule->command('emails:send Taylor --force')->daily();
+```php
+$schedule->command('emails:send Taylor --force')->daily();
 
-    $schedule->command(EmailsCommand::class, ['Taylor', '--force'])->daily();
+$schedule->command(EmailsCommand::class, ['Taylor', '--force'])->daily();
+```
 
 <a name="scheduling-queued-jobs"></a>
-### Scheduling Queued Jobs
+### 排程佇列工作
 
-The `job` method may be used to schedule a [queued job](/docs/{{version}}/queues). This method provides a convenient way to schedule jobs without using the `call` method to manually create Closures to queue the job:
+`job` 方法可用於排程[佇列工作](/docs/{{version}}/queues)。 這個方法提供了一種方便的方式來排程工作，而不需要使用 `call` 方法手動創建閉包來排入工作：
 
-    $schedule->job(new Heartbeat)->everyFiveMinutes();
+```php
+$schedule->job(new Heartbeat)->everyFiveMinutes();
 
-    // Dispatch the job to the "heartbeats" queue...
-    $schedule->job(new Heartbeat, 'heartbeats')->everyFiveMinutes();
+// 將工作排入 "heartbeats" 佇列...
+$schedule->job(new Heartbeat, 'heartbeats')->everyFiveMinutes();
+```
 
 <a name="scheduling-shell-commands"></a>
-### Scheduling Shell Commands
+### 排程 Shell 指令
+```
 
-The `exec` method may be used to issue a command to the operating system:
+`exec` 方法可用於向作業系統發送命令：
 
     $schedule->exec('node /home/forge/script.js')->daily();
 
 <a name="schedule-frequency-options"></a>
-### Schedule Frequency Options
+### 排程頻率選項
 
-There are a variety of schedules you may assign to your task:
+您可以為任務指定各種排程：
 
-Method  | Description
+方法  | 說明
 ------------- | -------------
-`->cron('* * * * *');`  |  Run the task on a custom Cron schedule
-`->everyMinute();`  |  Run the task every minute
-`->everyFiveMinutes();`  |  Run the task every five minutes
-`->everyTenMinutes();`  |  Run the task every ten minutes
-`->everyFifteenMinutes();`  |  Run the task every fifteen minutes
-`->everyThirtyMinutes();`  |  Run the task every thirty minutes
-`->hourly();`  |  Run the task every hour
-`->hourlyAt(17);`  |  Run the task every hour at 17 minutes past the hour
-`->daily();`  |  Run the task every day at midnight
-`->dailyAt('13:00');`  |  Run the task every day at 13:00
-`->twiceDaily(1, 13);`  |  Run the task daily at 1:00 & 13:00
-`->weekly();`  |  Run the task every sunday at 00:00
-`->weeklyOn(1, '8:00');`  |  Run the task every week on Monday at 8:00
-`->monthly();`  |  Run the task on the first day of every month at 00:00
-`->monthlyOn(4, '15:00');`  |  Run the task every month on the 4th at 15:00
-`->quarterly();` |  Run the task on the first day of every quarter at 00:00
-`->yearly();`  |  Run the task on the first day of every year at 00:00
-`->timezone('America/New_York');` | Set the timezone
+`->cron('* * * * *');`  |  在自訂的 Cron 排程上運行任務
+`->everyMinute();`  |  每分鐘運行任務
+`->everyFiveMinutes();`  |  每五分鐘運行任務
+`->everyTenMinutes();`  |  每十分鐘運行任務
+`->everyFifteenMinutes();`  |  每十五分鐘運行任務
+`->everyThirtyMinutes();`  |  每三十分鐘運行任務
+`->hourly();`  |  每小時運行任務
+`->hourlyAt(17);`  |  每小時的第 17 分鐘運行任務
+`->daily();`  |  每天午夜運行任務
+`->dailyAt('13:00');`  |  每天下午 13:00 運行任務
+`->twiceDaily(1, 13);`  |  每天的 1:00 和 13:00 運行任務
+`->weekly();`  |  每週日午夜運行任務
+`->weeklyOn(1, '8:00');`  |  每週一早上 8:00 運行任務
+`->monthly();`  |  每月的第一天午夜運行任務
+`->monthlyOn(4, '15:00');`  |  每月的第 4 日下午 15:00 運行任務
+`->quarterly();` |  每季的第一天午夜運行任務
+`->yearly();`  |  每年的第一天午夜運行任務
+`->timezone('America/New_York');` | 設置時區
 
-These methods may be combined with additional constraints to create even more finely tuned schedules that only run on certain days of the week. For example, to schedule a command to run weekly on Monday:
+這些方法可以與其他約束結合，以創建更精細調整的排程，僅在一周的特定日期運行。例如，要安排一個命令每週一運行：
 
-    // Run once per week on Monday at 1 PM...
+    // 每週一下午 1 點運行一次...
     $schedule->call(function () {
         //
     })->weekly()->mondays()->at('13:00');
 
-    // Run hourly from 8 AM to 5 PM on weekdays...
+    // 在工作日的上午 8 點到下午 5 點每小時運行...
     $schedule->command('foo')
               ->weekdays()
               ->hourly()
               ->timezone('America/Chicago')
               ->between('8:00', '17:00');
 
-Below is a list of the additional schedule constraints:
+以下是其他排程約束的列表：
 
-Method  | Description
+方法  | 描述
 ------------- | -------------
-`->weekdays();`  |  Limit the task to weekdays
-`->weekends();`  |  Limit the task to weekends
-`->sundays();`  |  Limit the task to Sunday
-`->mondays();`  |  Limit the task to Monday
-`->tuesdays();`  |  Limit the task to Tuesday
-`->wednesdays();`  |  Limit the task to Wednesday
-`->thursdays();`  |  Limit the task to Thursday
-`->fridays();`  |  Limit the task to Friday
-`->saturdays();`  |  Limit the task to Saturday
-`->between($start, $end);`  |  Limit the task to run between start and end times
-`->when(Closure);`  |  Limit the task based on a truth test
-`->environments($env);`  |  Limit the task to specific environments
+`->weekdays();`  |  限制任務僅在工作日執行
+`->weekends();`  |  限制任務僅在週末執行
+`->sundays();`  |  限制任務僅在星期日執行
+`->mondays();`  |  限制任務僅在星期一執行
+`->tuesdays();`  |  限制任務僅在星期二執行
+`->wednesdays();`  |  限制任務僅在星期三執行
+`->thursdays();`  |  限制任務僅在星期四執行
+`->fridays();`  |  限制任務僅在星期五執行
+`->saturdays();`  |  限制任務僅在星期六執行
+`->between($start, $end);`  |  限制任務在開始和結束時間之間執行
+`->when(Closure);`  |  基於真實測試限制任務
+`->environments($env);`  |  限制任務僅在特定環境執行
 
-#### Between Time Constraints
+#### 時間範圍限制
 
-The `between` method may be used to limit the execution of a task based on the time of day:
+`between` 方法可用於根據一天中的時間限制任務的執行：
 
     $schedule->command('reminders:send')
                         ->hourly()
                         ->between('7:00', '22:00');
 
-Similarly, the `unlessBetween` method can be used to exclude the execution of a task for a period of time:
+同樣，`unlessBetween` 方法可用於排除一段時間內的任務執行：
 
     $schedule->command('reminders:send')
                         ->hourly()
                         ->unlessBetween('23:00', '4:00');
 
-#### Truth Test Constraints
+#### 真實測試限制
 
-The `when` method may be used to limit the execution of a task based on the result of a given truth test. In other words, if the given `Closure` returns `true`, the task will execute as long as no other constraining conditions prevent the task from running:
+`when` 方法可用於根據給定真實測試的結果限制任務的執行。換句話說，如果給定的 `Closure` 返回 `true`，則只要沒有其他限制條件阻止任務運行，任務就會執行：
 
     $schedule->command('emails:send')->daily()->when(function () {
         return true;
     });
 
-The `skip` method may be seen as the inverse of `when`. If the `skip` method returns `true`, the scheduled task will not be executed:
+`skip` 方法可以被視為 `when` 的相反。如果 `skip` 方法返回 `true`，則不會執行預定的任務：
 
     $schedule->command('emails:send')->daily()->skip(function () {
         return true;
     });
 
-When using chained `when` methods, the scheduled command will only execute if all `when` conditions return `true`.
+當使用鏈式 `when` 方法時，只有當所有 `when` 條件返回 `true` 時，預定的命令才會執行。
 
-#### Environment Constraints
+#### 環境限制
 
-The `environments` method may be used to execute tasks only on the given environments:
+`environments` 方法可用於僅在給定的環境中執行任務：
 
     $schedule->command('emails:send')
                 ->daily()
                 ->environments(['staging', 'production']);
 
-<a name="timezones"></a>
-### Timezones
+### 時區
 
-Using the `timezone` method, you may specify that a scheduled task's time should be interpreted within a given timezone:
+使用 `timezone` 方法，您可以指定排程任務的時間應在特定時區中解釋：
 
     $schedule->command('report:generate')
              ->timezone('America/New_York')
              ->at('02:00')
 
-If you are assigning the same timezone to all of your scheduled tasks, you may wish to define a `scheduleTimezone` method in your `app/Console/Kernel.php` file. This method should return the default timezone that should be assigned to all scheduled tasks:
+如果您將相同的時區分配給所有排程任務，您可能希望在您的 `app/Console/Kernel.php` 檔案中定義一個 `scheduleTimezone` 方法。此方法應返回應分配給所有排程任務的預設時區：
 
     /**
-     * Get the timezone that should be used by default for scheduled events.
+     * 取得預設用於排程事件的時區。
      *
      * @return \DateTimeZone|string|null
      */
@@ -213,131 +221,152 @@ If you are assigning the same timezone to all of your scheduled tasks, you may w
         return 'America/Chicago';
     }
 
-> {note} Remember that some timezones utilize daylight savings time. When daylight saving time changes occur, your scheduled task may run twice or even not run at all. For this reason, we recommend avoiding timezone scheduling when possible.
+> {note} 請記住，某些時區使用夏令時。當夏令時更改時，您的排程任務可能會運行兩次，甚至根本不運行。因此，我們建議在可能的情況下避免使用時區排程。
 
-<a name="preventing-task-overlaps"></a>
-### Preventing Task Overlaps
+### 防止任務重疊
 
-By default, scheduled tasks will be run even if the previous instance of the task is still running. To prevent this, you may use the `withoutOverlapping` method:
+預設情況下，即使前一個任務實例仍在運行，排程任務也會運行。為了防止這種情況，您可以使用 `withoutOverlapping` 方法：
 
     $schedule->command('emails:send')->withoutOverlapping();
 
-In this example, the `emails:send` [Artisan command](/docs/{{version}}/artisan) will be run every minute if it is not already running. The `withoutOverlapping` method is especially useful if you have tasks that vary drastically in their execution time, preventing you from predicting exactly how long a given task will take.
+在此示例中，如果 `emails:send` [Artisan 指令](/docs/{{version}}/artisan) 尚未運行，則將每分鐘運行一次。`withoutOverlapping` 方法在您的任務在執行時間上有很大差異，無法準確預測給定任務需要多長時間時特別有用。
 
-If needed, you may specify how many minutes must pass before the "without overlapping" lock expires. By default, the lock will expire after 24 hours:
+如果需要，您可以指定在“不重疊”鎖定過期之前必須過多少分鐘。預設情況下，該鎖定將在 24 小時後過期：
 
     $schedule->command('emails:send')->withoutOverlapping(10);
 
-<a name="running-tasks-on-one-server"></a>
-### Running Tasks On One Server
+### 在單一伺服器上運行任務
 
-> {note} To utilize this feature, your application must be using the `memcached` or `redis` cache driver as your application's default cache driver. In addition, all servers must be communicating with the same central cache server.
+> {note} 要使用此功能，您的應用程式必須將 `memcached` 或 `redis` 快取驅動程式作為應用程式的預設快取驅動程式。此外，所有伺服器必須與同一中央快取伺服器通訊。
 
-If your application is running on multiple servers, you may limit a scheduled job to only execute on a single server. For instance, assume you have a scheduled task that generates a new report every Friday night. If the task scheduler is running on three worker servers, the scheduled task will run on all three servers and generate the report three times. Not good!
+如果您的應用程式在多台伺服器上運行，您可能會將排程工作限制為僅在單台伺服器上執行。例如，假設您有一個排程任務，每週五晚上生成一份新報告。如果任務排程器在三個工作伺服器上運行，則排程任務將在所有三台伺服器上運行並生成三份報告。這樣做並不理想！
 
-To indicate that the task should run on only one server, use the `onOneServer` method when defining the scheduled task. The first server to obtain the task will secure an atomic lock on the job to prevent other servers from running the same task at the same time:
+要指示該任務僅在一台伺服器上運行，請在定義排程任務時使用 `onOneServer` 方法。首先獲取任務的伺服器將對該作業進行原子鎖定，以防止其他伺服器在同一時間運行相同的任務：
 
-    $schedule->command('report:generate')
+```php
+$schedule->command('report:generate')
                     ->fridays()
                     ->at('17:00')
                     ->onOneServer();
+```
 
-<a name="background-tasks"></a>
-### Background Tasks
+### 背景任務
 
-By default, multiple commands scheduled at the same time will execute sequentially. If you have long-running commands, this may cause subsequent commands to start much later than anticipated. If you would like to run commands in the background so that they may all run simultaneously, you may use the `runInBackground` method:
+預設情況下，同時安排的多個命令將按順序執行。如果您有執行時間較長的命令，這可能會導致後續命令開始的時間比預期晚得多。如果您希望在背景中運行命令，以便它們可以同時運行，您可以使用 `runInBackground` 方法：
 
-    $schedule->command('analytics:report')
+```php
+$schedule->command('analytics:report')
              ->daily()
              ->runInBackground();
+```
 
-> {note} The `runInBackground` method may only be used when scheduling tasks via the `command` and `exec` methods.
+> {note} 只能在使用 `command` 和 `exec` 方法安排任務時使用 `runInBackground` 方法。
 
-<a name="maintenance-mode"></a>
-### Maintenance Mode
+### 維護模式
 
-Laravel's scheduled tasks will not run when Laravel is in [maintenance mode](/docs/{{version}}/configuration#maintenance-mode), since we don't want your tasks to interfere with any unfinished maintenance you may be performing on your server. However, if you would like to force a task to run even in maintenance mode, you may use the `evenInMaintenanceMode` method:
+當 Laravel 處於[維護模式](/docs/{{version}}/configuration#maintenance-mode)時，Laravel 的排程任務將不運行，因為我們不希望您的任務干擾您可能正在伺服器上執行的任何未完成的維護。但是，如果您希望強制執行一個任務，即使在維護模式下，您可以使用 `evenInMaintenanceMode` 方法：
 
-    $schedule->command('emails:send')->evenInMaintenanceMode();
+```php
+$schedule->command('emails:send')->evenInMaintenanceMode();
+```
 
-<a name="task-output"></a>
-## Task Output
+## 任務輸出
 
-The Laravel scheduler provides several convenient methods for working with the output generated by scheduled tasks. First, using the `sendOutputTo` method, you may send the output to a file for later inspection:
+Laravel 排程器提供了幾個方便的方法來處理排程任務生成的輸出。首先，使用 `sendOutputTo` 方法，您可以將輸出發送到文件以供以後檢查：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->sendOutputTo($filePath);
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->sendOutputTo($filePath);
+```
 
-If you would like to append the output to a given file, you may use the `appendOutputTo` method:
+如果您想將輸出附加到指定文件，可以使用 `appendOutputTo` 方法：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->appendOutputTo($filePath);
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->appendOutputTo($filePath);
+```
 
-Using the `emailOutputTo` method, you may e-mail the output to an e-mail address of your choice. Before e-mailing the output of a task, you should configure Laravel's [e-mail services](/docs/{{version}}/mail):
+使用 `emailOutputTo` 方法，您可以將輸出郵寄到您選擇的電子郵件地址。在將任務的輸出發送電子郵件之前，您應該配置 Laravel 的 [電子郵件服務](/docs/{{version}}/mail)：
 
-    $schedule->command('foo')
-             ->daily()
-             ->sendOutputTo($filePath)
-             ->emailOutputTo('foo@example.com');
+```php
+$schedule->command('foo')
+         ->daily()
+         ->sendOutputTo($filePath)
+         ->emailOutputTo('foo@example.com');
+```
 
-If you only want to e-mail the output if the command fails, use the `emailOutputOnFailure` method:
+如果只想在命令失敗時發送輸出郵件，請使用 `emailOutputOnFailure` 方法：
 
-    $schedule->command('foo')
-             ->daily()
-             ->emailOutputOnFailure('foo@example.com');
+```php
+$schedule->command('foo')
+         ->daily()
+         ->emailOutputOnFailure('foo@example.com');
+```
 
-> {note} The `emailOutputTo`, `emailOutputOnFailure`, `sendOutputTo`, and `appendOutputTo` methods are exclusive to the `command` and `exec` methods.
+> {note} `emailOutputTo`、`emailOutputOnFailure`、`sendOutputTo` 和 `appendOutputTo` 方法僅適用於 `command` 和 `exec` 方法。
 
 <a name="task-hooks"></a>
-## Task Hooks
+## 任務掛勾
 
-Using the `before` and `after` methods, you may specify code to be executed before and after the scheduled task is complete:
+使用 `before` 和 `after` 方法，您可以指定在預定任務完成之前和之後執行的程式碼：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->before(function () {
-                 // Task is about to start...
-             })
-             ->after(function () {
-                 // Task is complete...
-             });
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->before(function () {
+             // 任務即將開始...
+         })
+         ->after(function () {
+             // 任務完成...
+         });
+```
 
-The `onSuccess` and `onFailure` methods allow you to specify code to be executed if the scheduled task succeeds or fails:
+`onSuccess` 和 `onFailure` 方法允許您指定在預定任務成功或失敗時執行的程式碼：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->onSuccess(function () {
-                 // The task succeeded...
-             })
-             ->onFailure(function () {
-                 // The task failed...
-             });
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->onSuccess(function () {
+             // 任務成功...
+         })
+         ->onFailure(function () {
+             // 任務失敗...
+         });
+```
 
-#### Pinging URLs
+#### Ping URL
 
-Using the `pingBefore` and `thenPing` methods, the scheduler can automatically ping a given URL before or after a task is complete. This method is useful for notifying an external service, such as [Laravel Envoyer](https://envoyer.io), that your scheduled task is commencing or has finished execution:
+使用 `pingBefore` 和 `thenPing` 方法，調度器可以在任務完成之前或之後自動對給定的 URL 進行 ping。此方法可用於通知外部服務，例如 [Laravel Envoyer](https://envoyer.io)，您的預定任務正在開始或已完成執行：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->pingBefore($url)
-             ->thenPing($url);
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->pingBefore($url)
+         ->thenPing($url);
+```
 
-The `pingBeforeIf` and `thenPingIf` methods may be used to ping a given URL only if the given condition is `true`:
+`pingBeforeIf` 和 `thenPingIf` 方法可用於僅在給定條件為 `true` 時 ping 指定的 URL：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->pingBeforeIf($condition, $url)
-             ->thenPingIf($condition, $url);
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->pingBeforeIf($condition, $url)
+         ->thenPingIf($condition, $url);
+```
 
-The `pingOnSuccess` and `pingOnFailure` methods may be used to ping a given URL only if the task succeeds or fails:
+`pingOnSuccess` 和 `pingOnFailure` 方法可用於僅在任務成功或失敗時 ping 指定的 URL：
 
-    $schedule->command('emails:send')
-             ->daily()
-             ->pingOnSuccess($successUrl)
-             ->pingOnFailure($failureUrl);
+```php
+$schedule->command('emails:send')
+         ->daily()
+         ->pingOnSuccess($successUrl)
+         ->pingOnFailure($failureUrl);
+```
 
-All of the ping methods require the Guzzle HTTP library. You can add Guzzle to your project using the Composer package manager:
+所有 ping 方法都需要 Guzzle HTTP 函式庫。您可以使用 Composer 套件管理器將 Guzzle 添加到您的項目中：
 
-    composer require guzzlehttp/guzzle
+```php
+composer require guzzlehttp/guzzle
+```

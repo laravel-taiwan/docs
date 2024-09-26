@@ -1,49 +1,49 @@
-# Routing
+# 路由
 
-- [Basic Routing](#basic-routing)
-    - [Redirect Routes](#redirect-routes)
-    - [View Routes](#view-routes)
-- [Route Parameters](#route-parameters)
-    - [Required Parameters](#required-parameters)
-    - [Optional Parameters](#parameters-optional-parameters)
-    - [Regular Expression Constraints](#parameters-regular-expression-constraints)
-- [Named Routes](#named-routes)
-- [Route Groups](#route-groups)
-    - [Middleware](#route-group-middleware)
-    - [Namespaces](#route-group-namespaces)
-    - [Subdomain Routing](#route-group-subdomain-routing)
-    - [Route Prefixes](#route-group-prefixes)
-    - [Route Name Prefixes](#route-group-name-prefixes)
-- [Route Model Binding](#route-model-binding)
-    - [Implicit Binding](#implicit-binding)
-    - [Explicit Binding](#explicit-binding)
-- [Fallback Routes](#fallback-routes)
-- [Rate Limiting](#rate-limiting)
-- [Form Method Spoofing](#form-method-spoofing)
-- [Accessing The Current Route](#accessing-the-current-route)
+- [基本路由](#basic-routing)
+    - [重定向路由](#redirect-routes)
+    - [視圖路由](#view-routes)
+- [路由參數](#route-parameters)
+    - [必要參數](#required-parameters)
+    - [可選參數](#parameters-optional-parameters)
+    - [正則表達式約束](#parameters-regular-expression-constraints)
+- [命名路由](#named-routes)
+- [路由群組](#route-groups)
+    - [中介層](#route-group-middleware)
+    - [命名空間](#route-group-namespaces)
+    - [子域路由](#route-group-subdomain-routing)
+    - [路由前綴](#route-group-prefixes)
+    - [路由名稱前綴](#route-group-name-prefixes)
+- [路由模型綁定](#route-model-binding)
+    - [隱式綁定](#implicit-binding)
+    - [顯式綁定](#explicit-binding)
+- [後備路由](#fallback-routes)
+- [速率限制](#rate-limiting)
+- [表單方法欺騙](#form-method-spoofing)
+- [存取當前路由](#accessing-the-current-route)
 
 <a name="basic-routing"></a>
-## Basic Routing
+## 基本路由
 
-The most basic Laravel routes accept a URI and a `Closure`, providing a very simple and expressive method of defining routes:
+最基本的 Laravel 路由接受一個 URI 和一個 `Closure`，提供了一種非常簡單和表達性強的定義路由的方法：
 
     Route::get('foo', function () {
         return 'Hello World';
     });
 
-#### The Default Route Files
+#### 預設路由檔案
 
-All Laravel routes are defined in your route files, which are located in the `routes` directory. These files are automatically loaded by the framework. The `routes/web.php` file defines routes that are for your web interface. These routes are assigned the `web` middleware group, which provides features like session state and CSRF protection. The routes in `routes/api.php` are stateless and are assigned the `api` middleware group.
+所有 Laravel 路由都定義在您的路由檔案中，這些檔案位於 `routes` 目錄中。這些檔案會被框架自動載入。`routes/web.php` 檔案定義了用於您的網頁介面的路由。這些路由被分配到 `web` 中介層群組，提供了像是會話狀態和 CSRF 保護等功能。`routes/api.php` 中的路由是無狀態的，並被分配到 `api` 中介層群組。
 
-For most applications, you will begin by defining routes in your `routes/web.php` file. The routes defined in `routes/web.php` may be accessed by entering the defined route's URL in your browser. For example, you may access the following route by navigating to `http://your-app.test/user` in your browser:
+對於大多數應用程式，您將開始在 `routes/web.php` 檔案中定義路由。在 `routes/web.php` 中定義的路由可以通過在瀏覽器中輸入定義的路由 URL 來訪問。例如，您可以通過在瀏覽器中導航至 `http://your-app.test/user` 來訪問以下路由：
 
     Route::get('/user', 'UserController@index');
 
-Routes defined in the `routes/api.php` file are nested within a route group by the `RouteServiceProvider`. Within this group, the `/api` URI prefix is automatically applied so you do not need to manually apply it to every route in the file. You may modify the prefix and other route group options by modifying your `RouteServiceProvider` class.
+在 `routes/api.php` 檔案中定義的路由會被 `RouteServiceProvider` 放在路由群組中。在這個群組中，`/api` URI 前綴會自動套用，因此您不需要手動為檔案中的每個路由套用它。您可以通過修改您的 `RouteServiceProvider` 類別來修改前綴和其他路由群組選項。
 
-#### Available Router Methods
+#### 可用的路由器方法
 
-The router allows you to register routes that respond to any HTTP verb:
+路由器允許您註冊回應任何 HTTP 動詞的路由：
 
     Route::get($uri, $callback);
     Route::post($uri, $callback);
@@ -52,7 +52,7 @@ The router allows you to register routes that respond to any HTTP verb:
     Route::delete($uri, $callback);
     Route::options($uri, $callback);
 
-Sometimes you may need to register a route that responds to multiple HTTP verbs. You may do so using the `match` method. Or, you may even register a route that responds to all HTTP verbs using the `any` method:
+有時您可能需要註冊回應多個 HTTP 動詞的路由。您可以使用 `match` 方法來這樣做。或者，您甚至可以使用 `any` 方法來註冊回應所有 HTTP 動詞的路由：
 
     Route::match(['get', 'post'], '/', function () {
         //
@@ -62,9 +62,9 @@ Sometimes you may need to register a route that responds to multiple HTTP verbs.
         //
     });
 
-#### CSRF Protection
+#### CSRF 保護
 
-Any HTML forms pointing to `POST`, `PUT`, or `DELETE` routes that are defined in the `web` routes file should include a CSRF token field. Otherwise, the request will be rejected. You can read more about CSRF protection in the [CSRF documentation](/docs/{{version}}/csrf):
+任何指向在 `web` 路由檔案中定義的 `POST`、`PUT` 或 `DELETE` 路由的 HTML 表單都應包含 CSRF 欄位。否則，請求將被拒絕。您可以在 [CSRF 文件](/docs/{{version}}/csrf) 中閱讀更多關於 CSRF 保護的資訊：
 
     <form method="POST" action="/profile">
         @csrf
@@ -72,67 +72,72 @@ Any HTML forms pointing to `POST`, `PUT`, or `DELETE` routes that are defined in
     </form>
 
 <a name="redirect-routes"></a>
-### Redirect Routes
+### 重新導向路由
 
-If you are defining a route that redirects to another URI, you may use the `Route::redirect` method. This method provides a convenient shortcut so that you do not have to define a full route or controller for performing a simple redirect:
+如果您正在定義一個導向到另一個 URI 的路由，您可以使用 `Route::redirect` 方法。這個方法提供了一個方便的快捷方式，這樣您就不需要為執行簡單重定向定義完整的路由或控制器：
 
     Route::redirect('/here', '/there');
 
-By default, `Route::redirect` returns a `302` status code. You may customize the status code using the optional third parameter:
+預設情況下，`Route::redirect` 返回 `302` 狀態碼。您可以使用可選的第三個參數來自定義狀態碼：
 
     Route::redirect('/here', '/there', 301);
 
-You may use the `Route::permanentRedirect` method to return a `301` status code:
+您可以使用 `Route::permanentRedirect` 方法返回 `301` 狀態碼：
 
     Route::permanentRedirect('/here', '/there');
 
 <a name="view-routes"></a>
-### View Routes
+### 視圖路由
 
-If your route only needs to return a view, you may use the `Route::view` method. Like the `redirect` method, this method provides a simple shortcut so that you do not have to define a full route or controller. The `view` method accepts a URI as its first argument and a view name as its second argument. In addition, you may provide an array of data to pass to the view as an optional third argument:
+如果您的路由只需要返回一個視圖，您可以使用 `Route::view` 方法。與 `redirect` 方法類似，此方法提供了一個簡單的快捷方式，因此您無需定義完整的路由或控制器。`view` 方法將 URI 作為第一個引數，視圖名稱作為第二個引數。此外，您可以提供一個數據陣列作為可選的第三個引數傳遞給視圖：
 
-    Route::view('/welcome', 'welcome');
+```php
+Route::view('/welcome', 'welcome');
 
-    Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
+Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
+```
 
-<a name="route-parameters"></a>
-## Route Parameters
+## 路由參數
 
-<a name="required-parameters"></a>
-### Required Parameters
+### 必要參數
 
-Sometimes you will need to capture segments of the URI within your route. For example, you may need to capture a user's ID from the URL. You may do so by defining route parameters:
+有時您需要捕獲路由中的 URI 段。例如，您可能需要從 URL 中捕獲用戶的 ID。您可以通過定義路由參數來實現：
 
-    Route::get('user/{id}', function ($id) {
-        return 'User '.$id;
-    });
+```php
+Route::get('user/{id}', function ($id) {
+    return 'User '.$id;
+});
+```
 
-You may define as many route parameters as required by your route:
+您可以根據路由的需要定義多個路由參數：
 
-    Route::get('posts/{post}/comments/{comment}', function ($postId, $commentId) {
-        //
-    });
+```php
+Route::get('posts/{post}/comments/{comment}', function ($postId, $commentId) {
+    //
+});
+```
 
-Route parameters are always encased within `{}` braces and should consist of alphabetic characters, and may not contain a `-` character. Instead of using the `-` character, use an underscore (`_`). Route parameters are injected into route callbacks / controllers based on their order - the names of the callback / controller arguments do not matter.
+路由參數始終位於 `{}` 大括號內，應由字母組成，不得包含 `-` 字元。請改用底線 (`_`) 代替 `-` 字元。路由參數根據它們的順序注入到路由回調函數/控制器中 - 回調函數/控制器參數的名稱不重要。
 
-<a name="parameters-optional-parameters"></a>
-### Optional Parameters
+### 可選參數
 
-Occasionally you may need to specify a route parameter, but make the presence of that route parameter optional. You may do so by placing a `?` mark after the parameter name. Make sure to give the route's corresponding variable a default value:
+有時您可能需要指定一個路由參數，但使該路由參數的存在成為可選的。您可以在參數名稱後面加上 `?` 標記來實現。請確保為路由的相應變量設置默認值：
 
-    Route::get('user/{name?}', function ($name = null) {
-        return $name;
-    });
+```php
+Route::get('user/{name?}', function ($name = null) {
+    return $name;
+});
 
-    Route::get('user/{name?}', function ($name = 'John') {
-        return $name;
-    });
+Route::get('user/{name?}', function ($name = 'John') {
+    return $name;
+});
+```
 
-<a name="parameters-regular-expression-constraints"></a>
-### Regular Expression Constraints
+### 正則表達式約束
 
-You may constrain the format of your route parameters using the `where` method on a route instance. The `where` method accepts the name of the parameter and a regular expression defining how the parameter should be constrained:
+您可以使用路由實例上的 `where` 方法來限制路由參數的格式。`where` 方法接受參數名和定義參數約束方式的正則表達式：
 
+```markdown
     Route::get('user/{name}', function ($name) {
         //
     })->where('name', '[A-Za-z]+');
@@ -146,12 +151,12 @@ You may constrain the format of your route parameters using the `where` method o
     })->where(['id' => '[0-9]+', 'name' => '[a-z]+']);
 
 <a name="parameters-global-constraints"></a>
-#### Global Constraints
+#### 全域約束
 
-If you would like a route parameter to always be constrained by a given regular expression, you may use the `pattern` method. You should define these patterns in the `boot` method of your `RouteServiceProvider`:
+如果您希望路由參數始終受到特定正則表達式的約束，您可以使用 `pattern` 方法。您應該在您的 `RouteServiceProvider` 的 `boot` 方法中定義這些模式：
 
     /**
-     * Define your route model bindings, pattern filters, etc.
+     * 定義您的路由模型綁定、模式篩選器等。
      *
      * @return void
      */
@@ -162,123 +167,133 @@ If you would like a route parameter to always be constrained by a given regular 
         parent::boot();
     }
 
-Once the pattern has been defined, it is automatically applied to all routes using that parameter name:
+一旦定義了模式，它將自動應用於使用該參數名稱的所有路由：
 
     Route::get('user/{id}', function ($id) {
-        // Only executed if {id} is numeric...
+        // 只有當 {id} 是數字時才執行...
     });
 
 <a name="parameters-encoded-forward-slashes"></a>
-#### Encoded Forward Slashes
+#### 編碼的斜杠
 
-The Laravel routing component allows all characters except `/`. You must explicitly allow `/` to be part of your placeholder using a `where` condition regular expression:
+Laravel 路由組件允許所有字符，除了 `/`。您必須明確允許 `/` 成為您的占位符的一部分，使用 `where` 條件正則表達式：
 
     Route::get('search/{search}', function ($search) {
         return $search;
     })->where('search', '.*');
 
-> {note} Encoded forward slashes are only supported within the last route segment.
+> {note} 編碼的斜杠僅在最後一個路由段中受支持。
 
 <a name="named-routes"></a>
-## Named Routes
+## 命名路由
 
-Named routes allow the convenient generation of URLs or redirects for specific routes. You may specify a name for a route by chaining the `name` method onto the route definition:
+命名路由允許方便地為特定路由生成 URL 或重定向。您可以通過在路由定義上鏈接 `name` 方法來為路由指定名稱：
 
     Route::get('user/profile', function () {
         //
     })->name('profile');
 
-You may also specify route names for controller actions:
+您也可以為控制器操作指定路由名稱：
 
     Route::get('user/profile', 'UserProfileController@show')->name('profile');
 
-#### Generating URLs To Named Routes
+#### 生成到命名路由的 URL
 
-Once you have assigned a name to a given route, you may use the route's name when generating URLs or redirects via the global `route` function:
+一旦為特定路由分配了名稱，您可以在通過全局 `route` 函數生成 URL 或重定向時使用路由的名稱：
+```
 
-    // Generating URLs...
-    $url = route('profile');
+```php
+// 生成URL...
+$url = route('profile');
 
-    // Generating Redirects...
-    return redirect()->route('profile');
+// 生成重定向...
+return redirect()->route('profile');
+```
 
-If the named route defines parameters, you may pass the parameters as the second argument to the `route` function. The given parameters will automatically be inserted into the URL in their correct positions:
+如果命名路由定義了參數，您可以將參數作為 `route` 函數的第二個參數傳遞。給定的參數將自動插入到URL中的正確位置：
 
-    Route::get('user/{id}/profile', function ($id) {
+```php
+Route::get('user/{id}/profile', function ($id) {
+    //
+})->name('profile');
+
+$url = route('profile', ['id' => 1]);
+```
+
+如果您在陣列中傳遞額外的參數，這些鍵/值對將自動添加到生成的URL的查詢字串中：
+
+```php
+Route::get('user/{id}/profile', function ($id) {
+    //
+})->name('profile');
+
+$url = route('profile', ['id' => 1, 'photos' => 'yes']);
+
+// /user/1/profile?photos=yes
+```
+
+> {tip} 有時，您可能希望為URL參數指定請求範圍的默認值，例如當前語言環境。為了實現這一點，您可以使用 [`URL::defaults` 方法](/docs/{{version}}/urls#default-values)。
+
+#### 檢查當前路由
+
+如果您想確定當前請求是否路由到特定命名路由，您可以在 Route 實例上使用 `named` 方法。例如，您可以從路由中介軟體檢查當前路由名稱：
+
+```php
+/**
+ * 處理傳入的請求。
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @param  \Closure  $next
+ * @return mixed
+ */
+public function handle($request, Closure $next)
+{
+    if ($request->route()->named('profile')) {
         //
-    })->name('profile');
-
-    $url = route('profile', ['id' => 1]);
-
-If you pass additional parameters in the array, those key / value pairs will automatically be added to the generated URL's query string:
-
-    Route::get('user/{id}/profile', function ($id) {
-        //
-    })->name('profile');
-
-    $url = route('profile', ['id' => 1, 'photos' => 'yes']);
-
-    // /user/1/profile?photos=yes
-
-> {tip} Sometimes, you may wish to specify request-wide default values for URL parameters, such as the current locale. To accomplish this, you may use the [`URL::defaults` method](/docs/{{version}}/urls#default-values).
-
-#### Inspecting The Current Route
-
-If you would like to determine if the current request was routed to a given named route, you may use the `named` method on a Route instance. For example, you may check the current route name from a route middleware:
-
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
-    public function handle($request, Closure $next)
-    {
-        if ($request->route()->named('profile')) {
-            //
-        }
-
-        return $next($request);
     }
 
+    return $next($request);
+}
+```
+
 <a name="route-groups"></a>
-## Route Groups
+## 路由群組
 
-Route groups allow you to share route attributes, such as middleware or namespaces, across a large number of routes without needing to define those attributes on each individual route. Shared attributes are specified in an array format as the first parameter to the `Route::group` method.
+路由群組允許您在不需要在每個單獨路由上定義這些屬性的情況下共享路由屬性，例如中介軟體或命名空間。共享屬性以陣列格式指定為 `Route::group` 方法的第一個參數。
 
-Nested groups attempt to intelligently "merge" attributes with their parent group. Middleware and `where` conditions are merged while names, namespaces, and prefixes are appended. Namespace delimiters and slashes in URI prefixes are automatically added where appropriate.
+嵌套群組會智能地“合併”屬性與其父群組。中介軟體和 `where` 條件會合併，而名稱、命名空間和前綴會被附加。在適當的地方自動添加命名空間分隔符和URI前綴中的斜線。
+
 
 <a name="route-group-middleware"></a>
-### Middleware
+### 中介層
 
-To assign middleware to all routes within a group, you may use the `middleware` method before defining the group. Middleware are executed in the order they are listed in the array:
+要將中介層指派給群組內的所有路由，您可以在定義群組之前使用 `middleware` 方法。中介層將按照在陣列中列出的順序來執行：
 
     Route::middleware(['first', 'second'])->group(function () {
         Route::get('/', function () {
-            // Uses first & second Middleware
+            // 使用第一個和第二個中介層
         });
 
         Route::get('user/profile', function () {
-            // Uses first & second Middleware
+            // 使用第一個和第二個中介層
         });
     });
 
 <a name="route-group-namespaces"></a>
-### Namespaces
+### 命名空間
 
-Another common use-case for route groups is assigning the same PHP namespace to a group of controllers using the `namespace` method:
+路由群組的另一個常見用法是使用 `namespace` 方法將相同的 PHP 命名空間指派給一組控制器：
 
     Route::namespace('Admin')->group(function () {
-        // Controllers Within The "App\Http\Controllers\Admin" Namespace
+        // 在 "App\Http\Controllers\Admin" 命名空間內的控制器
     });
 
-Remember, by default, the `RouteServiceProvider` includes your route files within a namespace group, allowing you to register controller routes without specifying the full `App\Http\Controllers` namespace prefix. So, you only need to specify the portion of the namespace that comes after the base `App\Http\Controllers` namespace.
+請記住，預設情況下，`RouteServiceProvider` 會將您的路由文件包含在一個命名空間群組內，這樣您就可以註冊控制器路由而無需指定完整的 `App\Http\Controllers` 命名空間前綴。因此，您只需要指定在基本 `App\Http\Controllers` 命名空間之後的部分命名空間。
 
 <a name="route-group-subdomain-routing"></a>
-### Subdomain Routing
+### 子域路由
 
-Route groups may also be used to handle subdomain routing. Subdomains may be assigned route parameters just like route URIs, allowing you to capture a portion of the subdomain for usage in your route or controller. The subdomain may be specified by calling the `domain` method before defining the group:
+路由群組也可用於處理子域路由。子域可以像路由 URI 一樣被指定路由參數，允許您捕獲子域的一部分以在路由或控制器中使用。可以通過在定義群組之前調用 `domain` 方法來指定子域：
 
     Route::domain('{account}.myapp.com')->group(function () {
         Route::get('user/{id}', function ($account, $id) {
@@ -286,52 +301,60 @@ Route groups may also be used to handle subdomain routing. Subdomains may be ass
         });
     });
 
-> {note} In order to ensure your subdomain routes are reachable, you should register subdomain routes before registering root domain routes. This will prevent root domain routes from overwriting subdomain routes which have the same URI path.
+> {note} 為了確保您的子域路由可被訪問，您應該在註冊根域路由之前註冊子域路由。這將防止根域路由覆蓋具有相同 URI 路徑的子域路由。
 
 <a name="route-group-prefixes"></a>
-### Route Prefixes
+### 路由前綴
 
-The `prefix` method may be used to prefix each route in the group with a given URI. For example, you may want to prefix all route URIs within the group with `admin`:
+`prefix` 方法可用於使用特定 URI 為群組中的每個路由添加前綴。例如，您可能希望將群組內的所有路由 URI 都以 `admin` 為前綴：
 
-    Route::prefix('admin')->group(function () {
-        Route::get('users', function () {
-            // Matches The "/admin/users" URL
-        });
+```php
+Route::prefix('admin')->group(function () {
+    Route::get('users', function () {
+        // 符合 "/admin/users" URL
     });
+});
+```
 
 <a name="route-group-name-prefixes"></a>
-### Route Name Prefixes
+### 路由名稱前綴
 
-The `name` method may be used to prefix each route name in the group with a given string. For example, you may want to prefix all of the grouped route's names with `admin`. The given string is prefixed to the route name exactly as it is specified, so we will be sure to provide the trailing `.` character in the prefix:
+`name` 方法可用於為群組中的每個路由名稱添加指定的字串前綴。例如，您可能希望將所有群組路由的名稱前綴設置為 `admin`。給定的字串將正確地添加到路由名稱之前，因此我們將確保在前綴中提供尾隨的 `.` 字元：
 
-    Route::name('admin.')->group(function () {
-        Route::get('users', function () {
-            // Route assigned name "admin.users"...
-        })->name('users');
-    });
+```php
+Route::name('admin.')->group(function () {
+    Route::get('users', function () {
+        // 路由分配名稱為 "admin.users"...
+    })->name('users');
+});
+```
 
 <a name="route-model-binding"></a>
-## Route Model Binding
+## 路由模型繫結
 
-When injecting a model ID to a route or controller action, you will often query to retrieve the model that corresponds to that ID. Laravel route model binding provides a convenient way to automatically inject the model instances directly into your routes. For example, instead of injecting a user's ID, you can inject the entire `User` model instance that matches the given ID.
+當將模型 ID 注入到路由或控制器行為時，您通常會查詢以檢索與該 ID 對應的模型。Laravel 路由模型繫結提供了一種方便的方式，可以將模型實例自動注入到您的路由中。例如，您可以注入與給定 ID 匹配的整個 `User` 模型實例，而不是注入用戶的 ID。
 
 <a name="implicit-binding"></a>
-### Implicit Binding
+### 隱式繫結
 
-Laravel automatically resolves Eloquent models defined in routes or controller actions whose type-hinted variable names match a route segment name. For example:
+Laravel 自動解析在路由或控制器行為中定義的 Eloquent 模型，其類型提示的變數名稱與路由段名稱匹配。例如：
 
-    Route::get('api/users/{user}', function (App\User $user) {
-        return $user->email;
-    });
+```php
+Route::get('api/users/{user}', function (App\User $user) {
+    return $user->email;
+});
+```
 
-Since the `$user` variable is type-hinted as the `App\User` Eloquent model and the variable name matches the `{user}` URI segment, Laravel will automatically inject the model instance that has an ID matching the corresponding value from the request URI. If a matching model instance is not found in the database, a 404 HTTP response will automatically be generated.
+由於 `$user` 變數被類型提示為 `App\User` Eloquent 模型，並且變數名稱與 `{user}` URI 段名稱匹配，Laravel 將自動注入具有與請求 URI 中相應值匹配的 ID 的模型實例。如果在數據庫中找不到匹配的模型實例，將自動生成 404 HTTP 響應。
 
-#### Customizing The Key Name
+#### 自定義鍵名
 
-If you would like model binding to use a database column other than `id` when retrieving a given model class, you may override the `getRouteKeyName` method on the Eloquent model:
+如果您希望模型繫結在檢索給定模型類時使用除 `id` 之外的數據庫列，則可以覆蓋 Eloquent 模型上的 `getRouteKeyName` 方法：
+```
 
+```markdown
     /**
-     * Get the route key for the model.
+     * 取得模型的路由鍵。
      *
      * @return string
      */
@@ -341,9 +364,9 @@ If you would like model binding to use a database column other than `id` when re
     }
 
 <a name="explicit-binding"></a>
-### Explicit Binding
+### 明確綁定
 
-To register an explicit binding, use the router's `model` method to specify the class for a given parameter. You should define your explicit model bindings in the `boot` method of the `RouteServiceProvider` class:
+要註冊明確綁定，請使用路由器的 `model` 方法來指定給定參數的類別。您應該在 `RouteServiceProvider` 類別的 `boot` 方法中定義您的明確模型綁定：
 
     public function boot()
     {
@@ -352,22 +375,22 @@ To register an explicit binding, use the router's `model` method to specify the 
         Route::model('user', App\User::class);
     }
 
-Next, define a route that contains a `{user}` parameter:
+接下來，定義一個包含 `{user}` 參數的路由：
 
     Route::get('profile/{user}', function (App\User $user) {
         //
     });
 
-Since we have bound all `{user}` parameters to the `App\User` model, a `User` instance will be injected into the route. So, for example, a request to `profile/1` will inject the `User` instance from the database which has an ID of `1`.
+由於我們將所有 `{user}` 參數綁定到 `App\User` 模型，一個 `User` 實例將被注入到路由中。因此，例如，對 `profile/1` 的請求將注入具有 ID 為 `1` 的資料庫中的 `User` 實例。
 
-If a matching model instance is not found in the database, a 404 HTTP response will be automatically generated.
+如果在資料庫中找不到匹配的模型實例，將自動生成 404 HTTP 回應。
 
-#### Customizing The Resolution Logic
+#### 自訂解析邏輯
 
-If you wish to use your own resolution logic, you may use the `Route::bind` method. The `Closure` you pass to the `bind` method will receive the value of the URI segment and should return the instance of the class that should be injected into the route:
+如果您希望使用自己的解析邏輯，可以使用 `Route::bind` 方法。您傳遞給 `bind` 方法的 `Closure` 將接收 URI 段的值，並應返回應注入到路由中的類別的實例：
 
     /**
-     * Bootstrap any application services.
+     * 啟動任何應用程式服務。
      *
      * @return void
      */
@@ -380,10 +403,10 @@ If you wish to use your own resolution logic, you may use the `Route::bind` meth
         });
     }
 
-Alternatively, you may override the `resolveRouteBinding` method on your Eloquent model. This method will receive the value of the URI segment and should return the instance of the class that should be injected into the route:
+或者，您可以覆蓋您的 Eloquent 模型上的 `resolveRouteBinding` 方法。此方法將接收 URI 段的值，並應返回應注入到路由中的類別的實例：
 
     /**
-     * Retrieve the model for a bound value.
+     * 檢索綁定值的模型。
      *
      * @param  mixed  $value
      * @return \Illuminate\Database\Eloquent\Model|null
@@ -392,99 +415,117 @@ Alternatively, you may override the `resolveRouteBinding` method on your Eloquen
     {
         return $this->where('name', $value)->firstOrFail();
     }
+```
 
-<a name="fallback-routes"></a>
-## Fallback Routes
 
-Using the `Route::fallback` method, you may define a route that will be executed when no other route matches the incoming request. Typically, unhandled requests will automatically render a "404" page via your application's exception handler. However, since you may define the `fallback` route within your `routes/web.php` file, all middleware in the `web` middleware group will apply to the route. You are free to add additional middleware to this route as needed:
+## 回退路由
 
-    Route::fallback(function () {
+使用 `Route::fallback` 方法，您可以定義一個路由，當沒有其他路由與傳入請求匹配時將被執行。通常，未處理的請求將通過應用程式的異常處理程序自動呈現一個 "404" 頁面。但是，由於您可以在 `routes/web.php` 檔案中定義 `fallback` 路由，所有 `web` 中介層組中的中介層將應用於該路由。您可以根據需要向此路由添加額外的中介層：
+
+```php
+Route::fallback(function () {
+    //
+});
+```
+
+> {note} 回退路由應始終是應用程式註冊的最後一個路由。
+
+## 速率限制
+
+Laravel 包括一個[中介層](/docs/{{version}}/middleware)來限制應用程式中路由的訪問速率。要開始，將 `throttle` 中介層分配給一個路由或一組路由。`throttle` 中介層接受兩個參數，這些參數決定在一定時間內可以發出的最大請求數。例如，讓我們指定一個已驗證使用者可以每分鐘訪問以下一組路由 60 次：
+
+```php
+Route::middleware('auth:api', 'throttle:60,1')->group(function () {
+    Route::get('/user', function () {
         //
     });
+});
+```
 
-> {note} The fallback route should always be the last route registered by your application.
+#### 動態速率限制
 
-<a name="rate-limiting"></a>
-## Rate Limiting
+您可以根據已驗證的 `User` 模型的屬性指定動態請求最大值。例如，如果您的 `User` 模型包含一個 `rate_limit` 屬性，您可以將屬性名稱傳遞給 `throttle` 中介層，以便用於計算最大請求計數：
 
-Laravel includes a [middleware](/docs/{{version}}/middleware) to rate limit access to routes within your application. To get started, assign the `throttle` middleware to a route or a group of routes. The `throttle` middleware accepts two parameters that determine the maximum number of requests that can be made in a given number of minutes. For example, let's specify that an authenticated user may access the following group of routes 60 times per minute:
-
-    Route::middleware('auth:api', 'throttle:60,1')->group(function () {
-        Route::get('/user', function () {
-            //
-        });
-    });
-
-#### Dynamic Rate Limiting
-
-You may specify a dynamic request maximum based on an attribute of the authenticated `User` model. For example, if your `User` model contains a `rate_limit` attribute, you may pass the name of the attribute to the `throttle` middleware so that it is used to calculate the maximum request count:
-
-    Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
-        Route::get('/user', function () {
-            //
-        });
-    });
-
-#### Distinct Guest & Authenticated User Rate Limits
-
-You may specify different rate limits for guest and authenticated users. For example, you may specify a maximum of `10` requests per minute for guests `60` for authenticated users:
-
-    Route::middleware('throttle:10|60,1')->group(function () {
+```php
+Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
+    Route::get('/user', function () {
         //
     });
+});
+```
 
-You may also combine this functionality with dynamic rate limits. For example, if your `User` model contains a `rate_limit` attribute, you may pass the name of the attribute to the `throttle` middleware so that it is used to calculate the maximum request count for authenticated users:
+#### 區分訪客和已驗證使用者的速率限制
 
-    Route::middleware('auth:api', 'throttle:10|rate_limit,1')->group(function () {
-        Route::get('/user', function () {
+您可以為訪客和已驗證使用者指定不同的速率限制。例如，您可以為訪客指定每分鐘最多 `10` 次請求，對於已驗證使用者則為 `60`：
+
+```php
+Route::middleware('throttle:10|60,1')->group(function () {
+    //
+});
+```
+
+您也可以將此功能與動態速率限制結合使用。例如，如果您的 `User` 模型包含一個 `rate_limit` 屬性，您可以將屬性名稱傳遞給 `throttle` 中介層，以便用於計算已驗證使用者的最大請求次數：
+
+```php
+Route::middleware('auth:api', 'throttle:10|rate_limit,1')->group(function () {
+    Route::get('/user', function () {
+        //
+    });
+});
+```
+
+#### 速率限制分段
+
+通常，您可能會為整個 API 指定一個速率限制。但是，您的應用程序可能需要為 API 的不同部分指定不同的速率限制。如果是這種情況，您需要將段名稱作為 `throttle` 中介層的第三個參數傳遞：
+
+```php
+Route::middleware('auth:api')->group(function () {
+    Route::middleware('throttle:60,1,default')->group(function () {
+        Route::get('/servers', function () {
             //
         });
     });
 
-#### Rate Limit Segments
-
-Typically, you will probably specify one rate limit for your entire API. However, your application may require different rate limits for different segments of your API. If this is the case, you will need to pass a segment name as the third argument to the `throttle` middleware:
-
-    Route::middleware('auth:api')->group(function () {
-        Route::middleware('throttle:60,1,default')->group(function () {
-            Route::get('/servers', function () {
-                //
-            });
-        });
-
-        Route::middleware('throttle:60,1,deletes')->group(function () {
-            Route::delete('/servers/{id}', function () {
-                //
-            });
+    Route::middleware('throttle:60,1,deletes')->group(function () {
+        Route::delete('/servers/{id}', function () {
+            //
         });
     });
+});
+```
 
 <a name="form-method-spoofing"></a>
-## Form Method Spoofing
+## 表單方法欺騙
 
-HTML forms do not support `PUT`, `PATCH` or `DELETE` actions. So, when defining `PUT`, `PATCH` or `DELETE` routes that are called from an HTML form, you will need to add a hidden `_method` field to the form. The value sent with the `_method` field will be used as the HTTP request method:
+HTML 表單不支援 `PUT`、`PATCH` 或 `DELETE` 操作。因此，當定義從 HTML 表單調用的 `PUT`、`PATCH` 或 `DELETE` 路由時，您需要在表單中添加一個隱藏的 `_method` 欄位。與 `_method` 欄位一起發送的值將用作 HTTP 請求方法：
 
-    <form action="/foo/bar" method="POST">
-        <input type="hidden" name="_method" value="PUT">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-    </form>
+```html
+<form action="/foo/bar" method="POST">
+    <input type="hidden" name="_method" value="PUT">
+    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+</form>
+```
 
-You may use the `@method` Blade directive to generate the `_method` input:
+您可以使用 `@method` Blade 指示詞來生成 `_method` 輸入：
 
-    <form action="/foo/bar" method="POST">
-        @method('PUT')
-        @csrf
-    </form>
+```html
+<form action="/foo/bar" method="POST">
+    @method('PUT')
+    @csrf
+</form>
+```
 
 <a name="accessing-the-current-route"></a>
-## Accessing The Current Route
+## 存取當前路由
 
-You may use the `current`, `currentRouteName`, and `currentRouteAction` methods on the `Route` facade to access information about the route handling the incoming request:
+您可以在 `Route` Facade 上使用 `current`、`currentRouteName` 和 `currentRouteAction` 方法來存取有關處理傳入請求的路由的信息：
 
-    $route = Route::current();
+```php
+$route = Route::current();
 
-    $name = Route::currentRouteName();
+$name = Route::currentRouteName();
 
-    $action = Route::currentRouteAction();
+$action = Route::currentRouteAction();
+```
 
-Refer to the API documentation for both the [underlying class of the Route facade](https://laravel.com/api/{{version}}/Illuminate/Routing/Router.html) and [Route instance](https://laravel.com/api/{{version}}/Illuminate/Routing/Route.html) to review all accessible methods.
+請參考 [Route 門面的基礎類別](https://laravel.com/api/{{version}}/Illuminate/Routing/Router.html) 和 [Route 實例](https://laravel.com/api/{{version}}/Illuminate/Routing/Route.html) 的 API 文件，以查看所有可存取的方法。

@@ -1,25 +1,25 @@
-# Encryption
+# 加密
 
-- [Introduction](#introduction)
-- [Configuration](#configuration)
-- [Using The Encrypter](#using-the-encrypter)
+- [簡介](#introduction)
+- [組態設定](#configuration)
+- [使用加密器](#using-the-encrypter)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's encrypter uses OpenSSL to provide AES-256 and AES-128 encryption. You are strongly encouraged to use Laravel's built-in encryption facilities and not attempt to roll your own "home grown" encryption algorithms. All of Laravel's encrypted values are signed using a message authentication code (MAC) so that their underlying value can not be modified once encrypted.
+Laravel 的加密器使用 OpenSSL 提供 AES-256 和 AES-128 加密。強烈建議您使用 Laravel 內建的加密設施，而不要嘗試自行開發「自家製」的加密演算法。所有 Laravel 的加密值都使用訊息驗證碼（MAC）簽署，因此一旦加密，其底層值就無法被修改。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
-Before using Laravel's encrypter, you must set a `key` option in your `config/app.php` configuration file. You should use the `php artisan key:generate` command to generate this key since this Artisan command will use PHP's secure random bytes generator to build your key. If this value is not properly set, all values encrypted by Laravel will be insecure.
+在使用 Laravel 的加密器之前，您必須在 `config/app.php` 組態檔中設置一個 `key` 選項。您應該使用 `php artisan key:generate` 命令來生成此金鑰，因為這個 Artisan 命令將使用 PHP 的安全隨機位元組產生器來建立您的金鑰。如果此值未正確設置，Laravel 加密的所有值將不安全。
 
 <a name="using-the-encrypter"></a>
-## Using The Encrypter
+## 使用加密器
 
-#### Encrypting A Value
+#### 加密值
 
-You may encrypt a value using the `encrypt` helper. All encrypted values are encrypted using OpenSSL and the `AES-256-CBC` cipher. Furthermore, all encrypted values are signed with a message authentication code (MAC) to detect any modifications to the encrypted string:
+您可以使用 `encrypt` 助手來加密值。所有加密的值都是使用 OpenSSL 和 `AES-256-CBC` 加密。此外，所有加密的值都使用訊息驗證碼（MAC）簽署，以檢測對加密字串的任何修改：
 
     <?php
 
@@ -32,7 +32,7 @@ You may encrypt a value using the `encrypt` helper. All encrypted values are enc
     class UserController extends Controller
     {
         /**
-         * Store a secret message for the user.
+         * 為使用者存儲一個秘密訊息。
          *
          * @param  Request  $request
          * @param  int  $id
@@ -48,24 +48,28 @@ You may encrypt a value using the `encrypt` helper. All encrypted values are enc
         }
     }
 
-#### Encrypting Without Serialization
+#### 無需序列化加密
 
-Encrypted values are passed through `serialize` during encryption, which allows for encryption of objects and arrays. Thus, non-PHP clients receiving encrypted values will need to `unserialize` the data. If you would like to encrypt and decrypt values without serialization, you may use the `encryptString` and `decryptString` methods of the `Crypt` facade:
+加密的值在加密期間通過 `serialize`，這允許對象和陣列的加密。因此，接收加密值的非 PHP 客戶端將需要對數據進行 `unserialize`。如果您想要在不進行序列化的情況下加密和解密值，您可以使用 `Crypt` 門面的 `encryptString` 和 `decryptString` 方法：
 
-    use Illuminate\Support\Facades\Crypt;
+```php
+use Illuminate\Support\Facades\Crypt;
 
-    $encrypted = Crypt::encryptString('Hello world.');
+$encrypted = Crypt::encryptString('Hello world.');
 
-    $decrypted = Crypt::decryptString($encrypted);
+$decrypted = Crypt::decryptString($encrypted);
+```
 
-#### Decrypting A Value
+#### 解密值
 
-You may decrypt values using the `decrypt` helper. If the value can not be properly decrypted, such as when the MAC is invalid, an `Illuminate\Contracts\Encryption\DecryptException` will be thrown:
+您可以使用 `decrypt` 輔助函式來解密值。如果值無法正確解密，例如 MAC 無效時，將拋出一個 `Illuminate\Contracts\Encryption\DecryptException`：
 
-    use Illuminate\Contracts\Encryption\DecryptException;
+```php
+use Illuminate\Contracts\Encryption\DecryptException;
 
-    try {
-        $decrypted = decrypt($encryptedValue);
-    } catch (DecryptException $e) {
-        //
-    }
+try {
+    $decrypted = decrypt($encryptedValue);
+} catch (DecryptException $e) {
+    //
+}
+```

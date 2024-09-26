@@ -1,63 +1,65 @@
-# Database: Getting Started
+# 資料庫：入門指南
 
-- [Introduction](#introduction)
-    - [Configuration](#configuration)
-    - [Read & Write Connections](#read-and-write-connections)
-    - [Using Multiple Database Connections](#using-multiple-database-connections)
-- [Running Raw SQL Queries](#running-queries)
-- [Listening For Query Events](#listening-for-query-events)
-- [Database Transactions](#database-transactions)
+- [簡介](#introduction)
+    - [組態設定](#configuration)
+    - [讀取與寫入連線](#read-and-write-connections)
+    - [使用多個資料庫連線](#using-multiple-database-connections)
+- [執行原始 SQL 查詢](#running-queries)
+- [監聽查詢事件](#listening-for-query-events)
+- [資料庫交易](#database-transactions)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel makes interacting with databases extremely simple across a variety of database backends using either raw SQL, the [fluent query builder](/docs/{{version}}/queries), and the [Eloquent ORM](/docs/{{version}}/eloquent). Currently, Laravel supports four databases:
+Laravel 透過原始 SQL、[流暢查詢建構器](/docs/{{version}}/queries)和[Eloquent ORM](/docs/{{version}}/eloquent)在各種資料庫後端上極為簡單地進行資料庫互動。目前，Laravel 支援四種資料庫：
 
 <div class="content-list" markdown="1">
-- MySQL 5.6+ ([Version Policy](https://en.wikipedia.org/wiki/MySQL#Release_history))
-- PostgreSQL 9.4+ ([Version Policy](https://www.postgresql.org/support/versioning/))
+
+- MySQL 5.6+ ([版本政策](https://en.wikipedia.org/wiki/MySQL#Release_history))
+- PostgreSQL 9.4+ ([版本政策](https://www.postgresql.org/support/versioning/))
 - SQLite 3.8.8+
-- SQL Server 2017+ ([Version Policy](https://support.microsoft.com/en-us/lifecycle/search))
+- SQL Server 2017+ ([版本政策](https://support.microsoft.com/en-us/lifecycle/search))
+
 </div>
 
 <a name="configuration"></a>
-### Configuration
+### 組態設定
 
-The database configuration for your application is located at `config/database.php`. In this file you may define all of your database connections, as well as specify which connection should be used by default. Examples for most of the supported database systems are provided in this file.
+應用程式的資料庫組態位於 `config/database.php`。在此檔案中，您可以定義所有的資料庫連線，並指定預設應使用哪個連線。此檔案提供了大多數支援的資料庫系統的範例。
 
-By default, Laravel's sample [environment configuration](/docs/{{version}}/configuration#environment-configuration) is ready to use with [Laravel Homestead](/docs/{{version}}/homestead), which is a convenient virtual machine for doing Laravel development on your local machine. You are free to modify this configuration as needed for your local database.
+預設情況下，Laravel 的範例[環境組態](/docs/{{version}}/configuration#environment-configuration)可與[Laravel Homestead](/docs/{{version}}/homestead)一起使用，後者是一個方便的虛擬機器，可用於在本機機器上進行 Laravel 開發。您可以根據需要自由修改此組態以符合本地資料庫的需求。
 
-#### SQLite Configuration
+#### SQLite 組態
 
-After creating a new SQLite database using a command such as `touch database/database.sqlite`, you can easily configure your environment variables to point to this newly created database by using the database's absolute path:
+在使用命令（例如 `touch database/database.sqlite`）創建新的 SQLite 資料庫後，您可以輕鬆地配置您的環境變數，指向這個新建的資料庫的絕對路徑：
 
     DB_CONNECTION=sqlite
     DB_DATABASE=/absolute/path/to/database.sqlite
 
-To enable foreign key constraints for SQLite connections, you should set the `DB_FOREIGN_KEYS` environment variable to `true`:
+要為 SQLite 連線啟用外鍵約束，您應該將 `DB_FOREIGN_KEYS` 環境變數設置為 `true`：
 
     DB_FOREIGN_KEYS=true
 
-#### Configuration Using URLs
+#### 使用 URL 進行配置
 
-Typically, database connections are configured using multiple configuration values such as `host`, `database`, `username`, `password`, etc. Each of these configuration values has its own corresponding environment variable. This means that when configuring your database connection information on a production server, you need to manage several environment variables.
+通常，數據庫連線是使用多個配置值進行配置的，例如 `host`、`database`、`username`、`password` 等。每個配置值都有對應的環境變數。這意味著在正式伺服器上配置數據庫連線信息時，您需要管理多個環境變數。
 
-Some managed database providers such as Heroku provide a single database "URL" that contains all of the connection information for the database in a single string. An example database URL may look something like the following:
+一些托管數據庫提供者，如 Heroku，提供一個包含數據庫所有連線信息的單個數據庫 "URL"。一個示例數據庫 URL 可能如下所示：
 
     mysql://root:password@127.0.0.1/forge?charset=UTF-8
 
-These URLs typically follow a standard schema convention:
+這些 URL 通常遵循標準的模式約定：
 
     driver://username:password@host:port/database?options
 
-For convenience, Laravel supports these URLs as an alternative to configuring your database with multiple configuration options. If the `url` (or corresponding `DATABASE_URL` environment variable) configuration option is present, it will be used to extract the database connection and credential information.
+為了方便起見，Laravel 支持這些 URL 作為配置數據庫的替代方法，而不是使用多個配置選項。如果存在 `url`（或對應的 `DATABASE_URL` 環境變數）配置選項，則將用於提取數據庫連線和憑證信息。
 
 <a name="read-and-write-connections"></a>
-### Read & Write Connections
+### 讀取和寫入連線
 
-Sometimes you may wish to use one database connection for SELECT statements, and another for INSERT, UPDATE, and DELETE statements. Laravel makes this a breeze, and the proper connections will always be used whether you are using raw queries, the query builder, or the Eloquent ORM.
+有時您可能希望對 SELECT 語句使用一個數據庫連線，對 INSERT、UPDATE 和 DELETE 語句使用另一個數據庫連線。Laravel 讓這變得輕而易舉，無論您使用原始查詢、查詢構建器還是 Eloquent ORM，都將始終使用正確的連線。
 
-To see how read / write connections should be configured, let's look at this example:
+要查看如何配置讀取/寫入連線，讓我們看一下這個示例：
 
     'mysql' => [
         'read' => [
@@ -81,166 +83,192 @@ To see how read / write connections should be configured, let's look at this exa
         'prefix'    => '',
     ],
 
-Note that three keys have been added to the configuration array: `read`, `write` and `sticky`. The `read` and `write` keys have array values containing a single key: `host`. The rest of the database options for the `read` and `write` connections will be merged from the main `mysql` array.
+請注意，配置陣列中已新增了三個鍵：`read`、`write` 和 `sticky`。`read` 和 `write` 鍵具有包含單一鍵 `host` 的陣列值。對於 `read` 和 `write` 連線的其餘資料庫選項將從主 `mysql` 陣列中合併。
 
-You only need to place items in the `read` and `write` arrays if you wish to override the values from the main array. So, in this case, `192.168.1.1` will be used as the host for the "read" connection, while `192.168.1.3` will be used for the "write" connection. The database credentials, prefix, character set, and all other options in the main `mysql` array will be shared across both connections.
+只有在希望覆蓋主陣列中的值時，才需要將項目放在 `read` 和 `write` 陣列中。因此，在這種情況下，`192.168.1.1` 將用作 "read" 連線的主機，而 `192.168.1.3` 將用於 "write" 連線。主 `mysql` 陣列中的資料庫憑證、前綴、字元集和所有其他選項將在兩個連線之間共享。
 
-#### The `sticky` Option
+#### `sticky` 選項
 
-The `sticky` option is an *optional* value that can be used to allow the immediate reading of records that have been written to the database during the current request cycle. If the `sticky` option is enabled and a "write" operation has been performed against the database during the current request cycle, any further "read" operations will use the "write" connection. This ensures that any data written during the request cycle can be immediately read back from the database during that same request. It is up to you to decide if this is the desired behavior for your application.
+`sticky` 選項是一個*可選*值，可用於允許立即讀取在當前請求週期中寫入資料庫的記錄。如果啟用了 `sticky` 選項並且在當前請求週期中對資料庫執行了 "write" 操作，任何進一步的 "read" 操作將使用 "write" 連線。這確保了在請求週期中寫入的任何資料可以立即從資料庫中讀取回來。您可以決定這是否是您的應用程式所需的行為。
 
 <a name="using-multiple-database-connections"></a>
-### Using Multiple Database Connections
+### 使用多個資料庫連線
 
-When using multiple connections, you may access each connection via the `connection` method on the `DB` facade. The `name` passed to the `connection` method should correspond to one of the connections listed in your `config/database.php` configuration file:
+在使用多個連線時，您可以通過 `DB` Facade 上的 `connection` 方法訪問每個連線。傳遞給 `connection` 方法的 `name` 應對應於您的 `config/database.php` 配置檔中列出的連線之一：
 
     $users = DB::connection('foo')->select(...);
 
-You may also access the raw, underlying PDO instance using the `getPdo` method on a connection instance:
+您還可以使用連線實例上的 `getPdo` 方法來訪問原始的底層 PDO 實例：
 
     $pdo = DB::connection()->getPdo();
 
 <a name="running-queries"></a>
-## Running Raw SQL Queries
+## 執行原始 SQL 查詢
 
-Once you have configured your database connection, you may run queries using the `DB` facade. The `DB` facade provides methods for each type of query: `select`, `update`, `insert`, `delete`, and `statement`.
+一旦配置了資料庫連線，您可以使用 `DB` Facade 來執行查詢。`DB` Facade 提供了每種類型查詢的方法：`select`、`update`、`insert`、`delete` 和 `statement`。
 
-#### Running A Select Query
+#### 執行選取查詢
 
-To run a basic query, you may use the `select` method on the `DB` facade:
+要執行基本查詢，您可以在 `DB` 門面上使用 `select` 方法：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * 顯示應用程式所有使用者的清單。
+     *
+     * @return Response
+     */
+    public function index()
     {
-        /**
-         * Show a list of all of the application's users.
-         *
-         * @return Response
-         */
-        public function index()
-        {
-            $users = DB::select('select * from users where active = ?', [1]);
+        $users = DB::select('select * from users where active = ?', [1]);
 
-            return view('user.index', ['users' => $users]);
-        }
+        return view('user.index', ['users' => $users]);
     }
+}
+```
 
-The first argument passed to the `select` method is the raw SQL query, while the second argument is any parameter bindings that need to be bound to the query. Typically, these are the values of the `where` clause constraints. Parameter binding provides protection against SQL injection.
+傳遞給 `select` 方法的第一個引數是原始 SQL 查詢，而第二個引數是需要綁定到查詢的任何參數綁定。通常，這些是 `where` 子句約束的值。參數綁定可防止 SQL 注入。
 
-The `select` method will always return an `array` of results. Each result within the array will be a PHP `stdClass` object, allowing you to access the values of the results:
+`select` 方法將始終返回一個結果的 `array`。陣列中的每個結果將是一個 PHP `stdClass` 物件，使您能夠訪問結果的值：
 
-    foreach ($users as $user) {
-        echo $user->name;
-    }
+```php
+foreach ($users as $user) {
+    echo $user->name;
+}
+```
 
-#### Using Named Bindings
+#### 使用命名綁定
 
-Instead of using `?` to represent your parameter bindings, you may execute a query using named bindings:
+您可以使用命名綁定來執行查詢，而不是使用 `?` 來表示您的參數綁定：
 
-    $results = DB::select('select * from users where id = :id', ['id' => 1]);
+```php
+$results = DB::select('select * from users where id = :id', ['id' => 1]);
+```
 
-#### Running An Insert Statement
+#### 執行插入語句
 
-To execute an `insert` statement, you may use the `insert` method on the `DB` facade. Like `select`, this method takes the raw SQL query as its first argument and bindings as its second argument:
+要執行 `insert` 語句，您可以在 `DB` 門面上使用 `insert` 方法。與 `select` 一樣，此方法將原始 SQL 查詢作為第一個引數，綁定作為第二個引數：
 
-    DB::insert('insert into users (id, name) values (?, ?)', [1, 'Dayle']);
+```php
+DB::insert('insert into users (id, name) values (?, ?)', [1, 'Dayle']);
+```
 
-#### Running An Update Statement
+#### 執行更新語句
 
-The `update` method should be used to update existing records in the database. The number of rows affected by the statement will be returned:
+應使用 `update` 方法來更新資料庫中的現有記錄。語句影響的列數將被返回：
 
-    $affected = DB::update('update users set votes = 100 where name = ?', ['John']);
+```php
+$affected = DB::update('update users set votes = 100 where name = ?', ['John']);
+```
 
-#### Running A Delete Statement
+#### 執行刪除語句
 
-The `delete` method should be used to delete records from the database. Like `update`, the number of rows affected will be returned:
+應使用 `delete` 方法來從資料庫中刪除記錄。與 `update` 一樣，將返回受影響的列數：
 
-    $deleted = DB::delete('delete from users');
+```php
+$deleted = DB::delete('delete from users');
+```
 
-#### Running A General Statement
+#### 執行一般語句
 
-Some database statements do not return any value. For these types of operations, you may use the `statement` method on the `DB` facade:
+有些資料庫語句不會返回任何值。對於這些類型的操作，您可以在 `DB` Facade 上使用 `statement` 方法：
 
-    DB::statement('drop table users');
+```php
+DB::statement('drop table users');
+```
 
 <a name="listening-for-query-events"></a>
-## Listening For Query Events
+## 監聽查詢事件
 
-If you would like to receive each SQL query executed by your application, you may use the `listen` method. This method is useful for logging queries or debugging. You may register your query listener in a [service provider](/docs/{{version}}/providers):
+如果您想要接收應用程式執行的每個 SQL 查詢，您可以使用 `listen` 方法。這個方法對於記錄查詢或進行除錯很有用。您可以在 [服務提供者](/docs/{{version}}/providers) 中註冊您的查詢監聽器：
 
-    <?php
+```php
+<?php
 
-    namespace App\Providers;
+namespace App\Providers;
 
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
 
-    class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     *
+     * @return void
+     */
+    public function register()
     {
-        /**
-         * Register any application services.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-
-        /**
-         * Bootstrap any application services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            DB::listen(function ($query) {
-                // $query->sql
-                // $query->bindings
-                // $query->time
-            });
-        }
+        //
     }
 
+    /**
+     * 引導任何應用程式服務。
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        DB::listen(function ($query) {
+            // $query->sql
+            // $query->bindings
+            // $query->time
+        });
+    }
+}
+```
+
 <a name="database-transactions"></a>
-## Database Transactions
+## 資料庫交易
 
-You may use the `transaction` method on the `DB` facade to run a set of operations within a database transaction. If an exception is thrown within the transaction `Closure`, the transaction will automatically be rolled back. If the `Closure` executes successfully, the transaction will automatically be committed. You don't need to worry about manually rolling back or committing while using the `transaction` method:
+您可以在 `DB` Facade 上使用 `transaction` 方法來在資料庫交易中運行一組操作。如果在交易 `Closure` 內拋出異常，則交易將自動回滾。如果 `Closure` 成功執行，則交易將自動提交。在使用 `transaction` 方法時，您不需要擔心手動回滾或提交：
 
-    DB::transaction(function () {
-        DB::table('users')->update(['votes' => 1]);
+```php
+DB::transaction(function () {
+    DB::table('users')->update(['votes' => 1]);
 
-        DB::table('posts')->delete();
-    });
+    DB::table('posts')->delete();
+});
+```
 
-#### Handling Deadlocks
+#### 處理死結
 
-The `transaction` method accepts an optional second argument which defines the number of times a transaction should be reattempted when a deadlock occurs. Once these attempts have been exhausted, an exception will be thrown:
+`transaction` 方法接受一個可選的第二個引數，該引數定義當發生死結時應重新嘗試交易的次數。一旦這些嘗試耗盡，將拋出異常：
 
-    DB::transaction(function () {
-        DB::table('users')->update(['votes' => 1]);
+```php
+DB::transaction(function () {
+    DB::table('users')->update(['votes' => 1]);
 
-        DB::table('posts')->delete();
-    }, 5);
+    DB::table('posts')->delete();
+}, 5);
+```
 
-#### Manually Using Transactions
+#### 手動使用交易
 
-If you would like to begin a transaction manually and have complete control over rollbacks and commits, you may use the `beginTransaction` method on the `DB` facade:
+如果您想要手動開始一個交易並完全控制回滾和提交，您可以在 `DB` Facade 上使用 `beginTransaction` 方法：
 
-    DB::beginTransaction();
+```php
+DB::beginTransaction();
+```
 
-You can rollback the transaction via the `rollBack` method:
+您可以通過 `rollBack` 方法回滾交易：
 
-    DB::rollBack();
+```php
+DB::rollBack();
+```
 
-Lastly, you can commit a transaction via the `commit` method:
+最後，您可以通過 `commit` 方法提交交易：
 
-    DB::commit();
+```php
+DB::commit();
+```
 
-> {tip} The `DB` facade's transaction methods control the transactions for both the [query builder](/docs/{{version}}/queries) and [Eloquent ORM](/docs/{{version}}/eloquent).
+> {tip} `DB` Facade 的交易方法控制著 [查詢建構器](/docs/{{version}}/queries) 和 [Eloquent ORM](/docs/{{version}}/eloquent) 的交易。

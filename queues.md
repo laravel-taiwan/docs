@@ -1,65 +1,66 @@
-# Queues
+# 佇列
 
-- [Introduction](#introduction)
-    - [Connections Vs. Queues](#connections-vs-queues)
-    - [Driver Notes & Prerequisites](#driver-prerequisites)
-- [Creating Jobs](#creating-jobs)
-    - [Generating Job Classes](#generating-job-classes)
-    - [Class Structure](#class-structure)
-    - [Job Middleware](#job-middleware)
-- [Dispatching Jobs](#dispatching-jobs)
-    - [Delayed Dispatching](#delayed-dispatching)
-    - [Synchronous Dispatching](#synchronous-dispatching)
-    - [Job Chaining](#job-chaining)
-    - [Customizing The Queue & Connection](#customizing-the-queue-and-connection)
-    - [Specifying Max Job Attempts / Timeout Values](#max-job-attempts-and-timeout)
-    - [Rate Limiting](#rate-limiting)
-    - [Error Handling](#error-handling)
-- [Queueing Closures](#queueing-closures)
-- [Running The Queue Worker](#running-the-queue-worker)
-    - [Queue Priorities](#queue-priorities)
-    - [Queue Workers & Deployment](#queue-workers-and-deployment)
-    - [Job Expirations & Timeouts](#job-expirations-and-timeouts)
-- [Supervisor Configuration](#supervisor-configuration)
-- [Dealing With Failed Jobs](#dealing-with-failed-jobs)
-    - [Cleaning Up After Failed Jobs](#cleaning-up-after-failed-jobs)
-    - [Failed Job Events](#failed-job-events)
-    - [Retrying Failed Jobs](#retrying-failed-jobs)
-    - [Ignoring Missing Models](#ignoring-missing-models)
-- [Job Events](#job-events)
+- [簡介](#introduction)
+    - [連線與佇列的區別](#connections-vs-queues)
+    - [驅動程式注意事項與先決條件](#driver-prerequisites)
+- [建立工作](#creating-jobs)
+    - [產生工作類別](#generating-job-classes)
+    - [類別結構](#class-structure)
+    - [工作中介層](#job-middleware)
+- [派送工作](#dispatching-jobs)
+    - [延遲派送](#delayed-dispatching)
+    - [同步派送](#synchronous-dispatching)
+    - [工作鏈結](#job-chaining)
+    - [自訂佇列與連線](#customizing-the-queue-and-connection)
+    - [指定最大工作嘗試次數/逾時值](#max-job-attempts-and-timeout)
+    - [速率限制](#rate-limiting)
+    - [錯誤處理](#error-handling)
+- [佇列閉包](#queueing-closures)
+- [執行佇列工作](#running-the-queue-worker)
+    - [佇列優先順序](#queue-priorities)
+    - [佇列工作者與部署](#queue-workers-and-deployment)
+    - [工作到期與逾時](#job-expirations-and-timeouts)
+- [監督者組態](#supervisor-configuration)
+- [處理失敗工作](#dealing-with-failed-jobs)
+    - [失敗工作後清理](#cleaning-up-after-failed-jobs)
+    - [失敗工作事件](#failed-job-events)
+    - [重試失敗工作](#retrying-failed-jobs)
+    - [忽略遺失模型](#ignoring-missing-models)
+- [工作事件](#job-events)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-> {tip} Laravel now offers Horizon, a beautiful dashboard and configuration system for your Redis powered queues. Check out the full [Horizon documentation](/docs/{{version}}/horizon) for more information.
+> {tip} Laravel 現在提供 Horizon，一個美觀的儀表板和配置系統，用於您的 Redis 驅動佇列。查看完整的[Horizon 文件](/docs/{{version}}/horizon)以獲取更多資訊。
 
-Laravel queues provide a unified API across a variety of different queue backends, such as Beanstalk, Amazon SQS, Redis, or even a relational database. Queues allow you to defer the processing of a time consuming task, such as sending an email, until a later time. Deferring these time consuming tasks drastically speeds up web requests to your application.
+Laravel 佇列提供了一個統一的 API，支援各種不同的佇列後端，如 Beanstalk、Amazon SQS、Redis，甚至是關聯式資料庫。佇列允許您延遲處理耗時的任務，例如發送郵件，直到稍後的時間。延遲這些耗時任務可以大大加快對應用程式的網路請求速度。
 
-The queue configuration file is stored in `config/queue.php`. In this file you will find connection configurations for each of the queue drivers that are included with the framework, which includes a database, [Beanstalkd](https://beanstalkd.github.io/), [Amazon SQS](https://aws.amazon.com/sqs/), [Redis](https://redis.io),  and a synchronous driver that will execute jobs immediately (for local use). A `null` queue driver is also included which discards queued jobs.
+佇列組態檔存儲在 `config/queue.php` 中。在此檔案中，您將找到框架附帶的每個佇列驅動程式的連線配置，其中包括資料庫、[Beanstalkd](https://beanstalkd.github.io/)、[Amazon SQS](https://aws.amazon.com/sqs/)、[Redis](https://redis.io)，以及一個立即執行工作的同步驅動程式（供本地使用）。還包括一個 `null` 佇列驅動程式，用於捨棄排入佇列的工作。
+
 
 <a name="connections-vs-queues"></a>
-### Connections Vs. Queues
+### 連線與佇列
 
-Before getting started with Laravel queues, it is important to understand the distinction between "connections" and "queues". In your `config/queue.php` configuration file, there is a `connections` configuration option. This option defines a particular connection to a backend service such as Amazon SQS, Beanstalk, or Redis. However, any given queue connection may have multiple "queues" which may be thought of as different stacks or piles of queued jobs.
+在開始使用 Laravel 佇列之前，重要的是要了解「連線」和「佇列」之間的區別。在您的 `config/queue.php` 配置檔中，有一個 `connections` 配置選項。這個選項定義了與後端服務（如 Amazon SQS、Beanstalk 或 Redis）的特定連線。然而，任何給定的佇列連線可能有多個「佇列」，這些可以被視為不同的堆疊或排列的工作。
 
-Note that each connection configuration example in the `queue` configuration file contains a `queue` attribute. This is the default queue that jobs will be dispatched to when they are sent to a given connection. In other words, if you dispatch a job without explicitly defining which queue it should be dispatched to, the job will be placed on the queue that is defined in the `queue` attribute of the connection configuration:
+請注意，在 `queue` 配置檔中，每個連線配置範例都包含一個 `queue` 屬性。這是當工作被發送到特定連線時，工作將被派送到的預設佇列。換句話說，如果您發送一個工作而沒有明確定義應該派送到哪個佇列，則該工作將被放置在連線配置的 `queue` 屬性中定義的佇列上：
 
-    // This job is sent to the default queue...
+    // 這個工作被發送到預設佇列...
     Job::dispatch();
 
-    // This job is sent to the "emails" queue...
+    // 這個工作被發送到「emails」佇列...
     Job::dispatch()->onQueue('emails');
 
-Some applications may not need to ever push jobs onto multiple queues, instead preferring to have one simple queue. However, pushing jobs to multiple queues can be especially useful for applications that wish to prioritize or segment how jobs are processed, since the Laravel queue worker allows you to specify which queues it should process by priority. For example, if you push jobs to a `high` queue, you may run a worker that gives them higher processing priority:
+有些應用可能永遠不需要將工作推送到多個佇列，而更喜歡只有一個簡單的佇列。然而，將工作推送到多個佇列對於希望優先處理或分段處理工作的應用程序特別有用，因為 Laravel 佇列工作者允許您按優先順序指定應該處理哪些佇列。例如，如果您將工作推送到 `high` 佇列，您可以運行一個給予這些工作更高處理優先級的工作者：
 
     php artisan queue:work --queue=high,default
 
 <a name="driver-prerequisites"></a>
-### Driver Notes & Prerequisites
+### 驅動程式注意事項與先決條件
 
-#### Database
+#### 資料庫
 
-In order to use the `database` queue driver, you will need a database table to hold the jobs. To generate a migration that creates this table, run the `queue:table` Artisan command. Once the migration has been created, you may migrate your database using the `migrate` command:
+為了使用 `database` 佇列驅動程式，您需要一個資料庫表來保存這些工作。要生成一個創建此表的遷移，運行 `queue:table` Artisan 命令。一旦遷移被創建，您可以使用 `migrate` 命令遷移您的資料庫：
 
     php artisan queue:table
 
@@ -67,11 +68,11 @@ In order to use the `database` queue driver, you will need a database table to h
 
 #### Redis
 
-In order to use the `redis` queue driver, you should configure a Redis database connection in your `config/database.php` configuration file.
+要使用 `redis` 佇列驅動程式，您應該在您的 `config/database.php` 組態檔中配置一個 Redis 資料庫連線。
 
-**Redis Cluster**
+**Redis 集群**
 
-If your Redis queue connection uses a Redis Cluster, your queue names must contain a [key hash tag](https://redis.io/topics/cluster-spec#keys-hash-tags). This is required in order to ensure all of the Redis keys for a given queue are placed into the same hash slot:
+如果您的 Redis 佇列連線使用 Redis 集群，您的佇列名稱必須包含 [鍵哈希標籤](https://redis.io/topics/cluster-spec#keys-hash-tags)。這是為了確保給定佇列的所有 Redis 金鑰都被放入同一個哈希槽中：
 
     'redis' => [
         'driver' => 'redis',
@@ -80,11 +81,11 @@ If your Redis queue connection uses a Redis Cluster, your queue names must conta
         'retry_after' => 90,
     ],
 
-**Blocking**
+**阻塞**
 
-When using the Redis queue, you may use the `block_for` configuration option to specify how long the driver should wait for a job to become available before iterating through the worker loop and re-polling the Redis database.
+當使用 Redis 佇列時，您可以使用 `block_for` 組態選項來指定驅動程式應該等待工作變得可用之前的時間長度，然後遍歷工作循環並重新輪詢 Redis 資料庫。
 
-Adjusting this value based on your queue load can be more efficient than continually polling the Redis database for new jobs. For instance, you may set the value to `5` to indicate that the driver should block for five seconds while waiting for a job to become available:
+根據您的佇列負載調整此值可能比持續輪詢 Redis 資料庫以尋找新工作更有效。例如，您可以將值設置為 `5`，表示驅動程式應該在等待工作變得可用時阻塞五秒：
 
     'redis' => [
         'driver' => 'redis',
@@ -94,479 +95,519 @@ Adjusting this value based on your queue load can be more efficient than continu
         'block_for' => 5,
     ],
 
-> {note} Setting `block_for` to `0` will cause queue workers to block indefinitely until a job is available. This will also prevent signals such as `SIGTERM` from being handled until the next job has been processed.
+> {note} 將 `block_for` 設置為 `0` 將導致佇列工作者無限期地阻塞，直到有工作可用。這也將防止處理 `SIGTERM` 等信號，直到下一個工作被處理。
 
-#### Other Driver Prerequisites
+#### 其他驅動程式先決條件
 
-The following dependencies are needed for the listed queue drivers:
+以下依賴項是列出的佇列驅動程式所需的：
 
 <div class="content-list" markdown="1">
+
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
 - Beanstalkd: `pda/pheanstalk ~4.0`
-- Redis: `predis/predis ~1.0` or phpredis PHP extension
+- Redis: `predis/predis ~1.0` 或 phpredis PHP 擴充功能
+
 </div>
 
 <a name="creating-jobs"></a>
-## Creating Jobs
+## 建立工作
 
 <a name="generating-job-classes"></a>
-### Generating Job Classes
+### 產生工作類別
 
-By default, all of the queueable jobs for your application are stored in the `app/Jobs` directory. If the `app/Jobs` directory doesn't exist, it will be created when you run the `make:job` Artisan command. You may generate a new queued job using the Artisan CLI:
+預設情況下，您應用程式中的所有可佇列工作都存儲在 `app/Jobs` 目錄中。如果 `app/Jobs` 目錄不存在，執行 `make:job` Artisan 指令時將會建立它。您可以使用 Artisan CLI 來產生新的佇列工作：
 
-    php artisan make:job ProcessPodcast
+```php
+php artisan make:job ProcessPodcast
 
-The generated class will implement the `Illuminate\Contracts\Queue\ShouldQueue` interface, indicating to Laravel that the job should be pushed onto the queue to run asynchronously.
+生成的類別將實作 `Illuminate\Contracts\Queue\ShouldQueue` 介面，告訴 Laravel 這個工作應該被推送到佇列中以異步運行。
 
 <a name="class-structure"></a>
-### Class Structure
+### 類別結構
 
-Job classes are very simple, normally containing only a `handle` method which is called when the job is processed by the queue. To get started, let's take a look at an example job class. In this example, we'll pretend we manage a podcast publishing service and need to process the uploaded podcast files before they are published:
+工作類別非常簡單，通常只包含一個 `handle` 方法，當工作被佇列處理時會被調用。讓我們來看一個示例工作類別。在這個示例中，我們假設我們管理一個播客發佈服務，需要在發佈之前處理上傳的播客檔案：
 
-    <?php
+```php
+<?php
 
-    namespace App\Jobs;
+namespace App\Jobs;
 
-    use App\AudioProcessor;
-    use App\Podcast;
-    use Illuminate\Bus\Queueable;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Foundation\Bus\Dispatchable;
-    use Illuminate\Queue\InteractsWithQueue;
-    use Illuminate\Queue\SerializesModels;
+use App\AudioProcessor;
+use App\Podcast;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
-    class ProcessPodcast implements ShouldQueue
-    {
-        use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class ProcessPodcast implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-        protected $podcast;
-
-        /**
-         * Create a new job instance.
-         *
-         * @param  Podcast  $podcast
-         * @return void
-         */
-        public function __construct(Podcast $podcast)
-        {
-            $this->podcast = $podcast;
-        }
-
-        /**
-         * Execute the job.
-         *
-         * @param  AudioProcessor  $processor
-         * @return void
-         */
-        public function handle(AudioProcessor $processor)
-        {
-            // Process uploaded podcast...
-        }
-    }
-
-In this example, note that we were able to pass an [Eloquent model](/docs/{{version}}/eloquent) directly into the queued job's constructor. Because of the `SerializesModels` trait that the job is using, Eloquent models and their loaded relationships will be gracefully serialized and unserialized when the job is processing. If your queued job accepts an Eloquent model in its constructor, only the identifier for the model will be serialized onto the queue. When the job is actually handled, the queue system will automatically re-retrieve the full model instance and its loaded relationships from the database. It's all totally transparent to your application and prevents issues that can arise from serializing full Eloquent model instances.
-
-The `handle` method is called when the job is processed by the queue. Note that we are able to type-hint dependencies on the `handle` method of the job. The Laravel [service container](/docs/{{version}}/container) automatically injects these dependencies.
-
-If you would like to take total control over how the container injects dependencies into the `handle` method, you may use the container's `bindMethod` method. The `bindMethod` method accepts a callback which receives the job and the container. Within the callback, you are free to invoke the `handle` method however you wish. Typically, you should call this method from a [service provider](/docs/{{version}}/providers):
-
-    use App\Jobs\ProcessPodcast;
-
-    $this->app->bindMethod(ProcessPodcast::class.'@handle', function ($job, $app) {
-        return $job->handle($app->make(AudioProcessor::class));
-    });
-
-> {note} Binary data, such as raw image contents, should be passed through the `base64_encode` function before being passed to a queued job. Otherwise, the job may not properly serialize to JSON when being placed on the queue.
-
-#### Handling Relationships
-
-Because loaded relationships also get serialized, the serialized job string can become quite large. To prevent relations from being serialized, you can call the `withoutRelations` method on the model when setting a property value. This method will return an instance of the model with no loaded relationships:
+    protected $podcast;
 
     /**
-     * Create a new job instance.
+     * 創建一個新的工作實例。
      *
-     * @param  \App\Podcast  $podcast
+     * @param  Podcast  $podcast
      * @return void
      */
     public function __construct(Podcast $podcast)
     {
-        $this->podcast = $podcast->withoutRelations();
+        $this->podcast = $podcast;
     }
 
-<a name="job-middleware"></a>
-### Job Middleware
-
-Job middleware allow you wrap custom logic around the execution of queued jobs, reducing boilerplate in the jobs themselves. For example, consider the following `handle` method which leverages Laravel's Redis rate limiting features to allow only one job to process every five seconds:
-
     /**
-     * Execute the job.
+     * 執行工作。
      *
+     * @param  AudioProcessor  $processor
      * @return void
      */
-    public function handle()
+    public function handle(AudioProcessor $processor)
     {
-        Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
-            info('Lock obtained...');
-
-            // Handle job...
-        }, function () {
-            // Could not obtain lock...
-
-            return $this->release(5);
-        });
+        // 處理上傳的播客...
     }
+}
+```
 
-While this code is valid, the structure of the `handle` method becomes noisy since it is cluttered with Redis rate limiting logic. In addition, this rate limiting logic must be duplicated for any other jobs that we want to rate limit.
+在這個示例中，請注意我們能夠直接將 [Eloquent 模型](/docs/{{version}}/eloquent) 傳遞給排入佇列的工作建構子。由於工作使用了 `SerializesModels` 特性，Eloquent 模型及其載入的關聯將在處理工作時優雅地序列化和反序列化。如果您的排入佇列的工作在其建構子中接受一個 Eloquent 模型，則只會將模型的識別符序列化到佇列中。當實際處理工作時，佇列系統將自動重新從資料庫中檢索完整的模型實例及其載入的關聯。這對您的應用程式完全透明，並防止因序列化完整的 Eloquent 模型實例而可能出現的問題。
+```
 
-Instead of rate limiting in the handle method, we could define a job middleware that handles rate limiting. Laravel does not have a default location for job middleware, so you are welcome to place job middleware anywhere in your application. In this example, we will place the middleware in a `app/Jobs/Middleware` directory:
+`handle` 方法在作業被佇列處理時被呼叫。請注意，我們可以在作業的 `handle` 方法上對依賴進行型別提示。Laravel [服務容器](/docs/{{version}}/container) 會自動注入這些依賴。
 
-    <?php
+如果您想完全控制容器如何將依賴注入到 `handle` 方法中，您可以使用容器的 `bindMethod` 方法。`bindMethod` 方法接受一個回呼函式，該函式接收作業和容器。在回呼函式中，您可以自由地以任何方式調用 `handle` 方法。通常，您應該從一個[服務提供者](/docs/{{version}}/providers)中調用此方法：
 
-    namespace App\Jobs\Middleware;
+```php
+use App\Jobs\ProcessPodcast;
 
-    use Illuminate\Support\Facades\Redis;
+$this->app->bindMethod(ProcessPodcast::class.'@handle', function ($job, $app) {
+    return $job->handle($app->make(AudioProcessor::class));
+});
+```
 
-    class RateLimited
-    {
-        /**
-         * Process the queued job.
-         *
-         * @param  mixed  $job
-         * @param  callable  $next
-         * @return mixed
-         */
-        public function handle($job, $next)
-        {
-            Redis::throttle('key')
-                    ->block(0)->allow(1)->every(5)
-                    ->then(function () use ($job, $next) {
-                        // Lock obtained...
+> {note} 二進制資料，例如原始圖像內容，應在傳遞給佇列作業之前通過 `base64_encode` 函式傳遞。否則，當放置在佇列上時，作業可能無法正確序列化為 JSON。
 
-                        $next($job);
-                    }, function () use ($job) {
-                        // Could not obtain lock...
+#### 處理關係
 
-                        $job->release(5);
-                    });
-        }
-    }
+因為載入的關係也會被序列化，序列化的作業字串可能會變得非常大。為了防止關係被序列化，您可以在設置屬性值時在模型上調用 `withoutRelations` 方法。該方法將返回一個沒有載入關係的模型實例：
 
-As you can see, like [route middleware](/docs/{{version}}/middleware), job middleware receive the job being processed and a callback that should be invoked to continue processing the job.
+```php
+/**
+ * 創建一個新的作業實例。
+ *
+ * @param  \App\Podcast  $podcast
+ * @return void
+ */
+public function __construct(Podcast $podcast)
+{
+    $this->podcast = $podcast->withoutRelations();
+}
+```
 
-After creating job middleware, they may be attached to a job by returning them from the job's `middleware` method. This method does not exist on jobs scaffolded by the `make:job` Artisan command, so you will need to add it to your own job class definition:
+<a name="job-middleware"></a>
+### 作業中介層
 
-    use App\Jobs\Middleware\RateLimited;
+作業中介層允許您在執行佇列作業時包裹自定邏輯，減少作業本身中的樣板代碼。例如，考慮以下 `handle` 方法，該方法利用 Laravel 的 Redis 速率限制功能，每五秒只允許一個作業處理：
 
+```php
+/**
+ * 執行作業。
+ *
+ * @return void
+ */
+public function handle()
+{
+    Redis::throttle('key')->block(0)->allow(1)->every(5)->then(function () {
+        info('Lock obtained...');
+```
+
+```php
+// 處理工作...
+}, function () {
+// 無法獲取鎖定...
+
+return $this->release(5);
+});
+}
+
+雖然此代碼有效，但`handle`方法的結構變得嘈雜，因為它被 Redis 速率限制邏輯混雜。此外，這種速率限制邏輯必須為我們想要對其進行速率限制的任何其他工作進行重複。
+
+在`handle`方法中進行速率限制的替代方法是，我們可以定義一個處理速率限制的工作中介層。Laravel 沒有為工作中介層設置默認位置，因此您可以將工作中介層放在應用程序中的任何位置。在此示例中，我們將中介層放在`app/Jobs/Middleware`目錄中：
+
+```php
+<?php
+
+namespace App\Jobs\Middleware;
+
+use Illuminate\Support\Facades\Redis;
+
+class RateLimited
+{
+/**
+* 處理排隊的工作。
+*
+* @param mixed $job
+* @param callable $next
+* @return mixed
+*/
+public function handle($job, $next)
+{
+Redis::throttle('key')
+->block(0)->allow(1)->every(5)
+->then(function () use ($job, $next) {
+// 獲取鎖定...
+
+$next($job);
+}, function () use ($job) {
+// 無法獲取鎖定...
+
+$job->release(5);
+});
+}
+}
+```
+
+如您所見，就像[路由中介層](/docs/{{version}}/middleware)一樣，工作中介層接收正在處理的工作和應該調用以繼續處理工作的回調函式。
+
+創建工作中介層後，它們可以通過從工作的`middleware`方法返回它們來附加到工作。此方法不存在於由`make:job`Artisan 命令搭建的工作中，因此您需要將其添加到自己的工作類定義中：
+
+```php
+use App\Jobs\Middleware\RateLimited;
+
+/**
+* 獲取工作應通過的中介層。
+*
+* @return array
+*/
+public function middleware()
+{
+return [new RateLimited];
+}
+```
+
+## 調度工作
+
+一旦您編寫了工作類別，您可以使用工作本身的 `dispatch` 方法來調度它。傳遞給 `dispatch` 方法的引數將傳遞給工作的建構子：
+
+```php
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPodcast;
+use Illuminate\Http\Request;
+
+class PodcastController extends Controller
+{
     /**
-     * Get the middleware the job should pass through.
+     * 儲存新的播客。
      *
-     * @return array
+     * @param  Request  $request
+     * @return Response
      */
-    public function middleware()
+    public function store(Request $request)
     {
-        return [new RateLimited];
+        // 創建播客...
+
+        ProcessPodcast::dispatch($podcast);
     }
+}
+```
 
-<a name="dispatching-jobs"></a>
-## Dispatching Jobs
+## 延遲調度
 
-Once you have written your job class, you may dispatch it using the `dispatch` method on the job itself. The arguments passed to the `dispatch` method will be given to the job's constructor:
+如果您想要延遲排隊工作的執行，您可以在調度工作時使用 `delay` 方法。例如，讓我們指定一個工作在調度後 10 分鐘後才可用於處理：
 
-    <?php
+```php
+namespace App\Http\Controllers;
 
-    namespace App\Http\Controllers;
+use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPodcast;
+use Illuminate\Http\Request;
 
-    use App\Http\Controllers\Controller;
-    use App\Jobs\ProcessPodcast;
-    use Illuminate\Http\Request;
-
-    class PodcastController extends Controller
+class PodcastController extends Controller
+{
+    /**
+     * 儲存新的播客。
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
     {
-        /**
-         * Store a new podcast.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function store(Request $request)
-        {
-            // Create podcast...
+        // 創建播客...
 
-            ProcessPodcast::dispatch($podcast);
-        }
+        ProcessPodcast::dispatch($podcast)
+                ->delay(now()->addMinutes(10));
     }
+}
+```
 
-<a name="delayed-dispatching"></a>
-### Delayed Dispatching
+> {note} Amazon SQS 隊列服務的最大延遲時間為 15 分鐘。
 
-If you would like to delay the execution of a queued job, you may use the `delay` method when dispatching a job. For example, let's specify that a job should not be available for processing until 10 minutes after it has been dispatched:
+## 同步調度
 
-    <?php
+如果您想要立即（同步地）調度一個工作，您可以使用 `dispatchNow` 方法。使用此方法時，工作將不會排隊，並將立即在當前進程中運行：
 
-    namespace App\Http\Controllers;
+```php
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\Jobs\ProcessPodcast;
-    use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPodcast;
+use Illuminate\Http\Request;
 
-    class PodcastController extends Controller
+```php
+class PodcastController extends Controller
+{
+    /**
+     * 儲存新播客。
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
     {
-        /**
-         * Store a new podcast.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function store(Request $request)
-        {
-            // Create podcast...
+        // 創建播客...
 
-            ProcessPodcast::dispatch($podcast)
-                    ->delay(now()->addMinutes(10));
-        }
+        ProcessPodcast::dispatchNow($podcast);
     }
-
-> {note} The Amazon SQS queue service has a maximum delay time of 15 minutes.
-
-<a name="synchronous-dispatching"></a>
-### Synchronous Dispatching
-
-If you would like to dispatch a job immediately (synchronously), you may use the `dispatchNow` method. When using this method, the job will not be queued and will be run immediately within the current process:
-
-    <?php
-
-    namespace App\Http\Controllers;
-
-    use App\Http\Controllers\Controller;
-    use App\Jobs\ProcessPodcast;
-    use Illuminate\Http\Request;
-
-    class PodcastController extends Controller
-    {
-        /**
-         * Store a new podcast.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function store(Request $request)
-        {
-            // Create podcast...
-
-            ProcessPodcast::dispatchNow($podcast);
-        }
-    }
+}
+```
 
 <a name="job-chaining"></a>
-### Job Chaining
+### 任務鏈結
 
-Job chaining allows you to specify a list of queued jobs that should be run in sequence after the primary job has executed successfully. If one job in the sequence fails, the rest of the jobs will not be run. To execute a queued job chain, you may use the `withChain` method on any of your dispatchable jobs:
+任務鏈結允許您指定一系列應在主要任務成功執行後按順序運行的排隊任務列表。如果序列中的一個任務失敗，則其餘任務將不會運行。要執行排隊任務鏈，您可以在任何可調度的任務上使用 `withChain` 方法：
 
-    ProcessPodcast::withChain([
-        new OptimizePodcast,
-        new ReleasePodcast
-    ])->dispatch();
+```php
+ProcessPodcast::withChain([
+    new OptimizePodcast,
+    new ReleasePodcast
+])->dispatch();
+```
 
-> {note} Deleting jobs using the `$this->delete()` method will not prevent chained jobs from being processed. The chain will only stop executing if a job in the chain fails.
+> {note} 使用 `$this->delete()` 方法刪除任務不會阻止鏈接任務被處理。只有在鏈中的任務失敗時，鏈才會停止執行。
 
-#### Chain Connection & Queue
+#### 鏈接連接和佇列
 
-If you would like to specify the default connection and queue that should be used for the chained jobs, you may use the `allOnConnection` and `allOnQueue` methods. These methods specify the queue connection and queue name that should be used unless the queued job is explicitly assigned a different connection / queue:
+如果您想要指定用於鏈接任務的默認連接和佇列，您可以使用 `allOnConnection` 和 `allOnQueue` 方法。這些方法指定應使用的佇列連接和佇列名稱，除非排隊任務明確分配了不同的連接/佇列：
 
-    ProcessPodcast::withChain([
-        new OptimizePodcast,
-        new ReleasePodcast
-    ])->dispatch()->allOnConnection('redis')->allOnQueue('podcasts');
+```php
+ProcessPodcast::withChain([
+    new OptimizePodcast,
+    new ReleasePodcast
+])->dispatch()->allOnConnection('redis')->allOnQueue('podcasts');
+```
 
 <a name="customizing-the-queue-and-connection"></a>
-### Customizing The Queue & Connection
+### 自訂佇列和連接
 
-#### Dispatching To A Particular Queue
+#### 分派到特定佇列
 
-By pushing jobs to different queues, you may "categorize" your queued jobs and even prioritize how many workers you assign to various queues. Keep in mind, this does not push jobs to different queue "connections" as defined by your queue configuration file, but only to specific queues within a single connection. To specify the queue, use the `onQueue` method when dispatching the job:
+通過將任務推送到不同的佇列，您可以“對排隊的任務進行分類”，甚至可以優先考慮分配給各種佇列的工作程序數量。請注意，這不會將任務推送到由您的佇列配置文件定義的不同佇列“連接”，而僅會將其推送到單個連接中的特定佇列。要指定佇列，請在調度任務時使用 `onQueue` 方法：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
+```
 
-    use App\Http\Controllers\Controller;
-    use App\Jobs\ProcessPodcast;
-    use Illuminate\Http\Request;
+```php
+use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPodcast;
+use Illuminate\Http\Request;
 
-    class PodcastController extends Controller
+class PodcastController extends Controller
+{
+    /**
+     * 儲存新的播客。
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
     {
-        /**
-         * Store a new podcast.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function store(Request $request)
-        {
-            // Create podcast...
+        // 創建播客...
 
-            ProcessPodcast::dispatch($podcast)->onQueue('processing');
-        }
+        ProcessPodcast::dispatch($podcast)->onQueue('processing');
     }
+}
+```
 
-#### Dispatching To A Particular Connection
+#### 派送至特定連線
 
-If you are working with multiple queue connections, you may specify which connection to push a job to. To specify the connection, use the `onConnection` method when dispatching the job:
+如果您正在使用多個佇列連線，您可以指定要將作業推送到哪個連線。要指定連線，請在派送作業時使用 `onConnection` 方法：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\Jobs\ProcessPodcast;
-    use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPodcast;
+use Illuminate\Http\Request;
 
-    class PodcastController extends Controller
+class PodcastController extends Controller
+{
+    /**
+     * 儲存新的播客。
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
     {
-        /**
-         * Store a new podcast.
-         *
-         * @param  Request  $request
-         * @return Response
-         */
-        public function store(Request $request)
-        {
-            // Create podcast...
+        // 創建播客...
 
-            ProcessPodcast::dispatch($podcast)->onConnection('sqs');
-        }
+        ProcessPodcast::dispatch($podcast)->onConnection('sqs');
     }
+}
+```
 
-You may chain the `onConnection` and `onQueue` methods to specify the connection and the queue for a job:
+您可以鏈接 `onConnection` 和 `onQueue` 方法以指定作業的連線和佇列：
 
-    ProcessPodcast::dispatch($podcast)
-                  ->onConnection('sqs')
-                  ->onQueue('processing');
+```php
+ProcessPodcast::dispatch($podcast)
+              ->onConnection('sqs')
+              ->onQueue('processing');
+```
 
-Alternatively, you may specify the `connection` as a property on the job class:
+或者，您可以將 `connection` 指定為作業類別的屬性：
 
-    <?php
+```php
+<?php
 
-    namespace App\Jobs;
+namespace App\Jobs;
 
-    class ProcessPodcast implements ShouldQueue
-    {
-        /**
-         * The queue connection that should handle the job.
-         *
-         * @var string
-         */
-        public $connection = 'sqs';
-    }
+class ProcessPodcast implements ShouldQueue
+{
+    /**
+     * 應處理作業的佇列連線。
+     *
+     * @var string
+     */
+    public $connection = 'sqs';
+}
+```
 
 <a name="max-job-attempts-and-timeout"></a>
-### Specifying Max Job Attempts / Timeout Values
+### 指定最大作業嘗試次數 / 逾時值
 
-#### Max Attempts
+#### 最大嘗試次數
 
-One approach to specifying the maximum number of times a job may be attempted is via the `--tries` switch on the Artisan command line:
+指定作業最大嘗試次數的一種方法是通過 Artisan 命令列上的 `--tries` 選項：
 
-    php artisan queue:work --tries=3
+```bash
+php artisan queue:work --tries=3
+```
 
-However, you may take a more granular approach by defining the maximum number of attempts on the job class itself. If the maximum number of attempts is specified on the job, it will take precedence over the value provided on the command line:
+然而，您可以採取更細緻的方法，通過在工作類別本身定義最大嘗試次數。如果在工作中指定了最大嘗試次數，則將優先於命令列提供的值：
 
-    <?php
+```php
+namespace App\Jobs;
 
-    namespace App\Jobs;
-
-    class ProcessPodcast implements ShouldQueue
-    {
-        /**
-         * The number of times the job may be attempted.
-         *
-         * @var int
-         */
-        public $tries = 5;
-    }
+class ProcessPodcast implements ShouldQueue
+{
+    /**
+     * 工作可嘗試的次數。
+     *
+     * @var int
+     */
+    public $tries = 5;
+}
+```
 
 <a name="time-based-attempts"></a>
-#### Time Based Attempts
+#### 基於時間的嘗試
 
-As an alternative to defining how many times a job may be attempted before it fails, you may define a time at which the job should timeout. This allows a job to be attempted any number of times within a given time frame. To define the time at which a job should timeout, add a `retryUntil` method to your job class:
+作為定義工作在失敗之前可以嘗試多少次的替代方法，您可以定義工作應該超時的時間。這允許在給定時間範圍內嘗試任意次數的工作。要定義工作應該超時的時間，請在您的工作類別中添加 `retryUntil` 方法：
 
+```php
+/**
+ * 確定工作應該超時的時間。
+ *
+ * @return \DateTime
+ */
+public function retryUntil()
+{
+    return now()->addSeconds(5);
+}
+```
+
+> {tip} 您也可以在排隊的事件監聽器上定義 `retryUntil` 方法。
+
+#### 超時
+
+> {note} `timeout` 功能針對 PHP 7.1+ 和 `pcntl` PHP 擴展進行了優化。
+
+同樣，可以使用 Artisan 命令列上的 `--timeout` 開關指定作業運行的最大秒數：
+
+```bash
+php artisan queue:work --timeout=30
+```
+
+然而，您也可以在工作類別本身定義作業允許運行的最大秒數。如果在工作中指定了超時時間，則將優先於命令列上指定的任何超時時間：
+
+```php
+namespace App\Jobs;
+
+class ProcessPodcast implements ShouldQueue
+{
     /**
-     * Determine the time at which the job should timeout.
+     * 工作在超時之前可以運行的秒數。
      *
-     * @return \DateTime
+     * @var int
      */
-    public function retryUntil()
-    {
-        return now()->addSeconds(5);
-    }
-
-> {tip} You may also define a `retryUntil` method on your queued event listeners.
-
-#### Timeout
-
-> {note} The `timeout` feature is optimized for PHP 7.1+ and the `pcntl` PHP extension.
-
-Likewise, the maximum number of seconds that jobs can run may be specified using the `--timeout` switch on the Artisan command line:
-
-    php artisan queue:work --timeout=30
-
-However, you may also define the maximum number of seconds a job should be allowed to run on the job class itself. If the timeout is specified on the job, it will take precedence over any timeout specified on the command line:
-
-    <?php
-
-    namespace App\Jobs;
-
-    class ProcessPodcast implements ShouldQueue
-    {
-        /**
-         * The number of seconds the job can run before timing out.
-         *
-         * @var int
-         */
-        public $timeout = 120;
-    }
+    public $timeout = 120;
+}
+```
 
 <a name="rate-limiting"></a>
-### Rate Limiting
+### 速率限制
 
-> {note} This feature requires that your application can interact with a [Redis server](/docs/{{version}}/redis).
+> {note} 此功能要求您的應用程序能夠與 [Redis 伺服器](/docs/{{version}}/redis) 進行交互。
 
-If your application interacts with Redis, you may throttle your queued jobs by time or concurrency. This feature can be of assistance when your queued jobs are interacting with APIs that are also rate limited.
+如果您的應用程式與 Redis 互動，您可以按時間或並發數量來節流您的佇列工作。當您的佇列工作與同時受到速率限制的 API 互動時，此功能將會有所幫助。
 
-For example, using the `throttle` method, you may throttle a given type of job to only run 10 times every 60 seconds. If a lock can not be obtained, you should typically release the job back onto the queue so it can be retried later:
+例如，使用 `throttle` 方法，您可以將特定類型的工作節流為每 60 秒僅運行 10 次。如果無法獲取鎖定，您通常應將工作釋放回佇列，以便稍後重試：
 
-    Redis::throttle('key')->allow(10)->every(60)->then(function () {
-        // Job logic...
-    }, function () {
-        // Could not obtain lock...
+```php
+Redis::throttle('key')->allow(10)->every(60)->then(function () {
+    // 工作邏輯...
+}, function () {
+    // 無法獲取鎖定...
 
-        return $this->release(10);
-    });
+    return $this->release(10);
+});
+```
 
-> {tip} In the example above, the `key` may be any string that uniquely identifies the type of job you would like to rate limit. For example, you may wish to construct the key based on the class name of the job and the IDs of the Eloquent models it operates on.
+> {tip} 在上面的示例中，`key` 可以是任何唯一識別您想要限制速率的工作類型的字串。例如，您可能希望基於工作的類名和其操作的 Eloquent 模型的 ID 來構建鍵。
 
-> {note}  Releasing a throttled job back onto the queue will still increment the job's total number of `attempts`.
+> {note} 將一個經過節流處理的工作釋放回佇列仍會增加工作的總 `嘗試次數`。
 
-Alternatively, you may specify the maximum number of workers that may simultaneously process a given job. This can be helpful when a queued job is modifying a resource that should only be modified by one job at a time. For example, using the `funnel` method, you may limit jobs of a given type to only be processed by one worker at a time:
+或者，您可以指定可以同時處理特定工作的最大工作人員數。當一個佇列工作正在修改只應由一個工作同時修改的資源時，這將會很有幫助。例如，使用 `funnel` 方法，您可以將特定類型的工作限制為僅由一個工作人員同時處理：
 
-    Redis::funnel('key')->limit(1)->then(function () {
-        // Job logic...
-    }, function () {
-        // Could not obtain lock...
+```php
+Redis::funnel('key')->limit(1)->then(function () {
+    // 工作邏輯...
+}, function () {
+    // 無法獲取鎖定...
 
-        return $this->release(10);
-    });
+    return $this->release(10);
+});
+```
 
-> {tip} When using rate limiting, the number of attempts your job will need to run successfully can be hard to determine. Therefore, it is useful to combine rate limiting with [time based attempts](#time-based-attempts).
+> {tip} 在使用速率限制時，您的工作需要成功運行的嘗試次數可能很難確定。因此，將速率限制與[基於時間的嘗試](#time-based-attempts)結合使用是很有用的。
 
 <a name="error-handling"></a>
-### Error Handling
+### 錯誤處理
 
-If an exception is thrown while the job is being processed, the job will automatically be released back onto the queue so it may be attempted again. The job will continue to be released until it has been attempted the maximum number of times allowed by your application. The maximum number of attempts is defined by the `--tries` switch used on the `queue:work` Artisan command. Alternatively, the maximum number of attempts may be defined on the job class itself. More information on running the queue worker [can be found below](#running-the-queue-worker).
+如果在處理工作時拋出異常，該工作將自動釋放回佇列，以便再次嘗試。該工作將繼續釋放，直到達到應用程式允許的最大嘗試次數。最大嘗試次數由 `--tries` 開關在 `queue:work` Artisan 命令中使用來定義。或者，最大嘗試次數可以在工作類別本身上定義。有關執行佇列工作的更多信息，[請參閱下方](#running-the-queue-worker)。
+
 
 <a name="queueing-closures"></a>
-## Queueing Closures
+## 排隊閉包
 
-Instead of dispatching a job class to the queue, you may also dispatch a Closure. This is great for quick, simple tasks that need to be executed outside of the current request cycle:
+與將工作類別調度到佇列不同，您也可以調度閉包。這對於需要在當前請求週期之外執行的快速、簡單任務非常適用：
 
     $podcast = App\Podcast::find(1);
 
@@ -574,110 +615,124 @@ Instead of dispatching a job class to the queue, you may also dispatch a Closure
         $podcast->publish();
     });
 
-When dispatching Closures to the queue, the Closure's code contents is cryptographically signed so it can not be modified in transit.
+將閉包調度到佇列時，閉包的程式碼內容會被加密簽名，因此在傳輸過程中無法修改。
 
 <a name="running-the-queue-worker"></a>
-## Running The Queue Worker
+## 執行佇列工作器
 
-Laravel includes a queue worker that will process new jobs as they are pushed onto the queue. You may run the worker using the `queue:work` Artisan command. Note that once the `queue:work` command has started, it will continue to run until it is manually stopped or you close your terminal:
+Laravel 包含一個佇列工作器，將處理推送到佇列的新工作。您可以使用 `queue:work` Artisan 指令運行工作器。請注意，一旦啟動 `queue:work` 指令，它將持續運行，直到手動停止或關閉終端機：
 
     php artisan queue:work
 
-> {tip} To keep the `queue:work` process running permanently in the background, you should use a process monitor such as [Supervisor](#supervisor-configuration) to ensure that the queue worker does not stop running.
+> {tip} 為了讓 `queue:work` 進程在後台永久運行，您應該使用進程監控器，如 [Supervisor](#supervisor-configuration)，以確保佇列工作器不會停止運行。
 
-Remember, queue workers are long-lived processes and store the booted application state in memory. As a result, they will not notice changes in your code base after they have been started. So, during your deployment process, be sure to [restart your queue workers](#queue-workers-and-deployment). In addition, remember that any static state created or modified by your application will not be automatically reset between jobs.
+請記住，佇列工作器是長期運行的進程，並將啟動的應用程式狀態存儲在記憶體中。因此，它們在啟動後不會注意到代碼庫中的變更。因此，在部署過程中，請確保 [重新啟動佇列工作器](#queue-workers-and-deployment)。此外，請記住，應用程式創建或修改的任何靜態狀態都不會在工作之間自動重置。
 
-Alternatively, you may run the `queue:listen` command. When using the `queue:listen` command, you don't have to manually restart the worker when you want to reload your updated code or reset the application state; however, this command is not as efficient as `queue:work`:
+或者，您可以運行 `queue:listen` 指令。使用 `queue:listen` 指令時，當您想重新加載更新的代碼或重置應用程式狀態時，您無需手動重新啟動工作器；但是，此指令不如 `queue:work` 高效：
 
     php artisan queue:listen
 
-#### Specifying The Connection & Queue
+#### 指定連線和佇列
 
-You may also specify which queue connection the worker should utilize. The connection name passed to the `work` command should correspond to one of the connections defined in your `config/queue.php` configuration file:
+您還可以指定工作器應該使用的佇列連線。傳遞給 `work` 指令的連線名應與您的 `config/queue.php` 配置文件中定義的連線之一對應：
 
-    php artisan queue:work redis
+```php
+php artisan queue:work redis
+```
 
-You may customize your queue worker even further by only processing particular queues for a given connection. For example, if all of your emails are processed in an `emails` queue on your `redis` queue connection, you may issue the following command to start a worker that only processes that queue:
+您可以進一步自訂您的佇列工作者，只處理特定連線的特定佇列。例如，如果您所有的郵件都在 `redis` 佇列連線上的 `emails` 佇列中處理，您可以發出以下命令來啟動僅處理該佇列的工作者：
 
-    php artisan queue:work redis --queue=emails
+```php
+php artisan queue:work redis --queue=emails
+```
 
-#### Processing A Single Job
+#### 處理單一工作
 
-The `--once` option may be used to instruct the worker to only process a single job from the queue:
+`--once` 選項可用於指示工作者僅處理佇列中的單一工作：
 
-    php artisan queue:work --once
+```php
+php artisan queue:work --once
+```
 
-#### Processing All Queued Jobs & Then Exiting
+#### 處理所有佇列工作後退出
 
-The `--stop-when-empty` option may be used to instruct the worker to process all jobs and then exit gracefully. This option can be useful when working Laravel queues within a Docker container if you wish to shutdown the container after the queue is empty:
+`--stop-when-empty` 選項可用於指示工作者處理所有工作，然後優雅地退出。當您在 Docker 容器中處理 Laravel 佇列並希望在佇列為空時關閉容器時，此選項可能很有用：
 
-    php artisan queue:work --stop-when-empty
+```php
+php artisan queue:work --stop-when-empty
+```
 
-#### Resource Considerations
+#### 資源考量
 
-Daemon queue workers do not "reboot" the framework before processing each job. Therefore, you should free any heavy resources after each job completes. For example, if you are doing image manipulation with the GD library, you should free the memory with `imagedestroy` when you are done.
+守護進程佇列工作者在處理每個工作之前不會「重新啟動」框架。因此，您應該在每個工作完成後釋放任何重型資源。例如，如果您正在使用 GD 函式庫進行圖像處理，當完成時應該使用 `imagedestroy` 釋放記憶體。
 
 <a name="queue-priorities"></a>
-### Queue Priorities
+### 佇列優先順序
 
-Sometimes you may wish to prioritize how your queues are processed. For example, in your `config/queue.php` you may set the default `queue` for your `redis` connection to `low`. However, occasionally you may wish to push a job to a `high` priority queue like so:
+有時您可能希望優先處理您的佇列。例如，在您的 `config/queue.php` 中，您可以將 `redis` 連線的預設 `queue` 設置為 `low`。但是，偶爾您可能希望將工作推送到 `high` 優先順序佇列，如下所示：
 
-    dispatch((new Job)->onQueue('high'));
+```php
+dispatch((new Job)->onQueue('high'));
+```
 
-To start a worker that verifies that all of the `high` queue jobs are processed before continuing to any jobs on the `low` queue, pass a comma-delimited list of queue names to the `work` command:
+要啟動一個工作者，確保所有 `high` 佇列工作處理完畢後再繼續處理 `low` 佇列上的任何工作，請將佇列名稱的逗號分隔清單傳遞給 `work` 命令：
 
-    php artisan queue:work --queue=high,low
+```php
+php artisan queue:work --queue=high,low
+```
 
 <a name="queue-workers-and-deployment"></a>
-### Queue Workers & Deployment
+### 佇列工作者與部署
 
-Since queue workers are long-lived processes, they will not pick up changes to your code without being restarted. So, the simplest way to deploy an application using queue workers is to restart the workers during your deployment process. You may gracefully restart all of the workers by issuing the `queue:restart` command:
+由於佇列工作者是長期運行的進程，它們不會在沒有重新啟動的情況下接收代碼更改。因此，使用佇列工作者部署應用程式的最簡單方法是在部署過程中重新啟動工作者。您可以通過發出 `queue:restart` 命令來優雅地重新啟動所有工作者：```
 
-    php artisan queue:restart
+```php
+php artisan queue:restart
+```
 
-This command will instruct all queue workers to gracefully "die" after they finish processing their current job so that no existing jobs are lost. Since the queue workers will die when the `queue:restart` command is executed, you should be running a process manager such as [Supervisor](#supervisor-configuration) to automatically restart the queue workers.
+此命令將指示所有佇列工作者在完成當前工作後優雅地“終止”，以確保不會遺失任何現有工作。由於執行 `queue:restart` 命令時佇列工作者將終止，您應運行進程管理器，例如[Supervisor](#supervisor-configuration) 以自動重新啟動佇列工作者。
 
-> {tip} The queue uses the [cache](/docs/{{version}}/cache) to store restart signals, so you should verify a cache driver is properly configured for your application before using this feature.
+> {tip} 佇列使用 [cache](/docs/{{version}}/cache) 來存儲重新啟動信號，因此在使用此功能之前，應確保為您的應用程序正確配置了快取驅動程式。
 
 <a name="job-expirations-and-timeouts"></a>
-### Job Expirations & Timeouts
+### 工作過期與逾時
 
-#### Job Expiration
+#### 工作過期
 
-In your `config/queue.php` configuration file, each queue connection defines a `retry_after` option. This option specifies how many seconds the queue connection should wait before retrying a job that is being processed. For example, if the value of `retry_after` is set to `90`, the job will be released back onto the queue if it has been processing for 90 seconds without being deleted. Typically, you should set the `retry_after` value to the maximum number of seconds your jobs should reasonably take to complete processing.
+在您的 `config/queue.php` 配置文件中，每個佇列連線都定義了一個 `retry_after` 選項。此選項指定佇列連線在重試正在處理的工作之前應等待多少秒。例如，如果 `retry_after` 的值設置為 `90`，則如果工作在處理了 90 秒而未被刪除，則該工作將被重新放入佇列。通常，您應將 `retry_after` 值設置為您的工作合理完成處理所需的最大秒數。
 
-> {note} The only queue connection which does not contain a `retry_after` value is Amazon SQS. SQS will retry the job based on the [Default Visibility Timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html) which is managed within the AWS console.
+> {note} 唯一不包含 `retry_after` 值的佇列連線是 Amazon SQS。SQS 將根據 [默認可見性超時](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html) 進行工作重試，該超時在 AWS 控制台中進行管理。
 
-#### Worker Timeouts
+#### 工作者逾時
 
-The `queue:work` Artisan command exposes a `--timeout` option. The `--timeout` option specifies how long the Laravel queue master process will wait before killing off a child queue worker that is processing a job. Sometimes a child queue process can become "frozen" for various reasons. The `--timeout` option removes frozen processes that have exceeded that specified time limit:
+`queue:work` Artisan 命令公開了一個 `--timeout` 選項。`--timeout` 選項指定 Laravel 佇列主進程在終止處理工作的子佇列工作者之前等待多長時間。有時，由於各種原因，子佇列進程可能會“凍結”。`--timeout` 選項會刪除已超過指定時間限制的凍結進程：
 
     php artisan queue:work --timeout=60
 
-The `retry_after` configuration option and the `--timeout` CLI option are different, but work together to ensure that jobs are not lost and that jobs are only successfully processed once.
+`retry_after` 配置選項和 `--timeout` CLI 選項是不同的，但它們共同確保工作不會遺失，並且工作僅成功處理一次。```
 
-> {note} The `--timeout` value should always be at least several seconds shorter than your `retry_after` configuration value. This will ensure that a worker processing a given job is always killed before the job is retried. If your `--timeout` option is longer than your `retry_after` configuration value, your jobs may be processed twice.
+> {note} `--timeout` 的值應該始終比您的 `retry_after` 組態值短幾秒。這將確保在重新嘗試作業之前，處理特定作業的工作程序總是在作業重新嘗試之前被終止。如果您的 `--timeout` 選項比您的 `retry_after` 組態值長，則您的作業可能會被處理兩次。
 
-#### Worker Sleep Duration
+#### 工作程序休眠時間
 
-When jobs are available on the queue, the worker will keep processing jobs with no delay in between them. However, the `sleep` option determines how long (in seconds) the worker will "sleep" if there are no new jobs available. While sleeping, the worker will not process any new jobs - the jobs will be processed after the worker wakes up again.
+當隊列中有作業可用時，工作程序將持續處理作業，並且它們之間沒有延遲。但是，`sleep` 選項確定了如果沒有新作業可用時，工作程序將「休眠」多長時間（以秒為單位）。在休眠期間，工作程序將不處理任何新作業 - 這些作業將在工作程序再次喚醒後處理。
 
     php artisan queue:work --sleep=3
 
 <a name="supervisor-configuration"></a>
-## Supervisor Configuration
+## Supervisor 組態設定
 
-#### Installing Supervisor
+#### 安裝 Supervisor
 
-Supervisor is a process monitor for the Linux operating system, and will automatically restart your `queue:work` process if it fails. To install Supervisor on Ubuntu, you may use the following command:
+Supervisor 是用於 Linux 作業系統的進程監控器，如果失敗，將自動重新啟動您的 `queue:work` 進程。要在 Ubuntu 上安裝 Supervisor，您可以使用以下命令：
 
     sudo apt-get install supervisor
 
-> {tip} If configuring Supervisor yourself sounds overwhelming, consider using [Laravel Forge](https://forge.laravel.com), which will automatically install and configure Supervisor for your Laravel projects.
+> {tip} 如果自行配置 Supervisor 聽起來讓人感到不知所措，請考慮使用 [Laravel Forge](https://forge.laravel.com)，它將自動為您的 Laravel 專案安裝和配置 Supervisor。
 
-#### Configuring Supervisor
+#### 配置 Supervisor
 
-Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `laravel-worker.conf` file that starts and monitors a `queue:work` process:
+Supervisor 組態文件通常存儲在 `/etc/supervisor/conf.d` 目錄中。在此目錄中，您可以創建任意數量的組態文件，指示 Supervisor 如何監控您的進程。例如，讓我們創建一個 `laravel-worker.conf` 文件，啟動和監控一個 `queue:work` 進程：
 
     [program:laravel-worker]
     process_name=%(program_name)s_%(process_num)02d
@@ -690,13 +745,13 @@ Supervisor configuration files are typically stored in the `/etc/supervisor/conf
     stdout_logfile=/home/forge/app.com/worker.log
     stopwaitsecs=3600
 
-In this example, the `numprocs` directive will instruct Supervisor to run 8 `queue:work` processes and monitor all of them, automatically restarting them if they fail. You should change the `queue:work sqs` portion of the `command` directive to reflect your desired queue connection.
+在此示例中，`numprocs` 指令將指示 Supervisor 運行 8 個 `queue:work` 進程並監控它們，如果它們失敗，將自動重新啟動它們。您應更改 `command` 指令中的 `queue:work sqs` 部分以反映您所需的隊列連接。
 
-> {note} You should ensure that the value of `stopwaitsecs` is greater than the number of seconds consumed by your longest running job. Otherwise, Supervisor may kill the job before it is finished processing.
+> {note} 您應該確保 `stopwaitsecs` 的值大於您最長運行工作所消耗的秒數。否則，Supervisor 可能會在作業完成處理之前終止作業。
 
-#### Starting Supervisor
+#### 啟動 Supervisor
 
-Once the configuration file has been created, you may update the Supervisor configuration and start the processes using the following commands:
+一旦配置文件已經創建，您可以使用以下命令更新 Supervisor 配置並啟動進程：
 
     sudo supervisorctl reread
 
@@ -704,221 +759,244 @@ Once the configuration file has been created, you may update the Supervisor conf
 
     sudo supervisorctl start laravel-worker:*
 
-For more information on Supervisor, consult the [Supervisor documentation](http://supervisord.org/index.html).
+有關 Supervisor 的更多信息，請參考 [Supervisor documentation](http://supervisord.org/index.html)。
 
 <a name="dealing-with-failed-jobs"></a>
-## Dealing With Failed Jobs
+## 處理失敗的工作
 
-Sometimes your queued jobs will fail. Don't worry, things don't always go as planned! Laravel includes a convenient way to specify the maximum number of times a job should be attempted. After a job has exceeded this amount of attempts, it will be inserted into the `failed_jobs` database table. To create a migration for the `failed_jobs` table, you may use the `queue:failed-table` command:
+有時您的排隊工作會失敗。別擔心，事情並不總是按計劃進行！Laravel 包含了一種方便的方式來指定作業應該嘗試的最大次數。當一個作業超過這個嘗試次數後，它將被插入到 `failed_jobs` 數據庫表中。要為 `failed_jobs` 表創建遷移，您可以使用 `queue:failed-table` 命令：
 
     php artisan queue:failed-table
 
     php artisan migrate
 
-Then, when running your [queue worker](#running-the-queue-worker), you can specify the maximum number of times a job should be attempted using the `--tries` switch on the `queue:work` command. If you do not specify a value for the `--tries` option, jobs will only be attempted once:
+然後，在運行您的 [queue worker](#running-the-queue-worker) 時，您可以使用 `queue:work` 命令的 `--tries` 選項指定作業應該嘗試的最大次數。如果您沒有為 `--tries` 選項指定值，作業將只嘗試一次：
 
     php artisan queue:work redis --tries=3
 
-In addition, you may specify how many seconds Laravel should wait before retrying a job that has failed using the `--delay` option. By default, a job is retried immediately:
+此外，您可以使用 `--delay` 選項指定 Laravel 在重試失敗作業之前應等待多少秒。默認情況下，作業會立即重試：
 
     php artisan queue:work redis --tries=3 --delay=3
 
-If you would like to configure the failed job retry delay on a per-job basis, you may do so by defining a `retryAfter` property on your queued job class:
+如果您想要根據每個作業配置失敗作業重試延遲，您可以在排隊的作業類別上定義一個 `retryAfter` 屬性：
 
     /**
-     * The number of seconds to wait before retrying the job.
+     * 重試作業之前等待的秒數。
      *
      * @var int
      */
     public $retryAfter = 3;
 
 <a name="cleaning-up-after-failed-jobs"></a>
-### Cleaning Up After Failed Jobs
+### 失敗作業後的清理
 
-You may define a `failed` method directly on your job class, allowing you to perform job specific clean-up when a failure occurs. This is the perfect location to send an alert to your users or revert any actions performed by the job. The `Exception` that caused the job to fail will be passed to the `failed` method:
+您可以直接在作業類別上定義一個 `failed` 方法，允許您在發生失敗時執行特定於作業的清理。這是發送警報給用戶或恢復作業執行的任何操作的完美位置。導致作業失敗的 `Exception` 將傳遞給 `failed` 方法：
 
-    <?php
+```php
+<?php
 
-    namespace App\Jobs;
+namespace App\Jobs;
 
-    use App\AudioProcessor;
-    use App\Podcast;
-    use Exception;
-    use Illuminate\Bus\Queueable;
-    use Illuminate\Contracts\Queue\ShouldQueue;
-    use Illuminate\Queue\InteractsWithQueue;
-    use Illuminate\Queue\SerializesModels;
+use App\AudioProcessor;
+use App\Podcast;
+use Exception;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
-    class ProcessPodcast implements ShouldQueue
-    {
-        use InteractsWithQueue, Queueable, SerializesModels;
+class ProcessPodcast implements ShouldQueue
+{
+    use InteractsWithQueue, Queueable, SerializesModels;
 
-        protected $podcast;
-
-        /**
-         * Create a new job instance.
-         *
-         * @param  Podcast  $podcast
-         * @return void
-         */
-        public function __construct(Podcast $podcast)
-        {
-            $this->podcast = $podcast;
-        }
-
-        /**
-         * Execute the job.
-         *
-         * @param  AudioProcessor  $processor
-         * @return void
-         */
-        public function handle(AudioProcessor $processor)
-        {
-            // Process uploaded podcast...
-        }
-
-        /**
-         * The job failed to process.
-         *
-         * @param  Exception  $exception
-         * @return void
-         */
-        public function failed(Exception $exception)
-        {
-            // Send user notification of failure, etc...
-        }
-    }
-
-> {note} The `failed` method will not be called if the job was dispatched using the `dispatchNow` method.
-
-<a name="failed-job-events"></a>
-### Failed Job Events
-
-If you would like to register an event that will be called when a job fails, you may use the `Queue::failing` method. This event is a great opportunity to notify your team via email or [Slack](https://www.slack.com). For example, we may attach a callback to this event from the `AppServiceProvider` that is included with Laravel:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Support\Facades\Queue;
-    use Illuminate\Support\ServiceProvider;
-    use Illuminate\Queue\Events\JobFailed;
-
-    class AppServiceProvider extends ServiceProvider
-    {
-        /**
-         * Register any application services.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-
-        /**
-         * Bootstrap any application services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Queue::failing(function (JobFailed $event) {
-                // $event->connectionName
-                // $event->job
-                // $event->exception
-            });
-        }
-    }
-
-<a name="retrying-failed-jobs"></a>
-### Retrying Failed Jobs
-
-To view all of your failed jobs that have been inserted into your `failed_jobs` database table, you may use the `queue:failed` Artisan command:
-
-    php artisan queue:failed
-
-The `queue:failed` command will list the job ID, connection, queue, and failure time. The job ID may be used to retry the failed job. For instance, to retry a failed job that has an ID of `5`, issue the following command:
-
-    php artisan queue:retry 5
-
-To retry all of your failed jobs, execute the `queue:retry` command and pass `all` as the ID:
-
-    php artisan queue:retry all
-
-If you would like to delete a failed job, you may use the `queue:forget` command:
-
-    php artisan queue:forget 5
-
-To delete all of your failed jobs, you may use the `queue:flush` command:
-
-    php artisan queue:flush
-
-<a name="ignoring-missing-models"></a>
-### Ignoring Missing Models
-
-When injecting an Eloquent model into a job, it is automatically serialized before being placed on the queue and restored when the job is processed. However, if the model has been deleted while the job was waiting to be processed by a worker, your job may fail with a `ModelNotFoundException`.
-
-For convenience, you may choose to automatically delete jobs with missing models by setting your job's `deleteWhenMissingModels` property to `true`:
+    protected $podcast;
 
     /**
-     * Delete the job if its models no longer exist.
+     * Create a new job instance.
      *
-     * @var bool
+     * @param  Podcast  $podcast
+     * @return void
      */
-    public $deleteWhenMissingModels = true;
-
-<a name="job-events"></a>
-## Job Events
-
-Using the `before` and `after` methods on the `Queue` [facade](/docs/{{version}}/facades), you may specify callbacks to be executed before or after a queued job is processed. These callbacks are a great opportunity to perform additional logging or increment statistics for a dashboard. Typically, you should call these methods from a [service provider](/docs/{{version}}/providers). For example, we may use the `AppServiceProvider` that is included with Laravel:
-
-    <?php
-
-    namespace App\Providers;
-
-    use Illuminate\Support\Facades\Queue;
-    use Illuminate\Support\ServiceProvider;
-    use Illuminate\Queue\Events\JobProcessed;
-    use Illuminate\Queue\Events\JobProcessing;
-
-    class AppServiceProvider extends ServiceProvider
+    public function __construct(Podcast $podcast)
     {
-        /**
-         * Register any application services.
-         *
-         * @return void
-         */
-        public function register()
-        {
-            //
-        }
-
-        /**
-         * Bootstrap any application services.
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Queue::before(function (JobProcessing $event) {
-                // $event->connectionName
-                // $event->job
-                // $event->job->payload()
-            });
-
-            Queue::after(function (JobProcessed $event) {
-                // $event->connectionName
-                // $event->job
-                // $event->job->payload()
-            });
-        }
+        $this->podcast = $podcast;
     }
 
-Using the `looping` method on the `Queue` [facade](/docs/{{version}}/facades), you may specify callbacks that execute before the worker attempts to fetch a job from a queue. For example, you might register a Closure to rollback any transactions that were left open by a previously failed job:
+    /**
+     * Execute the job.
+     *
+     * @param  AudioProcessor  $processor
+     * @return void
+     */
+    public function handle(AudioProcessor $processor)
+    {
+        // Process uploaded podcast...
+    }
 
-    Queue::looping(function () {
-        while (DB::transactionLevel() > 0) {
-            DB::rollBack();
-        }
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     * @return void
+     */
+    public function failed(Exception $exception)
+    {
+        // Send user notification of failure, etc...
+    }
+}
+```
+
+> {note} 如果使用 `dispatchNow` 方法調度作業，將不會調用 `failed` 方法。
+
+<a name="failed-job-events"></a>
+### 失敗的作業事件
+
+如果您想要註冊一個在作業失敗時調用的事件，您可以使用 `Queue::failing` 方法。這個事件是一個很好的機會，可以通過電子郵件或 [Slack](https://www.slack.com) 通知您的團隊。例如，我們可以從 Laravel 隨附的 `AppServiceProvider` 中附加一個回呼到這個事件：
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Queue\Events\JobFailed;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+}
+```
+
+```php
+/**
+ * 啟動任何應用程式服務。
+ *
+ * @return void
+ */
+public function boot()
+{
+    Queue::failing(function (JobFailed $event) {
+        // $event->connectionName
+        // $event->job
+        // $event->exception
     });
+}
+```
+
+<a name="retrying-failed-jobs"></a>
+### 重試失敗的工作
+
+要查看已插入到 `failed_jobs` 資料庫表中的所有失敗工作，您可以使用 `queue:failed` Artisan 指令：
+
+```bash
+php artisan queue:failed
+```
+
+`queue:failed` 指令將列出工作 ID、連線、佇列和失敗時間。工作 ID 可用於重試失敗的工作。例如，要重試 ID 為 `5` 的失敗工作，請執行以下指令：
+
+```bash
+php artisan queue:retry 5
+```
+
+要重試所有失敗的工作，執行 `queue:retry` 指令並將 `all` 作為 ID 傳遞：
+
+```bash
+php artisan queue:retry all
+```
+
+如果要刪除失敗的工作，您可以使用 `queue:forget` 指令：
+
+```bash
+php artisan queue:forget 5
+```
+
+要刪除所有失敗的工作，您可以使用 `queue:flush` 指令：
+
+```bash
+php artisan queue:flush
+```
+
+<a name="ignoring-missing-models"></a>
+### 忽略缺少的模型
+
+當將 Eloquent 模型注入到工作中時，它會在放入佇列之前自動序列化，並在處理工作時還原。但是，如果模型在工作等待被工作人員處理時已被刪除，您的工作可能會因 `ModelNotFoundException` 而失敗。
+
+為了方便起見，您可以選擇將具有缺少模型的工作自動刪除，方法是將工作的 `deleteWhenMissingModels` 屬性設置為 `true`：
+
+```php
+/**
+ * 如果其模型不再存在，則刪除工作。
+ *
+ * @var bool
+ */
+public $deleteWhenMissingModels = true;
+```
+
+<a name="job-events"></a>
+## 工作事件
+
+使用 `Queue` [facade](/docs/{{version}}/facades) 上的 `before` 和 `after` 方法，您可以指定在處理排入佇列的工作之前或之後要執行的回呼函式。這些回呼函式是執行額外記錄或增加儀表板統計資料的絕佳機會。通常，您應該從 [服務提供者](/docs/{{version}}/providers) 中呼叫這些方法。例如，我們可以使用 Laravel 隨附的 `AppServiceProvider`：
+```
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 註冊任何應用程式服務。
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * 引導任何應用程式服務。
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Queue::before(function (JobProcessing $event) {
+            // $event->connectionName
+            // $event->job
+            // $event->job->payload()
+        });
+
+        Queue::after(function (JobProcessed $event) {
+            // $event->connectionName
+            // $event->job
+            // $event->job->payload()
+        });
+    }
+}
+```
+
+使用 `looping` 方法在 `Queue` [配接器](/docs/{{version}}/facades) 上，您可以指定在工作程序嘗試從佇列中提取作業之前執行的回呼函式。例如，您可以註冊一個閉包來還原先前失敗作業留下的任何未關閉的交易：
+
+```php
+Queue::looping(function () {
+    while (DB::transactionLevel() > 0) {
+        DB::rollBack();
+    }
+});
+```
