@@ -1,26 +1,26 @@
-# Context
+# 語境
 
-- [Introduction](#introduction)
-    - [How it Works](#how-it-works)
-- [Capturing Context](#capturing-context)
-    - [Stacks](#stacks)
-- [Retrieving Context](#retrieving-context)
-    - [Determining Item Existence](#determining-item-existence)
-- [Removing Context](#removing-context)
-- [Hidden Context](#hidden-context)
-- [Events](#events)
-    - [Dehydrating](#dehydrating)
-    - [Hydrated](#hydrated)
+- [簡介](#introduction)
+    - [運作方式](#how-it-works)
+- [捕獲語境](#capturing-context)
+    - [堆疊](#stacks)
+- [擷取語境](#retrieving-context)
+    - [確定項目存在性](#determining-item-existence)
+- [移除語境](#removing-context)
+- [隱藏語境](#hidden-context)
+- [事件](#events)
+    - [脫水](#dehydrating)
+    - [水合](#hydrated)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's "context" capabilities enable you to capture, retrieve, and share information throughout requests, jobs, and commands executing within your application. This captured information is also included in logs written by your application, giving you deeper insight into the surrounding code execution history that occurred before a log entry was written and allowing you to trace execution flows throughout a distributed system.
+Laravel 的「語境」功能使您能夠在應用程式中的請求、工作和命令執行期間捕獲、擷取和共享資訊。這些捕獲的資訊也包含在應用程式寫入的日誌中，讓您更深入地了解在寫入日誌條目之前發生的周圍程式碼執行歷史，並允許您在分佈式系統中追蹤執行流程。
 
 <a name="how-it-works"></a>
-### How it Works
+### 運作方式
 
-The best way to understand Laravel's context capabilities is to see it in action using  the built-in logging features. To get started, you may [add information to the context](#capturing-context) using the `Context` facade. In this example, we will use a [middleware](/docs/{{version}}/middleware) to add the request URL and a unique trace ID to the context on every incoming request:
+了解 Laravel 的語境功能的最佳方式是通過使用內建的記錄功能實際操作。要開始，您可以使用 `Context` 門面[添加資訊到語境](#capturing-context)。在此示例中，我們將使用[中介層](/docs/{{version}}/middleware)在每個傳入請求上添加請求 URL 和唯一追蹤 ID 到語境中：
 
 ```php
 <?php
@@ -48,19 +48,19 @@ class AddContext
 }
 ```
 
-Information added to the context is automatically appended as metadata to any [log entries](/docs/{{version}}/logging) that are written throughout the request. Appending context as metadata allows information passed to individual log entries to be differentiated from the information shared via `Context`. For example, imagine we write the following log entry:
+添加到語境的資訊會自動附加為任何[日誌條目](/docs/{{version}}/logging)的元資料，這些日誌條目在請求期間寫入。將語境附加為元資料允許將傳遞給個別日誌條目的資訊與通過 `Context` 共享的資訊區分開來。例如，假設我們寫入以下日誌條目：
 
 ```php
 Log::info('User authenticated.', ['auth_id' => Auth::id()]);
 ```
 
-The written log will contain the `auth_id` passed to the log entry, but it will also contain the context's `url` and `trace_id` as metadata:
+寫入的日誌將包含傳遞給日誌條目的 `auth_id`，但它還將包含語境的 `url` 和 `trace_id` 作為元資料：
 
 ```text
 User authenticated. {"auth_id":27} {"url":"https://example.com/login","trace_id":"e04e1a11-e75c-4db3-b5b5-cfef4ef56697"}
 ```
 
-Information added to the context is also made available to jobs dispatched to the queue. For example, imagine we dispatch a `ProcessPodcast` job to the queue after adding some information to the context:
+新增到上下文中的資訊也將提供給調度到佇列的工作。例如，假設我們在將一些資訊新增到上下文後，將 `ProcessPodcast` 工作調度到佇列：
 
 ```php
 // In our middleware...
@@ -71,7 +71,7 @@ Context::add('trace_id', Str::uuid()->toString());
 ProcessPodcast::dispatch($podcast);
 ```
 
-When the job is dispatched, any information currently stored in the context is captured and shared with the job. The captured information is then hydrated back into the current context while the job is executing. So, if our job's handle method was to write to the log:
+當工作被調度時，當前存儲在上下文中的任何資訊都將被捕獲並與工作共享。然後，在執行工作時，捕獲的資訊將被重新注入到當前上下文中。因此，如果我們的工作的處理方法是寫入日誌：
 
 ```php
 class ProcessPodcast implements ShouldQueue
@@ -94,18 +94,18 @@ class ProcessPodcast implements ShouldQueue
 }
 ```
 
-The resulting log entry would contain the information that was added to the context during the request that originally dispatched the job:
+生成的日誌條目將包含在原始調度工作的請求期間新增到上下文中的資訊：
 
 ```text
-Processing podcast. {"podcast_id":95} {"url":"https://example.com/login","trace_id":"e04e1a11-e75c-4db3-b5b5-cfef4ef56697"}
+處理播客。{"podcast_id":95} {"url":"https://example.com/login","trace_id":"e04e1a11-e75c-4db3-b5b5-cfef4ef56697"}
 ```
 
-Although we have focused on the built-in logging related features of Laravel's context, the following documentation will illustrate how context allows you to share information across the HTTP request / queued job boundary and even how to add [hidden context data](#hidden-context) that is not written with log entries.
+儘管我們專注於 Laravel 上下文的內建日誌相關功能，以下文件將說明上下文如何允許您跨 HTTP 請求/佇列工作邊界共享資訊，甚至如何添加[隱藏的上下文資料](#hidden-context)，這些資料不會與日誌條目一起寫入。
 
 <a name="capturing-context"></a>
-## Capturing Context
+## 捕獲上下文
 
-You may store information in the current context using the `Context` facade's `add` method:
+您可以使用 `Context` 門面的 `add` 方法將資訊存儲在當前上下文中：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -113,7 +113,7 @@ use Illuminate\Support\Facades\Context;
 Context::add('key', 'value');
 ```
 
-To add multiple items at once, you may pass an associative array to the `add` method:
+要一次添加多個項目，可以將關聯陣列傳遞給 `add` 方法：
 
 ```php
 Context::add([
@@ -122,7 +122,7 @@ Context::add([
 ]);
 ```
 
-The `add` method will override any existing value that shares the same key. If you only wish to add information to the context if the key does not already exist, you may use the `addIf` method:
+`add` 方法將覆蓋任何具有相同鍵的現有值。如果只希望在鍵不存在時將資訊添加到上下文中，可以使用 `addIf` 方法：
 
 ```php
 Context::add('key', 'first');
@@ -137,9 +137,9 @@ Context::get('key');
 ```
 
 <a name="conditional-context"></a>
-#### Conditional Context
+#### 條件上下文
 
-The `when` method may be used to add data to the context based on a given condition. The first closure provided to the `when` method will be invoked if the given condition evaluates to `true`, while the second closure will be invoked if the condition evaluates to `false`:
+`when` 方法可用於根據給定條件向上下文添加資料。提供給 `when` 方法的第一個閉包將在給定條件評估為 `true` 時被調用，而第二個閉包將在條件評估為 `false` 時被調用：
 
 ```php
 use Illuminate\Support\Facades\Auth;
@@ -153,9 +153,9 @@ Context::when(
 ```
 
 <a name="scoped-context"></a>
-#### Scoped Context
+#### 作用域上下文
 
-The `scope` method provides a way to temporarily modify the context during the execution of a given callback and restore the context to its original state when the callback finishes executing. Additionally, you can pass extra data that should be merged into the context (as the second and third arguments) while the closure executes.
+`scope` 方法提供了一種在執行給定回呼時暫時修改上下文並在回呼執行完成時將上下文恢復到原始狀態的方法。此外，您可以在閉包執行時傳遞應合併到上下文中的額外數據（作為第二和第三個引數）。
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -187,12 +187,12 @@ Context::allHidden();
 ```
 
 > [!WARNING]
-> If an object within the context is modified inside the scoped closure, that mutation will be reflected outside of the scope.
+> 如果在作用域閉包內修改上下文中的對象，該變異將反映在作用域之外。
 
 <a name="stacks"></a>
-### Stacks
+### 堆疊
 
-Context offers the ability to create "stacks", which are lists of data stored in the order that they were added. You can add information to a stack by invoking the `push` method:
+上下文提供了創建“堆疊”的能力，這些堆疊是按添加順序存儲的數據列表。您可以通過調用 `push` 方法將信息添加到堆疊中：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -209,7 +209,7 @@ Context::get('breadcrumbs');
 // ]
 ```
 
-Stacks can be useful to capture historical information about a request, such as events that are happening throughout your application. For example, you could create an event listener to push to a stack every time a query is executed, capturing the query SQL and duration as a tuple:
+堆疊可用於捕獲有關請求的歷史信息，例如應用程序中正在發生的事件。例如，您可以創建一個事件監聽器，每次執行查詢時都將其推送到堆疊中，將查詢 SQL 和持續時間作為元組捕獲：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -220,7 +220,7 @@ DB::listen(function ($event) {
 });
 ```
 
-You may determine if a value is in a stack using the `stackContains` and `hiddenStackContains` methods:
+您可以使用 `stackContains` 和 `hiddenStackContains` 方法確定值是否在堆疊中：
 
 ```php
 if (Context::stackContains('breadcrumbs', 'first_value')) {
@@ -232,7 +232,7 @@ if (Context::hiddenStackContains('secrets', 'first_value')) {
 }
 ```
 
-The `stackContains` and `hiddenStackContains` methods also accept a closure as their second argument, allowing more control over the value comparison operation:
+`stackContains` 和 `hiddenStackContains` 方法還接受閉包作為它們的第二個引數，從而更好地控制值比較操作：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -244,9 +244,9 @@ return Context::stackContains('breadcrumbs', function ($value) {
 ```
 
 <a name="retrieving-context"></a>
-## Retrieving Context
+## 檢索上下文
 
-You may retrieve information from the context using the `Context` facade's `get` method:
+您可以使用 `Context` 門面的 `get` 方法從上下文中檢索信息：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -254,19 +254,19 @@ use Illuminate\Support\Facades\Context;
 $value = Context::get('key');
 ```
 
-The `only` method may be used to retrieve a subset of the information in the context:
+`only` 方法可用於檢索上下文中信息的子集：
 
 ```php
 $data = Context::only(['first_key', 'second_key']);
 ```
 
-The `pull` method may be used to retrieve information from the context and immediately remove it from the context:
+`pull` 方法可用於從上下文中檢索信息並立即從上下文中刪除它：
 
 ```php
 $value = Context::pull('key');
 ```
 
-If context data is stored in a [stack](#stacks), you may pop items from the stack using the `pop` method:
+如果上下文數據存儲在[堆疊](#stacks)中，您可以使用`pop`方法從堆疊中彈出項目：
 
 ```php
 Context::push('breadcrumbs', 'first_value', 'second_value');
@@ -278,16 +278,16 @@ Context::get('breadcrumbs');
 // ['first_value'] 
 ```
 
-If you would like to retrieve all of the information stored in the context, you may invoke the `all` method:
+如果您想檢索存儲在上下文中的所有信息，可以調用`all`方法：
 
 ```php
 $data = Context::all();
 ```
 
 <a name="determining-item-existence"></a>
-### Determining Item Existence
+### 確定項目存在性
 
-You may use the `has` and `missing` methods to determine if the context has any value stored for the given key:
+您可以使用`has`和`missing`方法來確定上下文是否為給定鍵存儲任何值：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -301,7 +301,7 @@ if (Context::missing('key')) {
 }
 ```
 
-The `has` method will return `true` regardless of the value stored. So, for example, a key with a `null` value will be considered present:
+`has`方法將返回`true`，無論存儲的值是什麼。例如，具有`null`值的鍵將被認為是存在的：
 
 ```php
 Context::add('key', null);
@@ -311,9 +311,9 @@ Context::has('key');
 ```
 
 <a name="removing-context"></a>
-## Removing Context
+## 刪除上下文
 
-The `forget` method may be used to remove a key and its value from the current context:
+`forget`方法可用於從當前上下文中刪除鍵及其值：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -327,16 +327,16 @@ Context::all();
 // ['second_key' => 2]
 ```
 
-You may forget several keys at once by providing an array to the `forget` method:
+您可以通過向`forget`方法提供一個數組來一次性忘記多個鍵：
 
 ```php
 Context::forget(['first_key', 'second_key']);
 ```
 
 <a name="hidden-context"></a>
-## Hidden Context
+## 隱藏上下文
 
-Context offers the ability to store "hidden" data. This hidden information is not appended to logs, and is not accessible via the data retrieval methods documented above. Context provides a different set of methods to interact with hidden context information:
+上下文提供了存儲“隱藏”數據的功能。這些隱藏信息不附加到日誌中，也無法通過上面記錄的數據檢索方法訪問。上下文提供了一組不同的方法來與隱藏上下文信息交互：
 
 ```php
 use Illuminate\Support\Facades\Context;
@@ -350,7 +350,7 @@ Context::get('key');
 // null
 ```
 
-The "hidden" methods mirror the functionality of the non-hidden methods documented above:
+“隱藏”方法與上面記錄的非隱藏方法的功能相同：
 
 ```php
 Context::addHidden(/* ... */);
@@ -366,18 +366,17 @@ Context::forgetHidden(/* ... */);
 ```
 
 <a name="events"></a>
-## Events
+## 事件
 
-Context dispatches two events that allow you to hook into the hydration and dehydration process of the context.
+上下文分發兩個事件，允許您鉤入上下文的水合和脫水過程。
 
-To illustrate how these events may be used, imagine that in a middleware of your application you set the `app.locale` configuration value based on the incoming HTTP request's `Accept-Language` header. Context's events allow you to capture this value during the request and restore it on the queue, ensuring notifications sent on the queue have the correct `app.locale` value. We can use context's events and [hidden](#hidden-context) data to achieve this, which the following documentation will illustrate.
+為了說明這些事件如何使用，假設在應用程序的中間件中，您根據傳入的HTTP請求的`Accept-Language`標頭設置`app.locale`配置值。上下文的事件允許您在請求期間捕獲此值並在佇列上恢復它，確保在佇列上發送的通知具有正確的`app.locale`值。我們可以使用上下文的事件和[隱藏](#hidden-context)數據來實現這一點，以下文檔將進行說明。
 
-<a name="dehydrating"></a>
-### Dehydrating
+### 脫水
 
-Whenever a job is dispatched to the queue the data in the context is "dehydrated" and captured alongside the job's payload. The `Context::dehydrating` method allows you to register a closure that will be invoked during the dehydration process. Within this closure, you may make changes to the data that will be shared with the queued job.
+每當作業被派送到佇列時，上下文中的資料會被「脫水」並與作業的有效載荷一起捕獲。`Context::dehydrating` 方法允許您註冊一個閉包，在脫水過程中將被調用。在這個閉包中，您可以對將與排入佇列的作業共享的資料進行更改。
 
-Typically, you should register `dehydrating` callbacks within the `boot` method of your application's `AppServiceProvider` class:
+通常，您應該在應用程式的 `AppServiceProvider` 類的 `boot` 方法中註冊 `dehydrating` 回呼：
 
 ```php
 use Illuminate\Log\Context\Repository;
@@ -396,14 +395,13 @@ public function boot(): void
 ```
 
 > [!NOTE]  
-> You should not use the `Context` facade within the `dehydrating` callback, as that will change the context of the current process. Ensure you only make changes to the repository passed to the callback.
+> 您不應在 `dehydrating` 回呼中使用 `Context` 門面，因為這將改變當前處理程序的上下文。請確保您只對傳遞給回呼的存儲庫進行更改。
 
-<a name="hydrated"></a>
-### Hydrated
+### 水合
 
-Whenever a queued job begins executing on the queue, any context that was shared with the job will be "hydrated" back into the current context. The `Context::hydrated` method allows you to register a closure that will be invoked during the hydration process.
+每當排入佇列的作業開始在佇列上執行時，與作業共享的任何上下文將被「水合」回當前上下文中。`Context::hydrated` 方法允許您註冊一個閉包，在水合過程中將被調用。
 
-Typically, you should register `hydrated` callbacks within the `boot` method of your application's `AppServiceProvider` class:
+通常，您應該在應用程式的 `AppServiceProvider` 類的 `boot` 方法中註冊 `hydrated` 回呼：
 
 ```php
 use Illuminate\Log\Context\Repository;
@@ -424,4 +422,4 @@ public function boot(): void
 ```
 
 > [!NOTE]  
-> You should not use the `Context` facade within the `hydrated` callback and instead ensure you only make changes to the repository passed to the callback.
+> 您不應在 `hydrated` 回呼中使用 `Context` 門面，而應確保您只對傳遞給回呼的存儲庫進行更改。

@@ -1,67 +1,67 @@
-# Logging
+# 記錄
 
-- [Introduction](#introduction)
-- [Configuration](#configuration)
-    - [Available Channel Drivers](#available-channel-drivers)
-    - [Channel Prerequisites](#channel-prerequisites)
-    - [Logging Deprecation Warnings](#logging-deprecation-warnings)
-- [Building Log Stacks](#building-log-stacks)
-- [Writing Log Messages](#writing-log-messages)
-    - [Contextual Information](#contextual-information)
-    - [Writing to Specific Channels](#writing-to-specific-channels)
-- [Monolog Channel Customization](#monolog-channel-customization)
-    - [Customizing Monolog for Channels](#customizing-monolog-for-channels)
-    - [Creating Monolog Handler Channels](#creating-monolog-handler-channels)
-    - [Creating Custom Channels via Factories](#creating-custom-channels-via-factories)
-- [Tailing Log Messages Using Pail](#tailing-log-messages-using-pail)
-    - [Installation](#pail-installation)
-    - [Usage](#pail-usage)
-    - [Filtering Logs](#pail-filtering-logs)
+- [簡介](#introduction)
+- [組態設定](#configuration)
+    - [可用的通道驅動程式](#available-channel-drivers)
+    - [通道先決條件](#channel-prerequisites)
+    - [記錄過時警告](#logging-deprecation-warnings)
+- [建立記錄堆疊](#building-log-stacks)
+- [撰寫記錄訊息](#writing-log-messages)
+    - [情境資訊](#contextual-information)
+    - [寫入特定通道](#writing-to-specific-channels)
+- [Monolog 通道自訂](#monolog-channel-customization)
+    - [為通道自訂 Monolog](#customizing-monolog-for-channels)
+    - [建立 Monolog 處理程序通道](#creating-monolog-handler-channels)
+    - [透過工廠建立自訂通道](#creating-custom-channels-via-factories)
+- [使用 Pail 追蹤記錄訊息](#tailing-log-messages-using-pail)
+    - [安裝](#pail-installation)
+    - [使用方式](#pail-usage)
+    - [篩選記錄](#pail-filtering-logs)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-To help you learn more about what's happening within your application, Laravel provides robust logging services that allow you to log messages to files, the system error log, and even to Slack to notify your entire team.
+為了幫助您更深入了解應用程式內部發生的事情，Laravel 提供了強大的記錄服務，讓您可以將訊息記錄到檔案、系統錯誤記錄，甚至透過 Slack 通知整個團隊。
 
-Laravel logging is based on "channels". Each channel represents a specific way of writing log information. For example, the `single` channel writes log files to a single log file, while the `slack` channel sends log messages to Slack. Log messages may be written to multiple channels based on their severity.
+Laravel 的記錄基於「通道」。每個通道代表一種特定的記錄資訊方式。例如，`single` 通道將記錄檔寫入單一記錄檔，而 `slack` 通道則將記錄訊息發送到 Slack。根據嚴重性，記錄訊息可能會被寫入多個通道。
 
-Under the hood, Laravel utilizes the [Monolog](https://github.com/Seldaek/monolog) library, which provides support for a variety of powerful log handlers. Laravel makes it a cinch to configure these handlers, allowing you to mix and match them to customize your application's log handling.
+在幕後，Laravel 使用 [Monolog](https://github.com/Seldaek/monolog) 函式庫，提供各種強大的記錄處理程序支援。Laravel 讓您輕鬆配置這些處理程序，讓您可以混合搭配它們以自訂應用程式的記錄處理。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
-All of the configuration options that control your application's logging behavior are housed in the `config/logging.php` configuration file. This file allows you to configure your application's log channels, so be sure to review each of the available channels and their options. We'll review a few common options below.
+控制應用程式記錄行為的所有組態選項都存放在 `config/logging.php` 組態檔案中。這個檔案允許您配置應用程式的記錄通道，請務必查看每個可用通道及其選項。以下是一些常見選項的概述。
 
-By default, Laravel will use the `stack` channel when logging messages. The `stack` channel is used to aggregate multiple log channels into a single channel. For more information on building stacks, check out the [documentation below](#building-log-stacks).
+預設情況下，Laravel 在記錄訊息時會使用 `stack` 通道。`stack` 通道用於將多個日誌通道聚合到單一通道中。有關構建堆疊的更多資訊，請查看下面的[文件](#building-log-stacks)。
 
 <a name="available-channel-drivers"></a>
-### Available Channel Drivers
+### 可用的通道驅動程式
 
-Each log channel is powered by a "driver". The driver determines how and where the log message is actually recorded. The following log channel drivers are available in every Laravel application. An entry for most of these drivers is already present in your application's `config/logging.php` configuration file, so be sure to review this file to become familiar with its contents:
+每個日誌通道都由一個"驅動程式"提供動力。該驅動程式決定了日誌訊息實際記錄的方式和位置。以下是每個 Laravel 應用程式中都可用的日誌通道驅動程式。大多數這些驅動程式的條目已經存在於您應用程式的 `config/logging.php` 配置檔中，請務必查看此檔案以熟悉其內容：
 
 <div class="overflow-auto">
 
-| Name         | Description                                                          |
+| 名稱         | 說明                                                          |
 | ------------ | -------------------------------------------------------------------- |
-| `custom`     | A driver that calls a specified factory to create a channel.         |
-| `daily`      | A `RotatingFileHandler` based Monolog driver which rotates daily.    |
-| `errorlog`   | An `ErrorLogHandler` based Monolog driver.                           |
-| `monolog`    | A Monolog factory driver that may use any supported Monolog handler. |
-| `papertrail` | A `SyslogUdpHandler` based Monolog driver.                           |
-| `single`     | A single file or path based logger channel (`StreamHandler`).        |
-| `slack`      | A `SlackWebhookHandler` based Monolog driver.                        |
-| `stack`      | A wrapper to facilitate creating "multi-channel" channels.           |
-| `syslog`     | A `SyslogHandler` based Monolog driver.                              |
+| `custom`     | 一個調用指定工廠以建立通道的驅動程式。         |
+| `daily`      | 基於 `RotatingFileHandler` 的 Monolog 驅動程式，每天輪換。    |
+| `errorlog`   | 基於 `ErrorLogHandler` 的 Monolog 驅動程式。                           |
+| `monolog`    | 可使用任何支援的 Monolog 處理程序的 Monolog 工廠驅動程式。 |
+| `papertrail` | 基於 `SyslogUdpHandler` 的 Monolog 驅動程式。                           |
+| `single`     | 單一檔案或路徑為基礎的記錄器通道（`StreamHandler`）。        |
+| `slack`      | 基於 `SlackWebhookHandler` 的 Monolog 驅動程式。                        |
+| `stack`      | 一個包裝器，用於便於創建"多通道"通道。           |
+| `syslog`     | 基於 `SyslogHandler` 的 Monolog 驅動程式。                              |
 
 </div>
 
 > [!NOTE]  
-> Check out the documentation on [advanced channel customization](#monolog-channel-customization) to learn more about the `monolog` and `custom` drivers.
+> 查看[進階通道自訂](#monolog-channel-customization)的文件，以了解更多關於 `monolog` 和 `custom` 驅動程式的資訊。
 
 <a name="configuring-the-channel-name"></a>
-#### Configuring the Channel Name
+#### 配置通道名稱
 
-By default, Monolog is instantiated with a "channel name" that matches the current environment, such as `production` or `local`. To change this value, you may add a `name` option to your channel's configuration:
+預設情況下，Monolog 使用與當前環境相符的"通道名稱"來實例化，例如 `production` 或 `local`。若要更改此值，您可以在通道的配置中添加一個 `name` 選項：
 
 ```php
 'stack' => [
@@ -72,49 +72,49 @@ By default, Monolog is instantiated with a "channel name" that matches the curre
 ```
 
 <a name="channel-prerequisites"></a>
-### Channel Prerequisites
+### 頻道先決條件
 
 <a name="configuring-the-single-and-daily-channels"></a>
-#### Configuring the Single and Daily Channels
+#### 配置單一和每日頻道
 
-The `single` and `daily` channels have three optional configuration options: `bubble`, `permission`, and `locking`.
+`single` 和 `daily` 頻道有三個可選的配置選項：`bubble`、`permission` 和 `locking`。
 
 <div class="overflow-auto">
 
-| Name         | Description                                                                   | Default |
-| ------------ | ----------------------------------------------------------------------------- | ------- |
-| `bubble`     | Indicates if messages should bubble up to other channels after being handled. | `true`  |
-| `locking`    | Attempt to lock the log file before writing to it.                            | `false` |
-| `permission` | The log file's permissions.                                                   | `0644`  |
+| 名稱         | 說明                                                                   | 預設值   |
+| ------------ | ---------------------------------------------------------------------- | ------- |
+| `bubble`     | 指示訊息在處理後是否應該冒泡到其他頻道。                             | `true`  |
+| `locking`    | 在寫入之前嘗試鎖定日誌檔案。                                         | `false` |
+| `permission` | 日誌檔案的權限。                                                       | `0644`  |
 
 </div>
 
-Additionally, the retention policy for the `daily` channel can be configured via the `LOG_DAILY_DAYS` environment variable or by setting the `days` configuration option.
+此外，`daily` 頻道的保留策略可以通過 `LOG_DAILY_DAYS` 環境變數或設置 `days` 配置選項來進行配置。
 
 <div class="overflow-auto">
 
-| Name   | Description                                                 | Default |
-| ------ | ----------------------------------------------------------- | ------- |
-| `days` | The number of days that daily log files should be retained. | `14`    |
+| 名稱   | 說明                                           | 預設值 |
+| ------ | ---------------------------------------------- | ------- |
+| `days` | 每日日誌檔案應保留的天數。                    | `14`    |
 
 </div>
 
 <a name="configuring-the-papertrail-channel"></a>
-#### Configuring the Papertrail Channel
+#### 配置 Papertrail 頻道
 
-The `papertrail` channel requires `host` and `port` configuration options. These may be defined via the `PAPERTRAIL_URL` and `PAPERTRAIL_PORT` environment variables. You can obtain these values from [Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app).
+`papertrail` 頻道需要 `host` 和 `port` 配置選項。這些可以通過 `PAPERTRAIL_URL` 和 `PAPERTRAIL_PORT` 環境變數來定義。您可以從 [Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app) 獲取這些值。
 
 <a name="configuring-the-slack-channel"></a>
-#### Configuring the Slack Channel
+#### 配置 Slack 頻道
 
-The `slack` channel requires a `url` configuration option. This value may be defined via the `LOG_SLACK_WEBHOOK_URL` environment variable. This URL should match a URL for an [incoming webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) that you have configured for your Slack team.
+`slack` 頻道需要一個 `url` 配置選項。這個值可以通過 `LOG_SLACK_WEBHOOK_URL` 環境變數來定義。此 URL 應該與您為 Slack 團隊配置的 [傳入 Webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks) 的 URL 匹配。
 
-By default, Slack will only receive logs at the `critical` level and above; however, you can adjust this using the `LOG_LEVEL` environment variable or by modifying the `level` configuration option within your Slack log channel's configuration array.
+預設情況下，Slack 僅會接收 `critical` 級別及以上的日誌；但是，您可以使用 `LOG_LEVEL` 環境變數或修改 Slack 日誌通道配置陣列中的 `level` 選項來調整這一設定。
 
 <a name="logging-deprecation-warnings"></a>
-### Logging Deprecation Warnings
+### 記錄已棄用警告
 
-PHP, Laravel, and other libraries often notify their users that some of their features have been deprecated and will be removed in a future version. If you would like to log these deprecation warnings, you may specify your preferred `deprecations` log channel using the `LOG_DEPRECATIONS_CHANNEL` environment variable, or within your application's `config/logging.php` configuration file:
+PHP、Laravel 和其他庫通常會通知用戶一些功能已被棄用並將在未來版本中移除。如果您想要記錄這些已棄用警告，您可以使用 `LOG_DEPRECATIONS_CHANNEL` 環境變數或在應用程式的 `config/logging.php` 配置文件中指定您偏好的 `deprecations` 日誌通道：
 
 ```php
 'deprecations' => [
@@ -127,7 +127,7 @@ PHP, Laravel, and other libraries often notify their users that some of their fe
 ]
 ```
 
-Or, you may define a log channel named `deprecations`. If a log channel with this name exists, it will always be used to log deprecations:
+或者，您可以定義一個名為 `deprecations` 的日誌通道。如果存在具有此名稱的日誌通道，則將始終使用該通道來記錄已棄用警告：
 
 ```php
 'channels' => [
@@ -139,9 +139,9 @@ Or, you may define a log channel named `deprecations`. If a log channel with thi
 ```
 
 <a name="building-log-stacks"></a>
-## Building Log Stacks
+## 構建日誌堆疊
 
-As mentioned previously, the `stack` driver allows you to combine multiple channels into a single log channel for convenience. To illustrate how to use log stacks, let's take a look at an example configuration that you might see in a production application:
+如前所述，`stack` 驅動程式允許您將多個通道組合成單個日誌通道以方便使用。為了說明如何使用日誌堆疊，讓我們看一下您可能在正式環境應用程式中看到的示例配置：
 
 ```php
 'channels' => [
@@ -169,29 +169,29 @@ As mentioned previously, the `stack` driver allows you to combine multiple chann
 ],
 ```
 
-Let's dissect this configuration. First, notice our `stack` channel aggregates two other channels via its `channels` option: `syslog` and `slack`. So, when logging messages, both of these channels will have the opportunity to log the message. However, as we will see below, whether these channels actually log the message may be determined by the message's severity / "level".
+讓我們分析這個配置。首先，請注意我們的 `stack` 通道通過其 `channels` 選項聚合了其他兩個通道：`syslog` 和 `slack`。因此，在記錄消息時，這兩個通道都有機會記錄消息。但是，正如我們將在下面看到的，這些通道是否實際記錄消息可能取決於消息的嚴重性/"級別"。
 
 <a name="log-levels"></a>
-#### Log Levels
+#### 日誌級別
 
-Take note of the `level` configuration option present on the `syslog` and `slack` channel configurations in the example above. This option determines the minimum "level" a message must be in order to be logged by the channel. Monolog, which powers Laravel's logging services, offers all of the log levels defined in the [RFC 5424 specification](https://tools.ietf.org/html/rfc5424). In descending order of severity, these log levels are: **emergency**, **alert**, **critical**, **error**, **warning**, **notice**, **info**, and **debug**.
+請注意上面示例中 `syslog` 和 `slack` 通道配置中存在的 `level` 配置選項。此選項確定消息必須達到的最低 "級別" 才能由通道記錄。為 Laravel 的日誌服務提供動力的 Monolog 提供了 [RFC 5424 規範](https://tools.ietf.org/html/rfc5424) 中定義的所有日誌級別。按嚴重性降序排列，這些日誌級別為：**emergency**、**alert**、**critical**、**error**、**warning**、**notice**、**info** 和 **debug**。
 
-So, imagine we log a message using the `debug` method:
+當我們使用 `debug` 方法記錄訊息時：
 
 ```php
-Log::debug('An informational message.');
+Log::debug('一則資訊訊息。');
 ```
 
-Given our configuration, the `syslog` channel will write the message to the system log; however, since the error message is not `critical` or above, it will not be sent to Slack. However, if we log an `emergency` message, it will be sent to both the system log and Slack since the `emergency` level is above our minimum level threshold for both channels:
+根據我們的配置，`syslog` 通道將把訊息寫入系統日誌；然而，由於錯誤訊息不是 `critical` 或更高級別，它將不會被發送到 Slack。然而，如果我們記錄一個 `emergency` 訊息，它將被同時發送到系統日誌和 Slack，因為 `emergency` 級別高於我們設定的兩個通道的最低級別閾值：
 
 ```php
-Log::emergency('The system is down!');
+Log::emergency('系統已經崩潰！');
 ```
 
 <a name="writing-log-messages"></a>
-## Writing Log Messages
+## 寫入日誌訊息
 
-You may write information to the logs using the `Log` [facade](/docs/{{version}}/facades). As previously mentioned, the logger provides the eight logging levels defined in the [RFC 5424 specification](https://tools.ietf.org/html/rfc5424): **emergency**, **alert**, **critical**, **error**, **warning**, **notice**, **info** and **debug**:
+您可以使用 `Log` [facade](/docs/{{version}}/facades) 將資訊寫入日誌。如前所述，記錄器提供了 [RFC 5424 規範](https://tools.ietf.org/html/rfc5424) 中定義的八個日誌級別：**emergency**、**alert**、**critical**、**error**、**warning**、**notice**、**info** 和 **debug**：
 
 ```php
 use Illuminate\Support\Facades\Log;
@@ -206,7 +206,7 @@ Log::info($message);
 Log::debug($message);
 ```
 
-You may call any of these methods to log a message for the corresponding level. By default, the message will be written to the default log channel as configured by your `logging` configuration file:
+您可以調用這些方法中的任何一個來為相應級別記錄訊息。默認情況下，該訊息將被寫入由您的 `logging` 配置文件配置的默認日誌通道：
 
 ```php
 <?php
@@ -235,17 +235,17 @@ class UserController extends Controller
 ```
 
 <a name="contextual-information"></a>
-### Contextual Information
+### 上下文資訊
 
-An array of contextual data may be passed to the log methods. This contextual data will be formatted and displayed with the log message:
+可以將一個上下文數據陣列傳遞給日誌方法。這些上下文數據將被格式化並與日誌訊息一起顯示：
 
 ```php
 use Illuminate\Support\Facades\Log;
 
-Log::info('User {id} failed to login.', ['id' => $user->id]);
+Log::info('用戶 {id} 登入失敗。', ['id' => $user->id]);
 ```
 
-Occasionally, you may wish to specify some contextual information that should be included with all subsequent log entries in a particular channel. For example, you may wish to log a request ID that is associated with each incoming request to your application. To accomplish this, you may call the `Log` facade's `withContext` method:
+有時，您可能希望指定一些應該包含在特定通道中所有後續日誌項目中的上下文資訊。例如，您可能希望記錄與應用程序的每個傳入請求相關聯的請求 ID。為了實現這一點，您可以調用 `Log` facade 的 `withContext` 方法：
 
 ```php
 <?php
@@ -282,7 +282,7 @@ class AssignRequestId
 }
 ```
 
-If you would like to share contextual information across _all_ logging channels, you may invoke the `Log::shareContext()` method. This method will provide the contextual information to all created channels and any channels that are created subsequently:
+如果您希望在 _所有_ 日誌通道之間共享上下文資訊，您可以調用 `Log::shareContext()` 方法。該方法將提供上下文資訊給所有已創建的通道以及隨後創建的任何通道：
 
 ```php
 <?php
@@ -316,29 +316,29 @@ class AssignRequestId
 ```
 
 > [!NOTE]  
-> If you need to share log context while processing queued jobs, you may utilize [job middleware](/docs/{{version}}/queues#job-middleware).
+> 如果您需要在處理排隊的工作時共享日誌上下文，您可以利用 [工作中介層](/docs/{{version}}/queues#job-middleware)。
 
 <a name="writing-to-specific-channels"></a>
-### Writing to Specific Channels
+### 寫入到特定頻道
 
-Sometimes you may wish to log a message to a channel other than your application's default channel. You may use the `channel` method on the `Log` facade to retrieve and log to any channel defined in your configuration file:
+有時您可能希望將消息記錄到應用程序的默認頻道以外的頻道。您可以使用 `Log` 門面上的 `channel` 方法來檢索並記錄到配置文件中定義的任何頻道：
 
 ```php
 use Illuminate\Support\Facades\Log;
 
-Log::channel('slack')->info('Something happened!');
+Log::channel('slack')->info('發生了某事！');
 ```
 
-If you would like to create an on-demand logging stack consisting of multiple channels, you may use the `stack` method:
+如果您想要創建由多個頻道組成的即時記錄堆棧，您可以使用 `stack` 方法：
 
 ```php
-Log::stack(['single', 'slack'])->info('Something happened!');
+Log::stack(['single', 'slack'])->info('發生了某事！');
 ```
 
 <a name="on-demand-channels"></a>
-#### On-Demand Channels
+#### 即時頻道
 
-It is also possible to create an on-demand channel by providing the configuration at runtime without that configuration being present in your application's `logging` configuration file. To accomplish this, you may pass a configuration array to the `Log` facade's `build` method:
+還可以通過在運行時提供配置而無需將該配置存在於應用程序的 `logging` 配置文件中來創建即時頻道。為此，您可以將配置數組傳遞給 `Log` 門面的 `build` 方法：
 
 ```php
 use Illuminate\Support\Facades\Log;
@@ -349,7 +349,7 @@ Log::build([
 ])->info('Something happened!');
 ```
 
-You may also wish to include an on-demand channel in an on-demand logging stack. This can be achieved by including your on-demand channel instance in the array passed to the `stack` method:
+您可能還希望在即時記錄堆棧中包含即時頻道。您可以通過將即時頻道實例包含在傳遞給 `stack` 方法的數組中來實現：
 
 ```php
 use Illuminate\Support\Facades\Log;
@@ -363,14 +363,14 @@ Log::stack(['slack', $channel])->info('Something happened!');
 ```
 
 <a name="monolog-channel-customization"></a>
-## Monolog Channel Customization
+## Monolog 頻道自定義
 
 <a name="customizing-monolog-for-channels"></a>
-### Customizing Monolog for Channels
+### 為頻道自定義 Monolog
 
-Sometimes you may need complete control over how Monolog is configured for an existing channel. For example, you may want to configure a custom Monolog `FormatterInterface` implementation for Laravel's built-in `single` channel.
+有時您可能需要完全控制如何為現有頻道配置 Monolog。例如，您可能希望為 Laravel 內置的 `single` 頻道配置自定義的 Monolog `FormatterInterface` 實現。
 
-To get started, define a `tap` array on the channel's configuration. The `tap` array should contain a list of classes that should have an opportunity to customize (or "tap" into) the Monolog instance after it is created. There is no conventional location where these classes should be placed, so you are free to create a directory within your application to contain these classes:
+要開始，請在頻道的配置上定義一個 `tap` 數組。`tap` 數組應包含一組類別，這些類別應有機會在創建 Monolog 實例後自定義（或“tap”進入）該實例。這些類別應放置在哪裡沒有傳統的位置，因此您可以自由地在應用程序中創建一個目錄來包含這些類別：
 
 ```php
 'single' => [
@@ -382,7 +382,7 @@ To get started, define a `tap` array on the channel's configuration. The `tap` a
 ],
 ```
 
-Once you have configured the `tap` option on your channel, you're ready to define the class that will customize your Monolog instance. This class only needs a single method: `__invoke`, which receives an `Illuminate\Log\Logger` instance. The `Illuminate\Log\Logger` instance proxies all method calls to the underlying Monolog instance:
+一旦您在頻道上配置了 `tap` 選項，您就可以定義將自訂 Monolog 實例的類別。這個類別只需要一個方法：`__invoke`，該方法接收一個 `Illuminate\Log\Logger` 實例。`Illuminate\Log\Logger` 實例將所有方法調用代理到底層的 Monolog 實例：
 
 ```php
 <?php
@@ -409,14 +409,14 @@ class CustomizeFormatter
 ```
 
 > [!NOTE]  
-> All of your "tap" classes are resolved by the [service container](/docs/{{version}}/container), so any constructor dependencies they require will automatically be injected.
+> 所有您的 "tap" 類別都是由 [服務容器](/docs/{{version}}/container) 解析的，因此它們所需的任何建構子依賴將自動被注入。
 
 <a name="creating-monolog-handler-channels"></a>
-### Creating Monolog Handler Channels
+### 建立 Monolog 處理程序頻道
 
-Monolog has a variety of [available handlers](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Handler) and Laravel does not include a built-in channel for each one. In some cases, you may wish to create a custom channel that is merely an instance of a specific Monolog handler that does not have a corresponding Laravel log driver.  These channels can be easily created using the `monolog` driver.
+Monolog 有各種[可用的處理程序](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Handler)，而 Laravel 並未為每個處理程序提供內建的頻道。在某些情況下，您可能希望創建一個自定義頻道，這僅僅是一個特定 Monolog 處理程序的實例，而該處理程序沒有對應的 Laravel 日誌驅動程式。這些頻道可以輕鬆地使用 `monolog` 驅動程式來創建。
 
-When using the `monolog` driver, the `handler` configuration option is used to specify which handler will be instantiated. Optionally, any constructor parameters the handler needs may be specified using the `with` configuration option:
+當使用 `monolog` 驅動程式時，`handler` 配置選項用於指定將被實例化的處理程序。可選地，處理程序需要的任何建構參數可以使用 `with` 配置選項來指定：
 
 ```php
 'logentries' => [
@@ -430,9 +430,9 @@ When using the `monolog` driver, the `handler` configuration option is used to s
 ```
 
 <a name="monolog-formatters"></a>
-#### Monolog Formatters
+#### Monolog 格式化器
 
-When using the `monolog` driver, the Monolog `LineFormatter` will be used as the default formatter. However, you may customize the type of formatter passed to the handler using the `formatter` and `formatter_with` configuration options:
+當使用 `monolog` 驅動程式時，Monolog 的 `LineFormatter` 將被用作默認格式化器。但是，您可以使用 `formatter` 和 `formatter_with` 配置選項來自定義傳遞給處理程序的格式化器類型：
 
 ```php
 'browser' => [
@@ -445,7 +445,7 @@ When using the `monolog` driver, the Monolog `LineFormatter` will be used as the
 ],
 ```
 
-If you are using a Monolog handler that is capable of providing its own formatter, you may set the value of the `formatter` configuration option to `default`:
+如果您使用的是能夠提供自己格式化器的 Monolog 處理程序，您可以將 `formatter` 配置選項的值設置為 `default`：
 
 ```php
 'newrelic' => [
@@ -456,11 +456,11 @@ If you are using a Monolog handler that is capable of providing its own formatte
 ```
 
 <a name="monolog-processors"></a>
-#### Monolog Processors
+#### Monolog 處理器
 
-Monolog can also process messages before logging them. You can create your own processors or use the [existing processors offered by Monolog](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Processor).
+Monolog 也可以在記錄消息之前處理它們。您可以創建自己的處理器或使用 Monolog 提供的[現有處理器](https://github.com/Seldaek/monolog/tree/main/src/Monolog/Processor)。
 
-If you would like to customize the processors for a `monolog` driver, add a `processors` configuration value to your channel's configuration:
+如果您想要自訂 `monolog` 驅動程式的處理器，請將 `processors` 配置值添加到您的頻道配置中：
 
 ```php
 'memory' => [
@@ -483,9 +483,9 @@ If you would like to customize the processors for a `monolog` driver, add a `pro
 ```
 
 <a name="creating-custom-channels-via-factories"></a>
-### Creating Custom Channels via Factories
+### 通過工廠創建自定義頻道
 
-If you would like to define an entirely custom channel in which you have full control over Monolog's instantiation and configuration, you may specify a `custom` driver type in your `config/logging.php` configuration file. Your configuration should include a `via` option that contains the name of the factory class which will be invoked to create the Monolog instance:
+如果您想要定義一個完全自定義的頻道，在這個頻道中您可以完全控制 Monolog 的實例化和配置，您可以在您的 `config/logging.php` 配置文件中指定一個 `custom` 驅動程式類型。您的配置應該包含一個 `via` 選項，其中包含將被調用以創建 Monolog 實例的工廠類別的名稱：
 
 ```php
 'channels' => [
@@ -496,7 +496,7 @@ If you would like to define an entirely custom channel in which you have full co
 ],
 ```
 
-Once you have configured the `custom` driver channel, you're ready to define the class that will create your Monolog instance. This class only needs a single `__invoke` method which should return the Monolog logger instance. The method will receive the channels configuration array as its only argument:
+一旦您配置了 `custom` 驅動程式頻道，您就可以開始定義將創建您的 Monolog 實例的類別。這個類別只需要一個 `__invoke` 方法，該方法應該返回 Monolog 日誌記錄器實例。該方法將接收頻道配置陣列作為其唯一參數：
 
 ```php
 <?php
@@ -518,56 +518,56 @@ class CreateCustomLogger
 ```
 
 <a name="tailing-log-messages-using-pail"></a>
-## Tailing Log Messages Using Pail
+## 使用 Pail 追蹤日誌訊息
 
-Often you may need to tail your application's logs in real time. For example, when debugging an issue or when monitoring your application's logs for specific types of errors.
+通常您可能需要即時追蹤應用程式的日誌。例如，在偵錯問題或監控應用程式的日誌以尋找特定類型的錯誤時。
 
-Laravel Pail is a package that allows you to easily dive into your Laravel application's log files directly from the command line. Unlike the standard `tail` command, Pail is designed to work with any log driver, including Sentry or Flare. In addition, Pail provides a set of useful filters to help you quickly find what you're looking for.
+Laravel Pail 是一個套件，允許您直接從命令列輕鬆地查看 Laravel 應用程式的日誌檔案。與標準的 `tail` 命令不同，Pail 設計用於與任何日誌驅動程式一起使用，包括 Sentry 或 Flare。此外，Pail 提供了一組有用的篩選器，幫助您快速找到您要尋找的內容。
 
 <img src="https://laravel.com/img/docs/pail-example.png">
 
 <a name="pail-installation"></a>
-### Installation
+### 安裝
 
 > [!WARNING]  
-> Laravel Pail requires [PHP 8.2+](https://php.net/releases/) and the [PCNTL](https://www.php.net/manual/en/book.pcntl.php) extension.
+> Laravel Pail 需要 [PHP 8.2+](https://php.net/releases/) 和 [PCNTL](https://www.php.net/manual/en/book.pcntl.php) 擴充功能。
 
-To get started, install Pail into your project using the Composer package manager:
+要開始使用，請使用 Composer 套件管理器將 Pail 安裝到您的專案中：
 
 ```shell
 composer require laravel/pail
 ```
 
 <a name="pail-usage"></a>
-### Usage
+### 使用
 
-To start tailing logs, run the `pail` command:
+要開始追蹤日誌，執行 `pail` 指令：
 
 ```shell
 php artisan pail
 ```
 
-To increase the verbosity of the output and avoid truncation (…), use the `-v` option:
+若要增加輸出的詳細程度並避免截斷（…），請使用 `-v` 選項：
 
 ```shell
 php artisan pail -v
 ```
 
-For maximum verbosity and to display exception stack traces, use the `-vv` option:
+若要達到最大的詳細程度並顯示例外堆疊跟踪，請使用 `-vv` 選項：
 
 ```shell
 php artisan pail -vv
 ```
 
-To stop tailing logs, press `Ctrl+C` at any time.
+要停止追蹤日誌，隨時按下 `Ctrl+C`。
 
 <a name="pail-filtering-logs"></a>
-### Filtering Logs
+### 過濾日誌
 
 <a name="pail-filtering-logs-filter-option"></a>
 #### `--filter`
 
-You may use the `--filter` option to filter logs by their type, file, message, and stack trace content:
+您可以使用 `--filter` 選項來按照類型、檔案、訊息和堆疊跟踪內容來過濾日誌：
 
 ```shell
 php artisan pail --filter="QueryException"
@@ -576,7 +576,7 @@ php artisan pail --filter="QueryException"
 <a name="pail-filtering-logs-message-option"></a>
 #### `--message`
 
-To filter logs by only their message, you may use the `--message` option:
+若要僅按照訊息來過濾日誌，您可以使用 `--message` 選項：
 
 ```shell
 php artisan pail --message="User created"
@@ -585,7 +585,7 @@ php artisan pail --message="User created"
 <a name="pail-filtering-logs-level-option"></a>
 #### `--level`
 
-The `--level` option may be used to filter logs by their [log level](#log-levels):
+`--level` 選項可用於按照其[日誌級別](#log-levels)來過濾日誌：
 
 ```shell
 php artisan pail --level=error
@@ -594,7 +594,7 @@ php artisan pail --level=error
 <a name="pail-filtering-logs-user-option"></a>
 #### `--user`
 
-To only display logs that were written while a given user was authenticated, you may provide the user's ID to the `--user` option:
+若要僅顯示在特定使用者驗證時寫入的日誌，您可以將使用者的 ID 提供給 `--user` 選項：
 
 ```shell
 php artisan pail --user=1

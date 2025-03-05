@@ -1,41 +1,41 @@
-# Starter Kits
+# 開發套件
 
-- [Introduction](#introduction)
-- [Creating an Application Using a Starter Kit](#creating-an-application)
-- [Available Starter Kits](#available-starter-kits)
+- [簡介](#introduction)
+- [使用開發套件建立應用程式](#creating-an-application)
+- [可用的開發套件](#available-starter-kits)
     - [React](#react)
     - [Vue](#vue)
     - [Livewire](#livewire)
-- [Starter Kit Customization](#starter-kit-customization)
+- [開發套件自訂](#starter-kit-customization)
     - [React](#react-customization)
     - [Vue](#vue-customization)
     - [Livewire](#livewire-customization)
-- [WorkOS AuthKit Authentication](#workos)
-- [Frequently Asked Questions](#faqs)
+- [WorkOS AuthKit 認證](#workos)
+- [常見問題](#faqs)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-To give you a head start building your new Laravel application, we are happy to offer [application starter kits](https://laravel.com/starter-kits). These starter kits give you a head start on building your next Laravel application, and include the routes, controllers, and views you need to register and authenticate your application's users.
+為了讓您在建立新的 Laravel 應用程式時能夠快速上手，我們很高興提供 [應用程式開發套件](https://laravel.com/starter-kits)。這些開發套件讓您在建立下一個 Laravel 應用程式時能夠快速開始，並包含您需要註冊和驗證應用程式使用者的路由、控制器和視圖。
 
-While you are welcome to use these starter kits, they are not required. You are free to build your own application from the ground up by simply installing a fresh copy of Laravel. Either way, we know you will build something great!
+雖然您可以使用這些開發套件，但並非必須。您可以自由地從頭開始建立自己的應用程式，只需安裝一個全新的 Laravel。無論哪種方式，我們相信您將建立出優秀的作品！
 
 <a name="creating-an-application"></a>
-## Creating an Application Using a Starter Kit
+## 使用開發套件建立應用程式
 
-To create a new Laravel application using one of our starter kits, you should first [install PHP and the Laravel CLI tool](/docs/{{version}}/installation#installing-php). If you already have PHP and Composer installed, you may install the Laravel installer CLI tool via Composer:
+要使用我們的開發套件之一來建立新的 Laravel 應用程式，您應該首先 [安裝 PHP 和 Laravel CLI 工具](/docs/{{version}}/installation#installing-php)。如果您已經安裝了 PHP 和 Composer，您可以通過 Composer 安裝 Laravel 安裝程式 CLI 工具：
 
 ```shell
 composer global require laravel/installer
 ```
 
-Then, create a new Laravel application using the Laravel installer CLI. The Laravel installer will prompt you to select your preferred starter kit:
+然後，使用 Laravel 安裝程式 CLI 創建一個新的 Laravel 應用程式。 Laravel 安裝程式將提示您選擇您喜歡的開發套件：
 
 ```shell
 laravel new my-app
 ```
 
-After creating your Laravel application, you only need to install its frontend dependencies via NPM and start the Laravel development server:
+在創建您的 Laravel 應用程式後，您只需要通過 NPM 安裝其前端依賴項並啟動 Laravel 開發伺服器：
 
 ```shell
 cd my-app
@@ -43,47 +43,41 @@ npm install && npm run build
 composer run dev
 ```
 
-Once you have started the Laravel development server, your application will be accessible in your web browser at [http://localhost:8000](http://localhost:8000).
+一旦您啟動了 Laravel 開發伺服器，您的應用程式將在網頁瀏覽器中可訪問，網址為 [http://localhost:8000](http://localhost:8000)。
 
-<a name="available-starter-kits"></a>
-## Available Starter Kits
+## 可用的起始套件
 
-<a name="react"></a>
 ### React
 
-Our React starter kit provides a robust, modern starting point for building Laravel applications with a React frontend using [Inertia](https://inertiajs.com).
+我們的 React 起始套件為使用 [Inertia](https://inertiajs.com) 在 Laravel 應用程式中建立具有 React 前端的堅固、現代起始點。
 
-Inertia allows you to build modern, single-page React applications using classic server-side routing and controllers. This lets you enjoy the frontend power of React combined with the incredible backend productivity of Laravel and lightning-fast Vite compilation.
+Inertia 讓您可以使用傳統的伺服器端路由和控制器來建立現代的單頁 React 應用程式。這讓您可以享受 React 的前端功能，同時結合 Laravel 的令人難以置信的後端生產力和快速的 Vite 編譯。
 
-The React starter kit utilizes React 19, TypeScript, Tailwind, and the [shadcn/ui](https://ui.shadcn.com) component library.
+React 起始套件利用 React 19、TypeScript、Tailwind 和 [shadcn/ui](https://ui.shadcn.com) 元件庫。
 
-<a name="vue"></a>
 ### Vue
 
-Our Vue starter kit provides a great starting point for building Laravel applications with a Vue frontend using [Inertia](https://inertiajs.com).
+我們的 Vue 起始套件為使用 [Inertia](https://inertiajs.com) 在 Laravel 應用程式中建立具有 Vue 前端的絕佳起始點。
 
-Inertia allows you to build modern, single-page Vue applications using classic server-side routing and controllers. This lets you enjoy the frontend power of Vue combined with the incredible backend productivity of Laravel and lightning-fast Vite compilation.
+Inertia 讓您可以使用傳統的伺服器端路由和控制器來建立現代的單頁 Vue 應用程式。這讓您可以享受 Vue 的前端功能，同時結合 Laravel 的令人難以置信的後端生產力和快速的 Vite 編譯。
 
-The Vue starter kit utilizes the Vue Composition API, TypeScript, Tailwind, and the [shadcn-vue](https://www.shadcn-vue.com/) component library.
+Vue 起始套件利用 Vue Composition API、TypeScript、Tailwind 和 [shadcn-vue](https://www.shadcn-vue.com/) 元件庫。
 
-<a name="livewire"></a>
 ### Livewire
 
-Our Livewire starter kit provides the perfect starting point for building Laravel applications with a [Laravel Livewire](https://livewire.laravel.com) frontend.
+我們的 Livewire 起始套件為使用 [Laravel Livewire](https://livewire.laravel.com) 在 Laravel 應用程式中建立的完美起始點。
 
-Livewire is a powerful way of building dynamic, reactive, frontend UIs using just PHP. It's a great fit for teams that primarily use Blade templates and are looking for a simpler alternative to JavaScript-driven SPA frameworks like React and Vue.
+Livewire 是一種強大的方式，可以僅使用 PHP 建立動態、反應式的前端 UI。對於主要使用 Blade 模板並尋找簡單替代方案以取代 React 和 Vue 等 JavaScript 驅動的 SPA 框架的團隊來說，這是一個很好的選擇。
 
-The Livewire starter kit utilizes Livewire, Tailwind, and the [Flux UI](https://fluxui.dev) component library.
+Livewire 起始套件利用 Livewire、Tailwind 和 [Flux UI](https://fluxui.dev) 元件庫。
 
-<a name="starter-kit-customization"></a>
-## Starter Kit Customization
+## 起始套件自訂
 
-<a name="react-customization"></a>
 ### React
 
-Our React starter kit is built with Inertia 2, React 19, Tailwind 4, and [shadcn/ui](https://ui.shadcn.com). As with all of our starter kits, all of the backend and frontend code exists within your application to allow for full customization.
+我們的 React 起始套件是使用 Inertia 2、React 19、Tailwind 4 和 [shadcn/ui](https://ui.shadcn.com) 構建的。與我們所有的起始套件一樣，所有的後端和前端程式碼都存在於您的應用程式中，以便進行完整的自訂。
 
-The majority of the frontend code is located in the `resources/js` directory. You are free to modify any of the code to customize the appearance and behavior of your application:
+大多數前端代碼位於 `resources/js` 目錄中。您可以自由修改任何代碼以自定義應用程式的外觀和行為：
 
 ```text
 resources/js/
@@ -95,13 +89,13 @@ resources/js/
 └── types/         # TypeScript definitions
 ```
 
-To publish additional shadcn components, first [find the component you want to publish](https://ui.shadcn.com). Then, publish the component using `npx`:
+要發佈其他 shadcn 元件，首先[找到要發佈的元件](https://ui.shadcn.com)。然後，使用 `npx` 發佈元件：
 
 ```shell
 npx shadcn@latest add switch
 ```
 
-In this example, the command will publish the Switch component to `resources/js/components/ui/switch.tsx`. Once the component has been published, you can use it in any of your pages:
+在此示例中，該命令將將 Switch 元件發佈到 `resources/js/components/ui/switch.tsx`。元件發佈後，您可以在任何頁面中使用它：
 
 ```jsx
 import { Switch } from "@/components/ui/switch"
@@ -118,9 +112,9 @@ export default MyPage;
 ```
 
 <a name="react-available-layouts"></a>
-#### Available Layouts
+#### 可用佈局
 
-The React starter kit includes two different primary layouts for you to choose from: a "sidebar" layout and a "header" layout. The sidebar layout is the default, but you can switch to the header layout by modifying the layout that is imported at the top of your application's `resources/js/layouts/app-layout.tsx` file:
+React 開發套件包括兩種不同的主要佈局供您選擇：「側邊欄」佈局和「標頭」佈局。側邊欄佈局是預設值，但您可以通過修改應用程式 `resources/js/layouts/app-layout.tsx` 文件頂部導入的佈局來切換到標頭佈局：
 
 ```js
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout'; // [tl! remove]
@@ -128,9 +122,9 @@ import AppLayoutTemplate from '@/layouts/app/app-header-layout'; // [tl! add]
 ```
 
 <a name="react-sidebar-variants"></a>
-#### Sidebar Variants
+#### 側邊欄變體
 
-The sidebar layout includes three different variants: the default sidebar variant, the "inset" variant, and the "floating" variant. You may choose the variant you like best by modifying the `resources/js/components/app-sidebar.tsx` component:
+側邊欄佈局包括三種不同的變體：預設側邊欄變體、"inset" 變體和"floating" 變體。您可以通過修改 `resources/js/components/app-sidebar.tsx` 元件來選擇最喜歡的變體：
 
 ```text
 <Sidebar collapsible="icon" variant="sidebar"> [tl! remove]
@@ -138,11 +132,11 @@ The sidebar layout includes three different variants: the default sidebar varian
 ```
 
 <a name="react-authentication-page-layout-variants"></a>
-#### Authentication Page Layout Variants
+#### 認證頁面佈局變體
 
-The authentication pages included with the React starter kit, such as the login page and registration page, also offer three different layout variants: "simple", "card", and "split".
+React 開發套件中包含的認證頁面，如登入頁面和註冊頁面，還提供三種不同的佈局變體："simple"、"card" 和"split"。
 
-To change your authentication layout, modify the layout that is imported at the top of your application's `resources/js/layouts/auth-layout.tsx` file:
+要更改您的認證佈局，請修改應用程式 `resources/js/layouts/auth-layout.tsx` 文件頂部導入的佈局。
 
 ```js
 import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout'; // [tl! remove]
@@ -152,9 +146,9 @@ import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout'; // [tl! add]
 <a name="vue-customization"></a>
 ### Vue
 
-Our Vue starter kit is built with Inertia 2, Vue 3 Composition API, Tailwind, and [shadcn-vue](https://www.shadcn-vue.com/). As with all of our starter kits, all of the backend and frontend code exists within your application to allow for full customization.
+我們的 Vue 開發套件是使用 Inertia 2、Vue 3 Composition API、Tailwind 和 [shadcn-vue](https://www.shadcn-vue.com/) 構建的。與我們所有的開發套件一樣，後端和前端的所有程式碼都存在於您的應用程式中，以便進行完全的自定義。
 
-The majority of the frontend code is located in the `resources/js` directory. You are free to modify any of the code to customize the appearance and behavior of your application:
+大部分的前端程式碼位於 `resources/js` 目錄中。您可以自由修改任何程式碼以自定義應用程式的外觀和行為：
 
 ```text
 resources/js/
@@ -166,13 +160,13 @@ resources/js/
 └── types/         # TypeScript definitions
 ```
 
-To publish additional shadcn-vue components, first [find the component you want to publish](https://www.shadcn-vue.com). Then, publish the component using `npx`:
+要發布額外的 shadcn-vue 元件，首先 [找到您想要發布的元件](https://www.shadcn-vue.com)。然後，使用 `npx` 發布該元件：
 
 ```shell
 npx shadcn-vue@latest add switch
 ```
 
-In this example, the command will publish the Switch component to `resources/js/components/ui/Switch.vue`. Once the component has been published, you can use it in any of your pages:
+在這個例子中，該命令將 Switch 元件發布到 `resources/js/components/ui/Switch.vue`。元件發布後，您可以在任何頁面中使用它：
 
 ```vue
 <script setup lang="ts">
@@ -187,9 +181,9 @@ import { Switch } from '@/Components/ui/switch'
 ```
 
 <a name="vue-available-layouts"></a>
-#### Available Layouts
+#### 可用佈局
 
-The Vue starter kit includes two different primary layouts for you to choose from: a "sidebar" layout and a "header" layout. The sidebar layout is the default, but you can switch to the header layout by modifying the layout that is imported at the top of your application's `resources/js/layouts/AppLayout.vue` file:
+Vue 開發套件包括兩種不同的主要佈局供您選擇：一個「側邊欄」佈局和一個「頭部」佈局。側邊欄佈局是默認的，但您可以通過修改應用程式 `resources/js/layouts/AppLayout.vue` 文件頂部導入的佈局來切換到頭部佈局：
 
 ```js
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue'; // [tl! remove]
@@ -197,35 +191,33 @@ import AppLayout from '@/layouts/app/AppHeaderLayout.vue'; // [tl! add]
 ```
 
 <a name="vue-sidebar-variants"></a>
-#### Sidebar Variants
+#### 側邊欄變體
 
-The sidebar layout includes three different variants: the default sidebar variant, the "inset" variant, and the "floating" variant. You may choose the variant you like best by modifying the `resources/js/components/AppSidebar.vue` component:
+側邊欄佈局包括三種不同的變體：默認的側邊欄變體、「插入」變體和「浮動」變體。您可以通過修改 `resources/js/components/AppSidebar.vue` 元件來選擇您喜歡的變體：
 
 ```text
 <Sidebar collapsible="icon" variant="sidebar"> [tl! remove]
 <Sidebar collapsible="icon" variant="inset"> [tl! add]
 ```
 
-<a name="vue-authentication-page-layout-variants"></a>
-#### Authentication Page Layout Variants
+#### 認證頁面佈局變體
 
-The authentication pages included with the Vue starter kit, such as the login page and registration page, also offer three different layout variants: "simple", "card", and "split".
+Vue 起始套件中包含的認證頁面，如登入頁面和註冊頁面，還提供三種不同的佈局變體："simple"、"card" 和 "split"。
 
-To change your authentication layout, modify the layout that is imported at the top of your application's `resources/js/layouts/AuthLayout.vue` file:
+要更改您的認證佈局，請修改應用程式 `resources/js/layouts/AuthLayout.vue` 檔案頂部引入的佈局：
 
 ```js
 import AuthLayout from '@/layouts/auth/AuthSimpleLayout.vue'; // [tl! remove]
 import AuthLayout from '@/layouts/auth/AuthSplitLayout.vue'; // [tl! add]
 ```
 
-<a name="livewire-customization"></a>
 ### Livewire
 
-Our Livewire starter kit is built with Livewire 3, Tailwind, and [Flux UI](https://fluxui.dev/). As with all of our starter kits, all of the backend and frontend code exists within your application to allow for full customization.
+我們的 Livewire 起始套件是使用 Livewire 3、Tailwind 和 [Flux UI](https://fluxui.dev/) 構建的。與我們所有的起始套件一樣，您的應用程式中存在所有後端和前端程式碼，以便進行完全自定義。
 
-#### Livewire and Volt
+#### Livewire 和 Volt
 
-The majority of the frontend code is located in the `resources/views` directory. You are free to modify any of the code to customize the appearance and behavior of your application:
+大部分前端程式碼位於 `resources/views` 目錄中。您可以自由修改任何程式碼以自定義應用程式的外觀和行為：
 
 ```text
 resources/views
@@ -237,14 +229,13 @@ resources/views
 ├── welcome.blade.php     # Guest user welcome page
 ```
 
-#### Traditional Livewire Components
+#### 傳統 Livewire 元件
 
-The frontend code is located in the `resouces/views` directory, while the `app/Livewire` directory contains the corresponding backend logic for the Livewire components.
+前端程式碼位於 `resouces/views` 目錄中，而 `app/Livewire` 目錄包含 Livewire 元件的相應後端邏輯。
 
-<a name="livewire-available-layouts"></a>
-#### Available Layouts
+#### 可用佈局
 
-The Livewire starter kit includes two different primary layouts for you to choose from: a "sidebar" layout and a "header" layout. The sidebar layout is the default, but you can switch to the header layout by modifying the layout that is used by your application's `resources/views/components/layouts/app.blade.php` file. In addition, you should add the `container` attribute to the main Flux component:
+Livewire 起始套件包含兩種不同的主要佈局供您選擇：一個 "sidebar" 佈局和一個 "header" 佈局。預設為 sidebar 佈局，但您可以通過修改應用程式 `resources/views/components/layouts/app.blade.php` 檔案中使用的佈局來切換到 header 佈局。此外，您應該將 `container` 屬性添加到主要 Flux 元件：
 
 ```blade
 <x-layouts.app.header>
@@ -254,12 +245,11 @@ The Livewire starter kit includes two different primary layouts for you to choos
 </x-layouts.app.header>
 ```
 
-<a name="livewire-authentication-page-layout-variants"></a>
-#### Authentication Page Layout Variants
+#### 認證頁面佈局變體
 
-The authentication pages included with the Livewire starter kit, such as the login page and registration page, also offer three different layout variants: "simple", "card", and "split".
+Livewire 起始套件中包含的認證頁面，如登入頁面和註冊頁面，還提供三種不同的佈局變體："simple"、"card" 和 "split"。
 
-To change your authentication layout, modify the layout that is used by your application's `resources/views/components/layouts/auth.blade.php` file:
+要更改您的認證版面配置，請修改應用程式的 `resources/views/components/layouts/auth.blade.php` 檔案所使用的版面配置：
 
 ```blade
 <x-layouts.auth.split>
@@ -268,26 +258,26 @@ To change your authentication layout, modify the layout that is used by your app
 ```
 
 <a name="workos"></a>
-## WorkOS AuthKit Authentication
+## WorkOS AuthKit 認證
 
-By default, the React, Vue, and Livewire starter kits all utilize Laravel's built-in authentication system to offer login, registration, password reset, email verification, and more. In addition, we also offer a [WorkOS AuthKit](https://authkit.com) powered variant of each starter kit that offers:
+預設情況下，React、Vue 和 Livewire 起始套件都使用 Laravel 內建的認證系統來提供登入、註冊、密碼重設、電子郵件驗證等功能。此外，我們還提供了每個起始套件的 [WorkOS AuthKit](https://authkit.com) 驅動變體，提供以下功能：
 
 <div class="content-list" markdown="1">
 
-- Social authentication (Google, Microsoft, GitHub, and Apple)
-- Passkey authentication
-- Email based "Magic Auth"
-- SSO
+- 社交認證（Google、Microsoft、GitHub 和 Apple）
+- Passkey 認證
+- 基於電子郵件的「Magic Auth」
+- 單一登入（SSO）
 
 </div>
 
-Using WorkOS as your authentication provider [requires a WorkOS account](https://workos.com). WorkOS offers free authentication for applications up to 1 million monthly active users.
+將 WorkOS 作為您的認證提供者 [需要一個 WorkOS 帳戶](https://workos.com)。WorkOS 為每月活躍用戶量達 100 萬的應用程式提供免費認證。
 
-To use WorkOS AuthKit as your application's authentication provider, select the WorkOS option when creating your new starter kit powered application via `laravel new`.
+要將 WorkOS AuthKit 用作您的應用程式認證提供者，請在建立新的由 `laravel new` 驅動的起始套件應用程式時，選擇 WorkOS 選項。
 
-### Configuring Your WorkOS Starter Kit
+### 配置您的 WorkOS 起始套件
 
-After creating a new application using a WorkOS powered starter kit, you should set the `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, and `WORKOS_REDIRECT_URL` environment variables in your application's `.env` file. These variables should match the values provided to you in the WorkOS dashboard for your application:
+在使用 WorkOS 驅動的起始套件創建新應用程式後，您應在應用程式的 `.env` 檔案中設置 `WORKOS_CLIENT_ID`、`WORKOS_API_KEY` 和 `WORKOS_REDIRECT_URL` 環境變數。這些變數應與 WorkOS 儀表板為您的應用程式提供的值相匹配：
 
 ```ini
 WORKOS_CLIENT_ID=your-client-id
@@ -296,27 +286,27 @@ WORKOS_REDIRECT_URL="${APP_URL}/authenticate"
 ```
 
 <a name="configuring-authkit-authentication-methods"></a>
-#### Configuring AuthKit Authentication Methods
+#### 配置 AuthKit 認證方法
 
-When using a WorkOS powered starter kit, we recommend that you disable "Email + Password" authentication within your application's WorkOS AuthKit configuration settings, allowing users to only authenticate via social authentication providers, passkeys, "Magic Auth", and SSO. This allows your application to totally avoid handling user passwords.
+在使用 WorkOS 驅動的起始套件時，我們建議您在應用程式的 WorkOS AuthKit 配置設定中停用「電子郵件 + 密碼」認證，讓使用者僅能透過社交認證提供者、passkeys、「Magic Auth」和 SSO 進行認證。這樣可以完全避免應用程式處理使用者密碼。
 
 <a name="configuring-authkit-session-timeouts"></a>
-#### Configuring AuthKit Session Timeouts
+#### 配置 AuthKit 會話逾時
 
-In addition, we recommend that you configure your WorkOS AuthKit session inactivity timeout to match your Laravel application's configured session timeout threshold, which is typically two hours.
+此外，我們建議您將您的 WorkOS AuthKit 會話閒置超時設置為與您的 Laravel 應用程式配置的會話超時閾值相匹配，通常為兩個小時。
 
 <a name="faqs"></a>
-### Frequently Asked Questions
+### 常見問題
 
 <a name="faq-upgrade"></a>
-#### How do I upgrade?
+#### 我該如何升級？
 
-Every starter kit gives you a solid starting point for your next application. With full ownership of the code, you can tweak, customize, and build your application exactly as you envision. However, there is no need to update the starter kit itself.
+每個起始套件都為您的下一個應用程式提供了堅實的起點。憑藉對代碼的完全擁有權，您可以根據自己的想法調整、自定義和構建應用程式。但是，無需更新起始套件本身。
 
 <a name="faq-enable-email-verification"></a>
-#### How do I enable email verification?
+#### 我該如何啟用電子郵件驗證？
 
-Email verification can be added by uncommenting the `MustVerifyEmail` import in your `App/Models/User.php` model and ensuring the model implements the `MustVerifyEmail` interface:
+通過取消註釋 `App/Models/User.php` 模型中的 `MustVerifyEmail` 導入並確保模型實現 `MustVerifyEmail` 接口，即可添加電子郵件驗證：
 
 ```php
 <?php
@@ -332,7 +322,7 @@ class User extends Authenticatable implements MustVerifyEmail
 }
 ```
 
-After registration, users will receive a verification email. To restrict access to certain routes until the user's email address is verified, add the `verified` middleware to the routes:
+註冊後，用戶將收到一封驗證郵件。為了在用戶的電子郵件地址驗證之前限制對某些路由的訪問，請將 `verified` 中介層添加到路由：
 
 ```php
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -343,16 +333,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 ```
 
 > [!NOTE]
-> Email verification is not required when using the [WorkOS](#workos) variant of the starter kits.
+> 使用起始套件的 [WorkOS](#workos) 變體時，不需要進行電子郵件驗證。
 
 <a name="faq-modify-email-template"></a>
-#### How do I modify the default email template?
+#### 我該如何修改默認電子郵件模板？
 
-You may want to customize the default email template to better align with your application's branding. To modify this template, you should publish the email views to your application with the following command:
+您可能希望自定義默認電子郵件模板，以更好地符合您應用程式的品牌形象。要修改此模板，您應該使用以下命令將電子郵件視圖發佈到您的應用程式：
 
 ```
 php artisan vendor:publish --tag=laravel-mail
 ```
 
-This will generate several files in `resources/views/vendor/mail`. You can modify any of these files as well as the `resources/views/vendor/mail/themes/default.css` file to change the look and appearance of the default email template.
-
+這將在 `resources/views/vendor/mail` 中生成多個文件。您可以修改這些文件中的任何文件，以及 `resources/views/vendor/mail/themes/default.css` 文件，以更改默認電子郵件模板的外觀和外觀。

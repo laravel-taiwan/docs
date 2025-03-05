@@ -1,58 +1,58 @@
-# Deployment
+# 部署
 
-- [Introduction](#introduction)
-- [Server Requirements](#server-requirements)
-- [Server Configuration](#server-configuration)
+- [簡介](#introduction)
+- [伺服器需求](#server-requirements)
+- [伺服器設定](#server-configuration)
     - [Nginx](#nginx)
     - [FrankenPHP](#frankenphp)
-    - [Directory Permissions](#directory-permissions)
-- [Optimization](#optimization)
-    - [Caching Configuration](#optimizing-configuration-loading)
-    - [Caching Events](#caching-events)
-    - [Caching Routes](#optimizing-route-loading)
-    - [Caching Views](#optimizing-view-loading)
-- [Debug Mode](#debug-mode)
-- [The Health Route](#the-health-route)
-- [Deploying With Laravel Cloud or Forge](#deploying-with-cloud-or-forge)
+    - [目錄權限](#directory-permissions)
+- [優化](#optimization)
+    - [快取設定](#optimizing-configuration-loading)
+    - [快取事件](#caching-events)
+    - [快取路由](#optimizing-route-loading)
+    - [快取視圖](#optimizing-view-loading)
+- [偵錯模式](#debug-mode)
+- [健康路由](#the-health-route)
+- [使用 Laravel Cloud 或 Forge 部署](#deploying-with-cloud-or-forge)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-When you're ready to deploy your Laravel application to production, there are some important things you can do to make sure your application is running as efficiently as possible. In this document, we'll cover some great starting points for making sure your Laravel application is deployed properly.
+當您準備將您的 Laravel 應用程式部署到正式環境時，有一些重要的事項可以確保您的應用程式運行效率最大化。在本文件中，我們將介紹一些確保您的 Laravel 應用程式正確部署的重要起點。
 
 <a name="server-requirements"></a>
-## Server Requirements
+## 伺服器需求
 
-The Laravel framework has a few system requirements. You should ensure that your web server has the following minimum PHP version and extensions:
+Laravel 框架有一些系統需求。您應確保您的網頁伺服器具備以下最低 PHP 版本和擴充功能：
 
 <div class="content-list" markdown="1">
 
 - PHP >= 8.2
-- Ctype PHP Extension
-- cURL PHP Extension
-- DOM PHP Extension
-- Fileinfo PHP Extension
-- Filter PHP Extension
-- Hash PHP Extension
-- Mbstring PHP Extension
-- OpenSSL PHP Extension
-- PCRE PHP Extension
-- PDO PHP Extension
-- Session PHP Extension
-- Tokenizer PHP Extension
-- XML PHP Extension
+- Ctype PHP 擴充功能
+- cURL PHP 擴充功能
+- DOM PHP 擴充功能
+- Fileinfo PHP 擴充功能
+- Filter PHP 擴充功能
+- Hash PHP 擴充功能
+- Mbstring PHP 擴充功能
+- OpenSSL PHP 擴充功能
+- PCRE PHP 擴充功能
+- PDO PHP 擴充功能
+- Session PHP 擴充功能
+- Tokenizer PHP 擴充功能
+- XML PHP 擴充功能
 
 </div>
 
 <a name="server-configuration"></a>
-## Server Configuration
+## 伺服器設定
 
 <a name="nginx"></a>
 ### Nginx
 
-If you are deploying your application to a server that is running Nginx, you may use the following configuration file as a starting point for configuring your web server. Most likely, this file will need to be customized depending on your server's configuration. **If you would like assistance in managing your server, consider using a fully-managed Laravel platform like [Laravel Cloud](https://cloud.laravel.com).**
+如果您將應用程式部署到運行 Nginx 的伺服器，您可以使用以下配置文件作為配置網頁伺服器的起點。很可能，根據您的伺服器配置，這個文件需要進行自定義。**如果您需要協助管理伺服器，考慮使用像 [Laravel Cloud](https://cloud.laravel.com) 這樣的完全管理的 Laravel 平台。**
 
-Please ensure, like the configuration below, your web server directs all requests to your application's `public/index.php` file. You should never attempt to move the `index.php` file to your project's root, as serving the application from the project root will expose many sensitive configuration files to the public Internet:
+請確保像下面的配置一樣，您的網頁伺服器將所有請求導向到您的應用程式的 `public/index.php` 檔案。您絕不應試圖將 `index.php` 檔案移至專案根目錄，因為從專案根目錄提供應用程式將會將許多敏感配置檔案暴露給公共網際網路：
 
 ```nginx
 server {
@@ -93,95 +93,96 @@ server {
 <a name="frankenphp"></a>
 ### FrankenPHP
 
-[FrankenPHP](https://frankenphp.dev/) may also be used to serve your Laravel applications. FrankenPHP is a modern PHP application server written in Go. To serve a Laravel PHP application using FrankenPHP, you may simply invoke its `php-server` command:
+[FrankenPHP](https://frankenphp.dev/) 也可以用來提供 Laravel 應用程式的服務。FrankenPHP 是一個用 Go 語言編寫的現代 PHP 應用伺服器。要使用 FrankenPHP 來提供 Laravel PHP 應用程式的服務，您只需呼叫其 `php-server` 指令：
 
 ```shell
 frankenphp php-server -r public/
 ```
 
-To take advantage of more powerful features supported by FrankenPHP, such as its [Laravel Octane](/docs/{{version}}/octane) integration, HTTP/3, modern compression, or the ability to package Laravel applications as standalone binaries, please consult FrankenPHP's [Laravel documentation](https://frankenphp.dev/docs/laravel/).
+要利用 FrankenPHP 支援的更強大功能，例如其 [Laravel Octane](/docs/{{version}}/octane) 整合、HTTP/3、現代壓縮，或將 Laravel 應用程式打包為獨立二進位檔，請參考 FrankenPHP 的 [Laravel 文件](https://frankenphp.dev/docs/laravel/)。
 
 <a name="directory-permissions"></a>
-### Directory Permissions
+### 目錄權限
 
-Laravel will need to write to the `bootstrap/cache` and `storage` directories, so you should ensure the web server process owner has permission to write to these directories.
+Laravel 需要寫入 `bootstrap/cache` 和 `storage` 目錄，因此您應確保網頁伺服器進程擁有寫入這些目錄的權限。
 
 <a name="optimization"></a>
-## Optimization
+## 優化
 
-When deploying your application to production, there are a variety of files that should be cached, including your configuration, events, routes, and views. Laravel provides a single, convenient `optimize` Artisan command that will cache all of these files. This command should typically be invoked as part of your application's deployment process:
+在將應用程式部署到正式環境時，應該將各種檔案進行快取，包括您的組態、事件、路由和視圖。Laravel 提供了一個方便的 `optimize` Artisan 指令，將快取所有這些檔案。這個指令通常應該作為應用程式部署過程的一部分來呼叫：
 
 ```shell
 php artisan optimize
 ```
 
-The `optimize:clear` method may be used to remove all of the cache files generated by the `optimize` command as well as all keys in the default cache driver:
+`optimize:clear` 方法可用於刪除 `optimize` 指令生成的所有快取檔案以及預設快取驅動程式中的所有金鑰：
 
 ```shell
 php artisan optimize:clear
 ```
 
-In the following documentation, we will discuss each of the granular optimization commands that are executed by the `optimize` command.
+在接下來的文件中，我們將討論 `optimize` 指令執行的每個細粒度優化指令。 
 
 <a name="optimizing-configuration-loading"></a>
-### Caching Configuration
+### 快取組態
 
-When deploying your application to production, you should make sure that you run the `config:cache` Artisan command during your deployment process:
+在將應用程式部署到正式環境時，您應該確保在部署過程中執行 `config:cache` Artisan 指令：
 
 ```shell
 php artisan config:cache
 ```
 
-This command will combine all of Laravel's configuration files into a single, cached file, which greatly reduces the number of trips the framework must make to the filesystem when loading your configuration values.
+此指令將所有 Laravel 的組態檔案合併為一個快取檔案，大大減少了框架在載入組態值時必須對檔案系統進行的查詢次數。
+
 
 > [!WARNING]  
-> If you execute the `config:cache` command during your deployment process, you should be sure that you are only calling the `env` function from within your configuration files. Once the configuration has been cached, the `.env` file will not be loaded and all calls to the `env` function for `.env` variables will return `null`.
+> 如果您在部署過程中執行 `config:cache` 命令，請確保您只在配置文件中調用 `env` 函數。一旦配置被快取，`.env` 文件將不會被加載，對於 `.env` 變數的所有 `env` 函數調用將返回 `null`。
 
 <a name="caching-events"></a>
-### Caching Events
+### 快取事件
 
-You should cache your application's auto-discovered event to listener mappings during your deployment process. This can be accomplished by invoking the `event:cache` Artisan command during deployment:
+您應該在部署過程中將應用程序自動發現的事件到監聽器映射進行快取。這可以通過在部署期間調用 `event:cache` Artisan 命令來完成：
 
 ```shell
 php artisan event:cache
 ```
 
 <a name="optimizing-route-loading"></a>
-### Caching Routes
+### 快取路由
 
-If you are building a large application with many routes, you should make sure that you are running the `route:cache` Artisan command during your deployment process:
+如果您正在構建具有許多路由的大型應用程序，請確保在部署過程中運行 `route:cache` Artisan 命令：
 
 ```shell
 php artisan route:cache
 ```
 
-This command reduces all of your route registrations into a single method call within a cached file, improving the performance of route registration when registering hundreds of routes.
+此命令將所有路由註冊縮減為一個方法調用在一個快取文件中，當註冊數百個路由時，將提高路由註冊的性能。
 
 <a name="optimizing-view-loading"></a>
-### Caching Views
+### 快取視圖
 
-When deploying your application to production, you should make sure that you run the `view:cache` Artisan command during your deployment process:
+在將應用程序部署到正式環境時，請確保在部署過程中運行 `view:cache` Artisan 命令：
 
 ```shell
 php artisan view:cache
 ```
 
-This command precompiles all your Blade views so they are not compiled on demand, improving the performance of each request that returns a view.
+此命令預編譯所有您的 Blade 視圖，因此它們不會按需編譯，提高每個返回視圖的請求的性能。
 
 <a name="debug-mode"></a>
-## Debug Mode
+## 調試模式
 
-The debug option in your `config/app.php` configuration file determines how much information about an error is actually displayed to the user. By default, this option is set to respect the value of the `APP_DEBUG` environment variable, which is stored in your application's `.env` file.
+您的 `config/app.php` 配置文件中的調試選項決定了實際向用戶顯示有關錯誤的信息量。默認情況下，此選項設置為尊重 `APP_DEBUG` 環境變量的值，該值存儲在應用程序的 `.env` 文件中。
 
 > [!WARNING]  
-> **In your production environment, this value should always be `false`. If the `APP_DEBUG` variable is set to `true` in production, you risk exposing sensitive configuration values to your application's end users.**
+> **在您的正式環境中，此值應始終為 `false`。如果在正式環境中將 `APP_DEBUG` 變量設置為 `true`，則有風險將敏感配置值暴露給應用程序的最終用戶。**
 
 <a name="the-health-route"></a>
-## The Health Route
+## 健康路由
 
-Laravel includes a built-in health check route that can be used to monitor the status of your application. In production, this route may be used to report the status of your application to an uptime monitor, load balancer, or orchestration system such as Kubernetes.
+Laravel 包含一個內建的健康檢查路由，可用於監控應用程式的狀態。在正式環境中，此路由可用於向正常運行監控器、負載平衡器或 Kubernetes 等協調系統報告應用程式的狀態。
 
-By default, the health check route is served at `/up` and will return a 200 HTTP response if the application has booted without exceptions. Otherwise, a 500 HTTP response will be returned. You may configure the URI for this route in your application's `bootstrap/app` file:
+預設情況下，健康檢查路由位於 `/up`，如果應用程式已經啟動且沒有異常，將返回 200 的 HTTP 回應。否則，將返回 500 的 HTTP 回應。您可以在應用程式的 `bootstrap/app` 檔案中配置此路由的 URI：
 
 ```php
 ->withRouting(
@@ -192,21 +193,23 @@ By default, the health check route is served at `/up` and will return a 200 HTTP
 )
 ```
 
-When HTTP requests are made to this route, Laravel will also dispatch a `Illuminate\Foundation\Events\DiagnosingHealth` event, allowing you to perform additional health checks relevant to your application. Within a [listener](/docs/{{version}}/events) for this event, you may check your application's database or cache status. If you detect a problem with your application, you may simply throw an exception from the listener.
+當對此路由進行 HTTP 請求時，Laravel 還會發送一個 `Illuminate\Foundation\Events\DiagnosingHealth` 事件，讓您可以執行與應用程式相關的其他健康檢查。在此事件的 [監聽器](/docs/{{version}}/events) 中，您可以檢查應用程式的資料庫或快取狀態。如果您發現應用程式存在問題，只需從監聽器中拋出一個例外。
 
 <a name="deploying-with-cloud-or-forge"></a>
-## Deploying With Laravel Cloud or Forge
+## 使用 Laravel Cloud 或 Forge 部署
 
 <a name="laravel-cloud"></a>
 #### Laravel Cloud
 
-If you would like a fully-managed, auto-scaling deployment platform tuned for Laravel, check out [Laravel Cloud](https://cloud.laravel.com). Laravel Cloud is a robust deployment platform for Laravel, offering managed compute, databases, caches, and object storage.
+如果您想要一個針對 Laravel 進行調整的全自動擴展部署平台，請查看 [Laravel Cloud](https://cloud.laravel.com)。Laravel Cloud 是一個強大的 Laravel 部署平台，提供管理的計算、資料庫、快取和物件儲存。
 
-Launch your Laravel application on Cloud and fall in love with the scalable simplicity. Laravel Cloud is fine-tuned by Laravel's creators to work seamlessly with the framework so you can keep writing your Laravel applications exactly like you're used to.
+在 Cloud 上啟動您的 Laravel 應用程式，並愛上可擴展的簡單性。Laravel Cloud 經 Laravel 的創作者精心調校，以便與框架無縫配合，讓您可以像以前一樣繼續撰寫 Laravel 應用程式。
 
 <a name="laravel-forge"></a>
 #### Laravel Forge
 
-If you prefer to manage your own servers but aren't comfortable configuring all of the various services needed to run a robust Laravel application, [Laravel Forge](https://forge.laravel.com) is a VPS server management platform for Laravel applications.
+如果您更喜歡管理自己的伺服器，但不熟悉配置運行強大 Laravel 應用程式所需的各種服務，[Laravel Forge](https://forge.laravel.com) 是一個針對 Laravel 應用程式的 VPS 伺服器管理平台。
 
-Laravel Forge can create servers on various infrastructure providers such as DigitalOcean, Linode, AWS, and more. In addition, Forge installs and manages all of the tools needed to build robust Laravel applications, such as Nginx, MySQL, Redis, Memcached, Beanstalk, and more.
+Laravel Forge 可在各種基礎設施提供者上創建伺服器，如 DigitalOcean、Linode、AWS 等。此外，Forge 安裝並管理構建強大 Laravel 應用程式所需的所有工具，如 Nginx、MySQL、Redis、Memcached、Beanstalk 等。
+
+I'm ready to translate. Please paste the Markdown content for me to work on.

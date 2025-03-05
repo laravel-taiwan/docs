@@ -1,15 +1,15 @@
-# Eloquent: Collections
+# Eloquent: 集合
 
-- [Introduction](#introduction)
-- [Available Methods](#available-methods)
-- [Custom Collections](#custom-collections)
+- [簡介](#introduction)
+- [可用方法](#available-methods)
+- [自訂集合](#custom-collections)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-All Eloquent methods that return more than one model result will return instances of the `Illuminate\Database\Eloquent\Collection` class, including results retrieved via the `get` method or accessed via a relationship. The Eloquent collection object extends Laravel's [base collection](/docs/{{version}}/collections), so it naturally inherits dozens of methods used to fluently work with the underlying array of Eloquent models. Be sure to review the Laravel collection documentation to learn all about these helpful methods!
+所有返回多個模型結果的 Eloquent 方法將返回 `Illuminate\Database\Eloquent\Collection` 類的實例，包括通過 `get` 方法檢索的結果或通過關聯訪問的結果。Eloquent 集合物件擴展了 Laravel 的[基本集合](/docs/{{version}}/collections)，因此自然繼承了數十種用於流暢處理底層 Eloquent 模型陣列的方法。請務必查看 Laravel 集合文件以了解所有這些有用的方法！
 
-All collections also serve as iterators, allowing you to loop over them as if they were simple PHP arrays:
+所有集合也作為迭代器，允許您像簡單的 PHP 陣列一樣對它們進行循環：
 
 ```php
 use App\Models\User;
@@ -21,7 +21,7 @@ foreach ($users as $user) {
 }
 ```
 
-However, as previously mentioned, collections are much more powerful than arrays and expose a variety of map / reduce operations that may be chained using an intuitive interface. For example, we may remove all inactive models and then gather the first name for each remaining user:
+然而，如前所述，集合比陣列強大得多，並公開了各種映射/減少操作，可以使用直觀的界面進行鏈接。例如，我們可以刪除所有非活動模型，然後為每個剩餘用戶收集名字：
 
 ```php
 $names = User::all()->reject(function (User $user) {
@@ -32,17 +32,18 @@ $names = User::all()->reject(function (User $user) {
 ```
 
 <a name="eloquent-collection-conversion"></a>
-#### Eloquent Collection Conversion
+#### Eloquent 集合轉換
 
-While most Eloquent collection methods return a new instance of an Eloquent collection, the `collapse`, `flatten`, `flip`, `keys`, `pluck`, and `zip` methods return a [base collection](/docs/{{version}}/collections) instance. Likewise, if a `map` operation returns a collection that does not contain any Eloquent models, it will be converted to a base collection instance.
+雖然大多數 Eloquent 集合方法返回 Eloquent 集合的新實例，但 `collapse`、`flatten`、`flip`、`keys`、`pluck` 和 `zip` 方法返回一個[基本集合](/docs/{{version}}/collections)實例。同樣，如果 `map` 操作返回一個不包含任何 Eloquent 模型的集合，它將被轉換為基本集合實例。
 
 <a name="available-methods"></a>
-## Available Methods
+## 可用方法
 
-All Eloquent collections extend the base [Laravel collection](/docs/{{version}}/collections#available-methods) object; therefore, they inherit all of the powerful methods provided by the base collection class.
+所有 Eloquent 集合都擴展了基本的[Laravel 集合](/docs/{{version}}/collections#available-methods)物件；因此，它們繼承了基本集合類提供的所有強大方法。
 
-In addition, the `Illuminate\Database\Eloquent\Collection` class provides a superset of methods to aid with managing your model collections. Most methods return `Illuminate\Database\Eloquent\Collection` instances; however, some methods, like `modelKeys`, return an `Illuminate\Support\Collection` instance.
+此外，`Illuminate\Database\Eloquent\Collection` 類提供了一組方法的超集，以幫助管理您的模型集合。大多數方法返回 `Illuminate\Database\Eloquent\Collection` 實例；但是，一些方法，如 `modelKeys`，返回一個 `Illuminate\Support\Collection` 實例。
 
+```html
 <style>
     .collection-method-list > p {
         columns: 14.4em 1; -moz-columns: 14.4em 1; -webkit-columns: 14.4em 1;
@@ -90,7 +91,7 @@ In addition, the `Illuminate\Database\Eloquent\Collection` class provides a supe
 <a name="method-append"></a>
 #### `append($attributes)` {.collection-method .first-collection-method}
 
-The `append` method may be used to indicate that an attribute should be [appended](/docs/{{version}}/eloquent-serialization#appending-values-to-json) for every model in the collection. This method accepts an array of attributes or a single attribute:
+`append` 方法可用於指示應為集合中的每個模型附加的屬性。此方法接受一個屬性數組或單個屬性：
 
 ```php
 $users->append('team');
@@ -101,7 +102,7 @@ $users->append(['team', 'is_admin']);
 <a name="method-contains"></a>
 #### `contains($key, $operator = null, $value = null)` {.collection-method}
 
-The `contains` method may be used to determine if a given model instance is contained by the collection. This method accepts a primary key or a model instance:
+`contains` 方法可用於確定集合中是否包含給定的模型實例。此方法接受主鍵或模型實例：
 
 ```php
 $users->contains(1);
@@ -112,7 +113,7 @@ $users->contains(User::find(1));
 <a name="method-diff"></a>
 #### `diff($items)` {.collection-method}
 
-The `diff` method returns all of the models that are not present in the given collection:
+`diff` 方法返回不在給定集合中的所有模型：
 
 ```php
 use App\Models\User;
@@ -122,8 +123,9 @@ $users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
 
 <a name="method-except"></a>
 #### `except($keys)` {.collection-method}
+```
 
-The `except` method returns all of the models that do not have the given primary keys:
+`except` 方法返回所有不具有給定主鍵的模型：
 
 ```php
 $users = $users->except([1, 2, 3]);
@@ -132,7 +134,7 @@ $users = $users->except([1, 2, 3]);
 <a name="method-find"></a>
 #### `find($key)` {.collection-method}
 
-The `find` method returns the model that has a primary key matching the given key. If `$key` is a model instance, `find` will attempt to return a model matching the primary key. If `$key` is an array of keys, `find` will return all models which have a primary key in the given array:
+`find` 方法返回具有與給定鍵匹配的主鍵的模型。如果 `$key` 是模型實例，`find` 將嘗試返回與主鍵匹配的模型。如果 `$key` 是一組鍵，`find` 將返回具有給定陣列中主鍵的所有模型：
 
 ```php
 $users = User::all();
@@ -143,7 +145,7 @@ $user = $users->find(1);
 <a name="method-find-or-fail"></a>
 #### `findOrFail($key)` {.collection-method}
 
-The `findOrFail` method returns the model that has a primary key matching the given key or throws an `Illuminate\Database\Eloquent\ModelNotFoundException` exception if no matching model can be found in the collection:
+`findOrFail` 方法返回具有與給定鍵匹配的主鍵的模型，如果集合中找不到匹配的模型，則拋出 `Illuminate\Database\Eloquent\ModelNotFoundException` 例外：
 
 ```php
 $users = User::all();
@@ -154,7 +156,7 @@ $user = $users->findOrFail(1);
 <a name="method-fresh"></a>
 #### `fresh($with = [])` {.collection-method}
 
-The `fresh` method retrieves a fresh instance of each model in the collection from the database. In addition, any specified relationships will be eager loaded:
+`fresh` 方法從資料庫中檢索集合中每個模型的新實例。此外，將急切載入任何指定的關聯：
 
 ```php
 $users = $users->fresh();
@@ -165,7 +167,7 @@ $users = $users->fresh('comments');
 <a name="method-intersect"></a>
 #### `intersect($items)` {.collection-method}
 
-The `intersect` method returns all of the models that are also present in the given collection:
+`intersect` 方法返回在給定集合中也存在的所有模型：
 
 ```php
 use App\Models\User;
@@ -176,7 +178,7 @@ $users = $users->intersect(User::whereIn('id', [1, 2, 3])->get());
 <a name="method-load"></a>
 #### `load($relations)` {.collection-method}
 
-The `load` method eager loads the given relationships for all models in the collection:
+`load` 方法為集合中的所有模型急切載入給定的關聯：
 
 ```php
 $users->load(['comments', 'posts']);
@@ -189,7 +191,7 @@ $users->load(['comments', 'posts' => fn ($query) => $query->where('active', 1)])
 <a name="method-loadMissing"></a>
 #### `loadMissing($relations)` {.collection-method}
 
-The `loadMissing` method eager loads the given relationships for all models in the collection if the relationships are not already loaded:
+`loadMissing` 方法為集合中的所有模型急切載入給定的關聯，如果關聯尚未載入：
 
 ```php
 $users->loadMissing(['comments', 'posts']);
@@ -202,7 +204,7 @@ $users->loadMissing(['comments', 'posts' => fn ($query) => $query->where('active
 <a name="method-modelKeys"></a>
 #### `modelKeys()` {.collection-method}
 
-The `modelKeys` method returns the primary keys for all models in the collection:
+`modelKeys` 方法返回集合中所有模型的主鍵：
 
 ```php
 $users->modelKeys();
@@ -213,7 +215,7 @@ $users->modelKeys();
 <a name="method-makeVisible"></a>
 #### `makeVisible($attributes)` {.collection-method}
 
-The `makeVisible` method [makes attributes visible](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json) that are typically "hidden" on each model in the collection:
+`makeVisible` 方法會[使通常在集合中每個模型上為「隱藏」的屬性可見](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)：
 
 ```php
 $users = $users->makeVisible(['address', 'phone_number']);
@@ -222,7 +224,7 @@ $users = $users->makeVisible(['address', 'phone_number']);
 <a name="method-makeHidden"></a>
 #### `makeHidden($attributes)` {.collection-method}
 
-The `makeHidden` method [hides attributes](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json) that are typically "visible" on each model in the collection:
+`makeHidden` 方法會[隱藏通常在集合中每個模型上為「可見」的屬性](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)：
 
 ```php
 $users = $users->makeHidden(['address', 'phone_number']);
@@ -231,7 +233,7 @@ $users = $users->makeHidden(['address', 'phone_number']);
 <a name="method-only"></a>
 #### `only($keys)` {.collection-method}
 
-The `only` method returns all of the models that have the given primary keys:
+`only` 方法會返回具有給定主鍵的所有模型：
 
 ```php
 $users = $users->only([1, 2, 3]);
@@ -240,7 +242,7 @@ $users = $users->only([1, 2, 3]);
 <a name="method-setVisible"></a>
 #### `setVisible($attributes)` {.collection-method}
 
-The `setVisible` method [temporarily overrides](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility) all of the visible attributes on each model in the collection:
+`setVisible` 方法會[暫時覆蓋](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility)集合中每個模型上的所有可見屬性：
 
 ```php
 $users = $users->setVisible(['id', 'name']);
@@ -249,7 +251,7 @@ $users = $users->setVisible(['id', 'name']);
 <a name="method-setHidden"></a>
 #### `setHidden($attributes)` {.collection-method}
 
-The `setHidden` method [temporarily overrides](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility) all of the hidden attributes on each model in the collection:
+`setHidden` 方法會[暫時覆蓋](/docs/{{version}}/eloquent-serialization#temporarily-modifying-attribute-visibility)集合中每個模型上的所有隱藏屬性：
 
 ```php
 $users = $users->setHidden(['email', 'password', 'remember_token']);
@@ -258,7 +260,7 @@ $users = $users->setHidden(['email', 'password', 'remember_token']);
 <a name="method-toquery"></a>
 #### `toQuery()` {.collection-method}
 
-The `toQuery` method returns an Eloquent query builder instance containing a `whereIn` constraint on the collection model's primary keys:
+`toQuery` 方法會返回包含對集合模型主鍵的 `whereIn` 約束的 Eloquent 查詢生成器實例：
 
 ```php
 use App\Models\User;
@@ -273,16 +275,16 @@ $users->toQuery()->update([
 <a name="method-unique"></a>
 #### `unique($key = null, $strict = false)` {.collection-method}
 
-The `unique` method returns all of the unique models in the collection. Any models with the same primary key as another model in the collection are removed:
+`unique` 方法會返回集合中所有獨特的模型。任何具有與集合中另一個模型相同主鍵的模型都將被移除：
 
 ```php
 $users = $users->unique();
 ```
 
 <a name="custom-collections"></a>
-## Custom Collections
+## 自訂集合
 
-If you would like to use a custom `Collection` object when interacting with a given model, you may add the `CollectedBy` attribute to your model:
+如果您想在與特定模型互動時使用自訂的 `Collection` 物件，您可以將 `CollectedBy` 屬性添加到您的模型中：
 
 ```php
 <?php
@@ -300,7 +302,7 @@ class User extends Model
 }
 ```
 
-Alternatively, you may define a `newCollection` method on your model:
+或者，您可以在您的模型上定義一個 `newCollection` 方法：
 
 ```php
 <?php
@@ -326,6 +328,6 @@ class User extends Model
 }
 ```
 
-Once you have defined a `newCollection` method or added the `CollectedBy` attribute to your model, you will receive an instance of your custom collection anytime Eloquent would normally return an `Illuminate\Database\Eloquent\Collection` instance.
+一旦您定義了 `newCollection` 方法或將 `CollectedBy` 屬性添加到您的模型中，每當 Eloquent 通常會返回一個 `Illuminate\Database\Eloquent\Collection` 實例時，您將收到您自訂集合的實例。
 
-If you would like to use a custom collection for every model in your application, you should define the `newCollection` method on a base model class that is extended by all of your application's models.
+如果您想要為應用程序中的每個模型使用自訂集合，您應該在一個基本模型類別上定義 `newCollection` 方法，該基本模型類別由應用程序的所有模型擴展。

@@ -1,21 +1,21 @@
-# Concurrency
+# 並行處理
 
-- [Introduction](#introduction)
-- [Running Concurrent Tasks](#running-concurrent-tasks)
-- [Deferring Concurrent Tasks](#deferring-concurrent-tasks)
+- [簡介](#introduction)
+- [執行並行任務](#running-concurrent-tasks)
+- [延遲執行並行任務](#deferring-concurrent-tasks)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
 > [!WARNING]
-> Laravel's `Concurrency` facade is currently in beta while we gather community feedback.
+> Laravel 的 `Concurrency` 配接器目前處於測試階段，我們正在收集社區的意見。
 
-Sometimes you may need to execute several slow tasks which do not depend on one another. In many cases, significant performance improvements can be realized by executing the tasks concurrently. Laravel's `Concurrency` facade provides a simple, convenient API for executing closures concurrently.
+有時您可能需要執行幾個不相互依賴的緩慢任務。在許多情況下，通過並行執行這些任務可以實現顯著的性能改進。Laravel 的 `Concurrency` 配接器提供了一個簡單、方便的 API，用於同時執行閉包。
 
 <a name="concurrency-compatibility"></a>
-#### Concurrency Compatibility
+#### 並行相容性
 
-If you upgraded to Laravel 11.x from a Laravel 10.x application, you may need to add the `ConcurrencyServiceProvider` to the `providers` array in your application's `config/app.php` configuration file:
+如果您從 Laravel 10.x 應用升級到 Laravel 11.x，您可能需要將 `ConcurrencyServiceProvider` 添加到應用程式的 `config/app.php` 配置文件中的 `providers` 陣列中：
 
 ```php
 'providers' => ServiceProvider::defaultProviders()->merge([
@@ -36,51 +36,40 @@ If you upgraded to Laravel 11.x from a Laravel 10.x application, you may need to
 ```
 
 <a name="how-it-works"></a>
-#### How it Works
+#### 工作原理
 
-Laravel achieves concurrency by serializing the given closures and dispatching them to a hidden Artisan CLI command, which unserializes the closures and invokes it within its own PHP process. After the closure has been invoked, the resulting value is serialized back to the parent process.
+Laravel 通過序列化給定的閉包並將它們分派給隱藏的 Artisan CLI 命令來實現並行處理，該命令將閉包反序列化並在其自己的 PHP 進程中調用它。閉包被調用後，結果值被序列化回父進程。
 
-The `Concurrency` facade supports three drivers: `process` (the default), `fork`, and `sync`. 
+`Concurrency` 配接器支持三種驅動程式：`process`（默認）、`fork` 和 `sync`。
 
-The `fork` driver offers improved performance compared to the default `process` driver, but it may only be used within PHP's CLI context, as PHP does not support forking during web requests. Before using the `fork` driver, you need to install the `spatie/fork` package:
+`fork` 驅動程式相比默認的 `process` 驅動程式具有更好的性能，但它只能在 PHP 的 CLI 上下文中使用，因為 PHP 在 Web 請求期間不支持分叉。在使用 `fork` 驅動程式之前，您需要安裝 `spatie/fork` 套件：
 
 ```shell
 composer require spatie/fork
 ```
 
-The `sync` driver is primarily useful during testing when you want to disable all concurrency and simply execute the given closures in sequence within the parent process.
+`sync` 驅動程式主要在測試期間非常有用，當您想要禁用所有並行處理並在父進程中按順序執行給定的閉包時。
 
 <a name="running-concurrent-tasks"></a>
-## Running Concurrent Tasks
+## 執行並行任務
 
-To run concurrent tasks, you may invoke the `Concurrency` facade's `run` method. The `run` method accepts an array of closures which should be executed simultaneously in child PHP processes:
+要執行並行任務，您可以調用 `Concurrency` 配接器的 `run` 方法。`run` 方法接受一個閉包陣列，這些閉包應該在子 PHP 進程中同時執行：
 
-```php
-use Illuminate\Support\Facades\Concurrency;
-use Illuminate\Support\Facades\DB;
-
-[$userCount, $orderCount] = Concurrency::run([
-    fn () => DB::table('users')->count(),
-    fn () => DB::table('orders')->count(),
-]);
-```
-
-To use a specific driver, you may use the `driver` method:
+要使用特定的驅動程式，您可以使用 `driver` 方法：
 
 ```php
 $results = Concurrency::driver('fork')->run(...);
 ```
 
-Or, to change the default concurrency driver, you should publish the `concurrency` configuration file via the `config:publish` Artisan command and update the `default` option within the file:
+或者，要更改預設的並行驅動程式，您應該透過 `config:publish` Artisan 命令發佈 `concurrency` 組態檔並在該檔案中更新 `default` 選項：
 
 ```shell
 php artisan config:publish concurrency
 ```
 
-<a name="deferring-concurrent-tasks"></a>
-## Deferring Concurrent Tasks
+## 延遲並行任務
 
-If you would like to execute an array of closures concurrently, but are not interested in the results returned by those closures, you should consider using the `defer` method. When the `defer` method is invoked, the given closures are not executed immediately. Instead, Laravel will execute the closures concurrently after the HTTP response has been sent to the user:
+如果您想要同時執行一組閉包，但不關心這些閉包返回的結果，您應該考慮使用 `defer` 方法。當調用 `defer` 方法時，給定的閉包不會立即執行。相反，Laravel 將在將 HTTP 回應發送給用戶後並行執行這些閉包：
 
 ```php
 use App\Services\Metrics;

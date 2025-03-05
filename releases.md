@@ -1,69 +1,69 @@
-# Release Notes
+# 發行說明
 
-- [Versioning Scheme](#versioning-scheme)
-- [Support Policy](#support-policy)
+- [版本控制方案](#versioning-scheme)
+- [支援政策](#support-policy)
 - [Laravel 12](#laravel-12)
 
 <a name="versioning-scheme"></a>
-## Versioning Scheme
+## 版本控制方案
 
-Laravel and its other first-party packages follow [Semantic Versioning](https://semver.org). Major framework releases are released every year (~Q1), while minor and patch releases may be released as often as every week. Minor and patch releases should **never** contain breaking changes.
+Laravel 及其其他第一方套件遵循[語義化版本](https://semver.org)。主要框架版本每年發布一次（約在第一季度），而次要和修補版本可能每週發布一次。次要和修補版本**絕對不應該**包含破壞性變更。
 
-When referencing the Laravel framework or its components from your application or package, you should always use a version constraint such as `^11.0`, since major releases of Laravel do include breaking changes. However, we strive to always ensure you may update to a new major release in one day or less.
+當從您的應用程式或套件中引用 Laravel 框架或其組件時，您應該始終使用版本約束，例如 `^11.0`，因為 Laravel 的主要版本確實包含破壞性變更。但是，我們始終努力確保您可以在一天或更短的時間內更新到新的主要版本。
 
 <a name="named-arguments"></a>
-#### Named Arguments
+#### 命名引數
 
-[Named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) are not covered by Laravel's backwards compatibility guidelines. We may choose to rename function arguments when necessary in order to improve the Laravel codebase. Therefore, using named arguments when calling Laravel methods should be done cautiously and with the understanding that the parameter names may change in the future.
+[命名引數](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)不在 Laravel 的向後兼容性指南中。在必要時，我們可能選擇重新命名函數引數，以改進 Laravel 代碼庫。因此，在調用 Laravel 方法時使用命名引數應該謹慎進行，並且應該了解參數名稱可能會在將來更改。
 
 <a name="support-policy"></a>
-## Support Policy
+## 支援政策
 
-For all Laravel releases, bug fixes are provided for 18 months and security fixes are provided for 2 years. For all additional libraries, including Lumen, only the latest major release receives bug fixes. In addition, please review the database versions [supported by Laravel](/docs/{{version}}/database#introduction).
+對於所有 Laravel 發行版，提供 18 個月的錯誤修復和 2 年的安全修復。對於所有其他附加函式庫，包括 Lumen，僅最新的主要版本接收錯誤修復。此外，請查看 Laravel 支援的[資料庫版本](/docs/{{version}}/database#introduction)。
 
 <div class="overflow-auto">
 
-| Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
+| 版本 | PHP (*) | 發布日期 | 錯誤修復截止日期 | 安全修復截止日期 |
 | --- | --- | --- | --- | --- |
-| 9 | 8.0 - 8.2 | February 8th, 2022 | August 8th, 2023 | February 6th, 2024 |
-| 10 | 8.1 - 8.3 | February 14th, 2023 | August 6th, 2024 | February 4th, 2025 |
-| 11 | 8.2 - 8.4 | March 12th, 2024 | September 3rd, 2025 | March 12th, 2026 |
-| 12 | 8.2 - 8.4 | February 24th, 2025 | August 13th, 2026 | February 24th, 2027 |
+| 9 | 8.0 - 8.2 | 2022年2月8日 | 2023年8月8日 | 2024年2月6日 |
+| 10 | 8.1 - 8.3 | 2023年2月14日 | 2024年8月6日 | 2025年2月4日 |
+| 11 | 8.2 - 8.4 | 2024年3月12日 | 2025年9月3日 | 2026年3月12日 |
+| 12 | 8.2 - 8.4 | 2025年2月24日 | 2026年8月13日 | 2027年2月24日 |
 
 </div>
 
 <div class="version-colors">
     <div class="end-of-life">
         <div class="color-box"></div>
-        <div>End of life</div>
+        <div>終止支援</div>
     </div>
     <div class="security-fixes">
         <div class="color-box"></div>
-        <div>Security fixes only</div>
+        <div>僅安全性修復</div>
     </div>
 </div>
 
-(*) Supported PHP versions
+(*) 支援的 PHP 版本
 
 <a name="laravel-12"></a>
 ## Laravel 12
 
-Laravel 12 continues the improvements made in Laravel 11.x by updating upstream dependencies and introducing new starter kits for React, Vue, and Livewire, including the option of using [WorkOS AuthKit](https://authkit.com) for user authentication. The WorkOS variant of our starter kits offers social authentication, passkeys, and SSO support.
+Laravel 12 在 Laravel 11.x 中所做的改進基礎上，更新上游依賴項目並引入新的 React、Vue 和 Livewire 入門套件，包括使用 [WorkOS AuthKit](https://authkit.com) 進行用戶認證的選項。我們的入門套件的 WorkOS 變體提供社交認證、通行證和單點登錄支持。
 
 <a name="minimal-breaking-changes"></a>
-### Minimal Breaking Changes
+### 最小破壞性變更
 
-Much of our focus during this release cycle has been minimizing breaking changes. Instead, we have dedicated ourselves to shipping continuous quality-of-life improvements throughout the year that do not break existing applications.
+在此版本週期中，我們的許多重點是減少破壞性變更。相反，我們致力於在整年內推出持續的生活品質改進，而不會破壞現有應用程式。
 
-Therefore, the Laravel 12 release is a relatively minor "maintenance release" in order to upgrade existing dependencies. In light of this, most Laravel applications may upgrade to Laravel 12 without changing any application code.
+因此，Laravel 12 版本是一個相對較小的「維護版本」，以升級現有的依賴項目。基於此，大多數 Laravel 應用程式可能升級到 Laravel 12 而無需更改任何應用程式代碼。
 
 <a name="new-application-starter-kits"></a>
-### New Application Starter Kits
+### 新應用程式入門套件
 
-Laravel 12 introduces new [application starter kits](/docs/{{version}}/starter-kits) for React, Vue, and Livewire. The React and Vue starter kits utilize Inertia 2, TypeScript, [shadcn/ui](https://ui.shadcn.com), and Tailwind, while the Livewire starter kits utilize the Tailwind-based [Flux UI](https://fluxui.dev) component library and Laravel Volt.
+Laravel 12 推出了新的 [應用程式入門套件](/docs/{{version}}/starter-kits) 供 React、Vue 和 Livewire 使用。React 和 Vue 入門套件利用 Inertia 2、TypeScript、[shadcn/ui](https://ui.shadcn.com) 和 Tailwind，而 Livewire 入門套件則利用基於 Tailwind 的 [Flux UI](https://fluxui.dev) 元件庫和 Laravel Volt。
 
-The React, Vue, and Livewire starter kits all utilize Laravel's built-in authentication system to offer login, registration, password reset, email verification, and more. In addition, we are introducing a [WorkOS AuthKit-powered](https://authkit.com) variant of each starter kit, offering social authentication, passkeys, and SSO support. WorkOS offers free authentication for applications up to 1 million monthly active users.
+React、Vue 和 Livewire 入門套件都利用 Laravel 內建的認證系統提供登入、註冊、密碼重設、電子郵件驗證等功能。此外，我們還推出了每個入門套件的 [WorkOS AuthKit 驅動](https://authkit.com) 變體，提供社交認證、通行證和單點登錄支持。WorkOS 為每月活躍用戶量達到 100 萬的應用程式提供免費認證。
 
-With the introduction of our new application starter kits, Laravel Breeze and Laravel Jetstream will no longer receive additional updates.
+隨著我們新應用程式起始套件 Laravel Breeze 和 Laravel Jetstream 的推出，將不再接收額外更新。
 
-To get started with our new starter kits, check out the [starter kit documentation](/docs/{{version}}/starter-kits).
+要開始使用我們的新起始套件，請查看 [起始套件文件](/docs/{{version}}/starter-kits)。

@@ -1,26 +1,26 @@
-# Localization
+# 本地化
 
-- [Introduction](#introduction)
-    - [Publishing the Language Files](#publishing-the-language-files)
-    - [Configuring the Locale](#configuring-the-locale)
-    - [Pluralization Language](#pluralization-language)
-- [Defining Translation Strings](#defining-translation-strings)
-    - [Using Short Keys](#using-short-keys)
-    - [Using Translation Strings as Keys](#using-translation-strings-as-keys)
-- [Retrieving Translation Strings](#retrieving-translation-strings)
-    - [Replacing Parameters in Translation Strings](#replacing-parameters-in-translation-strings)
-    - [Pluralization](#pluralization)
-- [Overriding Package Language Files](#overriding-package-language-files)
+- [簡介](#introduction)
+    - [發佈語言檔案](#publishing-the-language-files)
+    - [配置語言環境](#configuring-the-locale)
+    - [複數語言](#pluralization-language)
+- [定義翻譯字串](#defining-translation-strings)
+    - [使用簡短鍵](#using-short-keys)
+    - [使用翻譯字串作為鍵](#using-translation-strings-as-keys)
+- [擷取翻譯字串](#retrieving-translation-strings)
+    - [替換翻譯字串中的參數](#replacing-parameters-in-translation-strings)
+    - [複數形式](#pluralization)
+- [覆寫套件語言檔案](#overriding-package-language-files)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
 > [!NOTE]  
-> By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files, you may publish them via the `lang:publish` Artisan command.
+> 預設情況下，Laravel 應用程式骨架不包含 `lang` 目錄。如果您想自訂 Laravel 的語言檔案，您可以透過 `lang:publish` Artisan 指令來發佈它們。
 
-Laravel's localization features provide a convenient way to retrieve strings in various languages, allowing you to easily support multiple languages within your application.
+Laravel 的本地化功能提供了一種方便的方式來檢索各種語言的字串，讓您可以輕鬆地在應用程式中支援多種語言。
 
-Laravel provides two ways to manage translation strings. First, language strings may be stored in files within the application's `lang` directory. Within this directory, there may be subdirectories for each language supported by the application. This is the approach Laravel uses to manage translation strings for built-in Laravel features such as validation error messages:
+Laravel 提供兩種管理翻譯字串的方式。首先，語言字串可以存儲在應用程式的 `lang` 目錄中的檔案中。在這個目錄中，可以為應用程式支援的每種語言建立子目錄。這是 Laravel 用來管理內建 Laravel 功能的翻譯字串的方法，例如驗證錯誤訊息：
 
 ```text
 /lang
@@ -30,7 +30,7 @@ Laravel provides two ways to manage translation strings. First, language strings
         messages.php
 ```
 
-Or, translation strings may be defined within JSON files that are placed within the `lang` directory. When taking this approach, each language supported by your application would have a corresponding JSON file within this directory. This approach is recommended for applications that have a large number of translatable strings:
+或者，翻譯字串可以定義在放置在 `lang` 目錄中的 JSON 檔案中。當採用這種方法時，您的應用程式支援的每種語言將在此目錄中有一個對應的 JSON 檔案。這種方法適用於具有大量可翻譯字串的應用程式：
 
 ```text
 /lang
@@ -38,25 +38,25 @@ Or, translation strings may be defined within JSON files that are placed within 
     es.json
 ```
 
-We'll discuss each approach to managing translation strings within this documentation.
+我們將在本文件中討論管理翻譯字串的每種方法。 
 
 <a name="publishing-the-language-files"></a>
-### Publishing the Language Files
+### 發佈語言檔案
 
-By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files or create your own, you should scaffold the `lang` directory via the `lang:publish` Artisan command. The `lang:publish` command will create the `lang` directory in your application and publish the default set of language files used by Laravel:
+預設情況下，Laravel 應用程式骨架不包含 `lang` 目錄。如果您想要自訂 Laravel 的語言檔案或建立自己的語言檔案，您應該透過 `lang:publish` Artisan 指令來建立 `lang` 目錄。`lang:publish` 指令將在您的應用程式中建立 `lang` 目錄並發佈 Laravel 使用的預設語言檔案集：
 
 ```shell
 php artisan lang:publish
 ```
 
 <a name="configuring-the-locale"></a>
-### Configuring the Locale
+### 配置語言環境
 
-The default language for your application is stored in the `config/app.php` configuration file's `locale` configuration option, which is typically set using the `APP_LOCALE` environment variable. You are free to modify this value to suit the needs of your application.
+您的應用程式的預設語言存儲在 `config/app.php` 配置檔案的 `locale` 配置選項中，通常使用 `APP_LOCALE` 環境變數來設置。您可以自由修改此值以滿足您應用程式的需求。
 
-You may also configure a "fallback language", which will be used when the default language does not contain a given translation string. Like the default language, the fallback language is also configured in the `config/app.php` configuration file, and its value is typically set using the `APP_FALLBACK_LOCALE` environment variable.
+您也可以配置一個「備用語言」，當預設語言不包含特定的翻譯字串時將使用該語言。與預設語言一樣，備用語言也在 `config/app.php` 配置檔案中配置，其值通常使用 `APP_FALLBACK_LOCALE` 環境變數設置。
 
-You may modify the default language for a single HTTP request at runtime using the `setLocale` method provided by the `App` facade:
+您可以在運行時使用 `App` Facade 提供的 `setLocale` 方法來修改單個 HTTP 請求的預設語言：
 
 ```php
 use Illuminate\Support\Facades\App;
@@ -73,9 +73,9 @@ Route::get('/greeting/{locale}', function (string $locale) {
 ```
 
 <a name="determining-the-current-locale"></a>
-#### Determining the Current Locale
+#### 確定當前語言環境
 
-You may use the `currentLocale` and `isLocale` methods on the `App` facade to determine the current locale or check if the locale is a given value:
+您可以使用 `App` Facade 上的 `currentLocale` 和 `isLocale` 方法來確定當前的語言環境或檢查語言環境是否為特定值：
 
 ```php
 use Illuminate\Support\Facades\App;
@@ -88,9 +88,9 @@ if (App::isLocale('en')) {
 ```
 
 <a name="pluralization-language"></a>
-### Pluralization Language
+### 複數語言
 
-You may instruct Laravel's "pluralizer", which is used by Eloquent and other portions of the framework to convert singular strings to plural strings, to use a language other than English. This may be accomplished by invoking the `useLanguage` method within the `boot` method of one of your application's service providers. The pluralizer's currently supported languages are: `french`, `norwegian-bokmal`, `portuguese`, `spanish`, and `turkish`:
+您可以指示 Laravel 的「複數化器」，該複數化器由 Eloquent 和框架的其他部分使用，將單數字串轉換為複數字串，使用一種非英語語言。這可以通過在應用程式的服務提供者之一的 `boot` 方法中調用 `useLanguage` 方法來完成。目前支持的複數化器語言有：`french`、`norwegian-bokmal`、`portuguese`、`spanish` 和 `turkish`：
 
 ```php
 use Illuminate\Support\Pluralizer;
@@ -107,15 +107,15 @@ public function boot(): void
 ```
 
 > [!WARNING]  
-> If you customize the pluralizer's language, you should explicitly define your Eloquent model's [table names](/docs/{{version}}/eloquent#table-names).
+> 如果您自定義了複數形式的語言，您應該明確定義您 Eloquent 模型的 [表名稱](/docs/{{version}}/eloquent#table-names)。
 
 <a name="defining-translation-strings"></a>
-## Defining Translation Strings
+## 定義翻譯字串
 
 <a name="using-short-keys"></a>
-### Using Short Keys
+### 使用簡短鍵
 
-Typically, translation strings are stored in files within the `lang` directory. Within this directory, there should be a subdirectory for each language supported by your application. This is the approach Laravel uses to manage translation strings for built-in Laravel features such as validation error messages:
+通常，翻譯字串存儲在 `lang` 目錄中的文件中。在這個目錄中，應該為應用程序支持的每種語言創建一個子目錄。這是 Laravel 用來管理內置 Laravel 功能的翻譯字串的方法，例如驗證錯誤消息：
 
 ```text
 /lang
@@ -125,7 +125,7 @@ Typically, translation strings are stored in files within the `lang` directory. 
         messages.php
 ```
 
-All language files return an array of keyed strings. For example:
+所有語言文件都返回一個鍵入字串的數組。例如：
 
 ```php
 <?php
@@ -138,14 +138,14 @@ return [
 ```
 
 > [!WARNING]  
-> For languages that differ by territory, you should name the language directories according to the ISO 15897. For example, "en_GB" should be used for British English rather than "en-gb".
+> 對於因地區而異的語言，您應該根據 ISO 15897 命名語言目錄。例如，"en_GB" 應該用於英國英語，而不是 "en-gb"。
 
 <a name="using-translation-strings-as-keys"></a>
-### Using Translation Strings as Keys
+### 使用翻譯字串作為鍵
 
-For applications with a large number of translatable strings, defining every string with a "short key" can become confusing when referencing the keys in your views and it is cumbersome to continually invent keys for every translation string supported by your application.
+對於具有大量可翻譯字串的應用程序，在視圖中引用這些鍵時，使用“簡短鍵”定義每個字串可能會變得混亂，並且為應用程序支持的每個翻譯字串不斷創建鍵也很繁瑣。
 
-For this reason, Laravel also provides support for defining translation strings using the "default" translation of the string as the key. Language files that use translation strings as keys are stored as JSON files in the `lang` directory. For example, if your application has a Spanish translation, you should create a `lang/es.json` file:
+因此，Laravel 還支持使用字符串的“默認”翻譯作為鍵來定義翻譯字串。使用翻譯字串作為鍵的語言文件存儲為 JSON 文件在 `lang` 目錄中。例如，如果您的應用程序有西班牙語翻譯，您應該創建一個 `lang/es.json` 文件：
 
 ```json
 {
@@ -153,63 +153,60 @@ For this reason, Laravel also provides support for defining translation strings 
 }
 ```
 
-#### Key / File Conflicts
+#### 鍵 / 文件衝突
 
-You should not define translation string keys that conflict with other translation filenames. For example, translating `__('Action')` for the "NL" locale while a `nl/action.php` file exists but a `nl.json` file does not exist will result in the translator returning the entire contents of `nl/action.php`.
+您不應定義與其他翻譯文件名相衝突的翻譯字串鍵。例如，為 "NL" 地區翻譯 `__('Action')`，而同時存在 `nl/action.php` 文件但不存在 `nl.json` 文件，將導致翻譯器返回 `nl/action.php` 的整個內容。
 
-<a name="retrieving-translation-strings"></a>
-## Retrieving Translation Strings
+## 檢索翻譯字串
 
-You may retrieve translation strings from your language files using the `__` helper function. If you are using "short keys" to define your translation strings, you should pass the file that contains the key and the key itself to the `__` function using "dot" syntax. For example, let's retrieve the `welcome` translation string from the `lang/en/messages.php` language file:
+您可以使用 `__` 輔助函式從您的語言檔案中檢索翻譯字串。如果您使用 "簡短鍵" 來定義您的翻譯字串，您應該使用 "點" 語法將包含鍵和鍵本身的檔案傳遞給 `__` 函式。例如，讓我們從 `lang/en/messages.php` 語言檔案中檢索 `welcome` 翻譯字串：
 
 ```php
 echo __('messages.welcome');
 ```
 
-If the specified translation string does not exist, the `__` function will return the translation string key. So, using the example above, the `__` function would return `messages.welcome` if the translation string does not exist.
+如果指定的翻譯字串不存在，`__` 函式將返回翻譯字串鍵。因此，使用上面的示例，如果翻譯字串不存在，`__` 函式將返回 `messages.welcome`。
 
-If you are using your [default translation strings as your translation keys](#using-translation-strings-as-keys), you should pass the default translation of your string to the `__` function;
+如果您將[預設翻譯字串作為翻譯鍵](#using-translation-strings-as-keys)，您應該將字符串的預設翻譯傳遞給 `__` 函式：
 
 ```php
 echo __('I love programming.');
 ```
 
-Again, if the translation string does not exist, the `__` function will return the translation string key that it was given.
+同樣，如果翻譯字串不存在，`__` 函式將返回其所給定的翻譯字串鍵。
 
-If you are using the [Blade templating engine](/docs/{{version}}/blade), you may use the `{{ }}` echo syntax to display the translation string:
+如果您使用[Blade 模板引擎](/docs/{{version}}/blade)，您可以使用 `{{ }}` 輸出語法來顯示翻譯字串：
 
 ```blade
 {{ __('messages.welcome') }}
 ```
 
-<a name="replacing-parameters-in-translation-strings"></a>
-### Replacing Parameters in Translation Strings
+## 替換翻譯字串中的參數
 
-If you wish, you may define placeholders in your translation strings. All placeholders are prefixed with a `:`. For example, you may define a welcome message with a placeholder name:
+如果您希望，您可以在翻譯字串中定義佔位符。所有佔位符都以 `:` 為前綴。例如，您可以定義一個帶有佔位符名稱的歡迎訊息：
 
 ```php
-'welcome' => 'Welcome, :name',
+'welcome' => '歡迎，:name',
 ```
 
-To replace the placeholders when retrieving a translation string, you may pass an array of replacements as the second argument to the `__` function:
+在檢索翻譯字串時替換佔位符，您可以將替換項目的陣列作為第二個引數傳遞給 `__` 函式：
 
 ```php
 echo __('messages.welcome', ['name' => 'dayle']);
 ```
 
-If your placeholder contains all capital letters, or only has its first letter capitalized, the translated value will be capitalized accordingly:
+如果您的佔位符包含所有大寫字母，或僅首字母大寫，則翻譯值將相應大寫：
 
 ```php
-'welcome' => 'Welcome, :NAME', // Welcome, DAYLE
-'goodbye' => 'Goodbye, :Name', // Goodbye, Dayle
+'welcome' => '歡迎，:NAME', // 歡迎，DAYLE
+'goodbye' => '再見，:Name', // 再見，Dayle
 ```
 
-<a name="object-replacement-formatting"></a>
-#### Object Replacement Formatting
+#### 物件替換格式
 
-If you attempt to provide an object as a translation placeholder, the object's `__toString` method will be invoked. The [`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) method is one of PHP's built-in "magic methods". However, sometimes you may not have control over the `__toString` method of a given class, such as when the class that you are interacting with belongs to a third-party library.
+如果您嘗試將物件作為翻譯佔位符，將調用物件的 `__toString` 方法。[`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring) 方法是 PHP 內建的「魔術方法」之一。然而，有時您可能無法控制給定類別的 `__toString` 方法，例如當您與屬於第三方函式庫的類別互動時。
 
-In these cases, Laravel allows you to register a custom formatting handler for that particular type of object. To accomplish this, you should invoke the translator's `stringable` method. The `stringable` method accepts a closure, which should type-hint the type of object that it is responsible for formatting. Typically, the `stringable` method should be invoked within the `boot` method of your application's `AppServiceProvider` class:
+在這些情況下，Laravel 允許您為該特定類型的物件註冊自訂格式處理程序。為了完成這個任務，您應該調用翻譯器的 `stringable` 方法。`stringable` 方法接受一個閉包，該閉包應該對應負責格式化的物件類型進行型別提示。通常，`stringable` 方法應該在應用程式的 `AppServiceProvider` 類別的 `boot` 方法內調用：
 
 ```php
 use Illuminate\Support\Facades\Lang;
@@ -226,16 +223,15 @@ public function boot(): void
 }
 ```
 
-<a name="pluralization"></a>
-### Pluralization
+#### 複數形式
 
-Pluralization is a complex problem, as different languages have a variety of complex rules for pluralization; however, Laravel can help you translate strings differently based on pluralization rules that you define. Using a `|` character, you may distinguish singular and plural forms of a string:
+複數形式是一個複雜的問題，因為不同語言有各種複雜的複數形式規則；然而，Laravel 可以幫助您根據您定義的複數形式規則以不同方式翻譯字符串。使用 `|` 字元，您可以區分字符串的單數和複數形式：
 
 ```php
 'apples' => 'There is one apple|There are many apples',
 ```
 
-Of course, pluralization is also supported when using [translation strings as keys](#using-translation-strings-as-keys):
+當使用[翻譯字符串作為鍵](#using-translation-strings-as-keys)時，當然也支持複數形式：
 
 ```json
 {
@@ -243,35 +239,35 @@ Of course, pluralization is also supported when using [translation strings as ke
 }
 ```
 
-You may even create more complex pluralization rules which specify translation strings for multiple ranges of values:
+您甚至可以創建更複雜的複數形式規則，為多個值範圍指定翻譯字符串：
 
 ```php
 'apples' => '{0} There are none|[1,19] There are some|[20,*] There are many',
 ```
 
-After defining a translation string that has pluralization options, you may use the `trans_choice` function to retrieve the line for a given "count". In this example, since the count is greater than one, the plural form of the translation string is returned:
+在定義具有複數形式選項的翻譯字符串後，您可以使用 `trans_choice` 函數檢索給定「計數」的行。在此示例中，由於計數大於一，將返回翻譯字符串的複數形式：
 
 ```php
 echo trans_choice('messages.apples', 10);
 ```
 
-You may also define placeholder attributes in pluralization strings. These placeholders may be replaced by passing an array as the third argument to the `trans_choice` function:
+您也可以在複數化字串中定義佔位符屬性。通過將陣列作為 `trans_choice` 函數的第三個參數傳遞，這些佔位符可以被替換：
 
 ```php
-'minutes_ago' => '{1} :value minute ago|[2,*] :value minutes ago',
+'minutes_ago' => '{1} :value 分鐘前|[2,*] :value 分鐘前',
 
 echo trans_choice('time.minutes_ago', 5, ['value' => 5]);
 ```
 
-If you would like to display the integer value that was passed to the `trans_choice` function, you may use the built-in `:count` placeholder:
+如果您想顯示傳遞給 `trans_choice` 函數的整數值，您可以使用內置的 `:count` 佔位符：
 
 ```php
-'apples' => '{0} There are none|{1} There is one|[2,*] There are :count',
+'apples' => '{0} 沒有|{1} 有一個|[2,*] 有 :count 個',
 ```
 
 <a name="overriding-package-language-files"></a>
-## Overriding Package Language Files
+## 覆蓋套件語言文件
 
-Some packages may ship with their own language files. Instead of changing the package's core files to tweak these lines, you may override them by placing files in the `lang/vendor/{package}/{locale}` directory.
+有些套件可能會附帶自己的語言文件。您可以通過將文件放置在 `lang/vendor/{package}/{locale}` 目錄中來覆蓋這些行，而不是更改套件的核心文件以調整這些行。
 
-So, for example, if you need to override the English translation strings in `messages.php` for a package named `skyrim/hearthfire`, you should place a language file at: `lang/vendor/hearthfire/en/messages.php`. Within this file, you should only define the translation strings you wish to override. Any translation strings you don't override will still be loaded from the package's original language files.
+例如，如果您需要覆蓋名為 `skyrim/hearthfire` 的套件的 `messages.php` 中的英文翻譯字符串，您應該將語言文件放在：`lang/vendor/hearthfire/en/messages.php`。在這個文件中，您應該只定義您想要覆蓋的翻譯字符串。您不覆蓋的任何翻譯字符串仍將從套件的原始語言文件中加載。

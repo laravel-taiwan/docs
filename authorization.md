@@ -1,50 +1,49 @@
-# Authorization
+# 授權
 
-- [Introduction](#introduction)
-- [Gates](#gates)
-    - [Writing Gates](#writing-gates)
-    - [Authorizing Actions](#authorizing-actions-via-gates)
-    - [Gate Responses](#gate-responses)
-    - [Intercepting Gate Checks](#intercepting-gate-checks)
-    - [Inline Authorization](#inline-authorization)
-- [Creating Policies](#creating-policies)
-    - [Generating Policies](#generating-policies)
-    - [Registering Policies](#registering-policies)
-- [Writing Policies](#writing-policies)
-    - [Policy Methods](#policy-methods)
-    - [Policy Responses](#policy-responses)
-    - [Methods Without Models](#methods-without-models)
-    - [Guest Users](#guest-users)
-    - [Policy Filters](#policy-filters)
-- [Authorizing Actions Using Policies](#authorizing-actions-using-policies)
-    - [Via the User Model](#via-the-user-model)
-    - [Via the Gate Facade](#via-the-gate-facade)
-    - [Via Middleware](#via-middleware)
-    - [Via Blade Templates](#via-blade-templates)
-    - [Supplying Additional Context](#supplying-additional-context)
-- [Authorization & Inertia](#authorization-and-inertia)
+- [簡介](#introduction)
+- [權限](#gates)
+    - [撰寫權限](#writing-gates)
+    - [透過權限授權操作](#authorizing-actions-via-gates)
+    - [權限回應](#gate-responses)
+    - [攔截權限檢查](#intercepting-gate-checks)
+    - [內嵌授權](#inline-authorization)
+- [建立原則](#creating-policies)
+    - [產生原則](#generating-policies)
+    - [註冊原則](#registering-policies)
+- [撰寫原則](#writing-policies)
+    - [原則方法](#policy-methods)
+    - [原則回應](#policy-responses)
+    - [沒有模型的方法](#methods-without-models)
+    - [訪客使用者](#guest-users)
+    - [原則篩選器](#policy-filters)
+- [使用原則授權操作](#authorizing-actions-using-policies)
+    - [透過使用者模型](#via-the-user-model)
+    - [透過權限外觀](#via-the-gate-facade)
+    - [透過中介層](#via-middleware)
+    - [透過 Blade 模板](#via-blade-templates)
+    - [提供額外內容](#supplying-additional-context)
+- [授權與慣性](#authorization-and-inertia)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-In addition to providing built-in [authentication](/docs/{{version}}/authentication) services, Laravel also provides a simple way to authorize user actions against a given resource. For example, even though a user is authenticated, they may not be authorized to update or delete certain Eloquent models or database records managed by your application. Laravel's authorization features provide an easy, organized way of managing these types of authorization checks.
+除了提供內建的[認證](/docs/{{version}}/authentication)服務外，Laravel 還提供了一種簡單的方式來授權用戶對特定資源的操作。例如，即使用戶已經通過驗證，他們可能沒有權限來更新或刪除應用程序管理的某些 Eloquent 模型或資料庫記錄。Laravel 的授權功能提供了一種簡單、有組織的方式來管理這些類型的授權檢查。
 
-Laravel provides two primary ways of authorizing actions: [gates](#gates) and [policies](#creating-policies). Think of gates and policies like routes and controllers. Gates provide a simple, closure-based approach to authorization while policies, like controllers, group logic around a particular model or resource. In this documentation, we'll explore gates first and then examine policies.
+Laravel 提供了兩種主要的授權操作方式：[權限](#gates)和[原則](#creating-policies)。將權限和原則視為路由和控制器。權限提供了一種簡單的基於閉包的授權方法，而原則則像控制器一樣，將邏輯團結在特定模型或資源周圍。在本文檔中，我們將首先探討權限，然後再檢查原則。
 
-You do not need to choose between exclusively using gates or exclusively using policies when building an application. Most applications will most likely contain some mixture of gates and policies, and that is perfectly fine! Gates are most applicable to actions that are not related to any model or resource, such as viewing an administrator dashboard. In contrast, policies should be used when you wish to authorize an action for a particular model or resource.
+在構建應用程序時，您無需在使用權限或原則之間做出選擇。大多數應用程序很可能包含權限和原則的混合使用，這是完全可以的！權限最適用於與任何模型或資源無關的操作，例如查看管理員儀表板。相反，當您希望為特定模型或資源授權操作時，應使用原則。
 
-<a name="gates"></a>
-## Gates
 
-<a name="writing-gates"></a>
-### Writing Gates
+## 權限
+
+### 撰寫權限
 
 > [!WARNING]  
-> Gates are a great way to learn the basics of Laravel's authorization features; however, when building robust Laravel applications you should consider using [policies](#creating-policies) to organize your authorization rules.
+> 權限是學習 Laravel 授權功能基礎的好方法；然而，在建立強大的 Laravel 應用程式時，您應該考慮使用 [原則](#creating-policies) 來組織您的授權規則。
 
-Gates are simply closures that determine if a user is authorized to perform a given action. Typically, gates are defined within the `boot` method of the `App\Providers\AppServiceProvider` class using the `Gate` facade. Gates always receive a user instance as their first argument and may optionally receive additional arguments such as a relevant Eloquent model.
+權限只是確定使用者是否被授權執行特定操作的閉包。通常，權限是在 `App\Providers\AppServiceProvider` 類別的 `boot` 方法中使用 `Gate` 門面定義的。權限始終接收使用者實例作為其第一個引數，並可以選擇性地接收其他引數，例如相關的 Eloquent 模型。
 
-In this example, we'll define a gate to determine if a user can update a given `App\Models\Post` model. The gate will accomplish this by comparing the user's `id` against the `user_id` of the user that created the post:
+在此示例中，我們將定義一個權限，以確定使用者是否可以更新給定的 `App\Models\Post` 模型。該權限將通過比較使用者的 `id` 與建立該文章的使用者的 `user_id` 來實現：
 
 ```php
 use App\Models\Post;
@@ -62,7 +61,7 @@ public function boot(): void
 }
 ```
 
-Like controllers, gates may also be defined using a class callback array:
+與控制器一樣，權限也可以使用類別回呼陣列來定義：
 
 ```php
 use App\Policies\PostPolicy;
@@ -77,10 +76,9 @@ public function boot(): void
 }
 ```
 
-<a name="authorizing-actions-via-gates"></a>
-### Authorizing Actions
+### 透過權限授權操作
 
-To authorize an action using gates, you should use the `allows` or `denies` methods provided by the `Gate` facade. Note that you are not required to pass the currently authenticated user to these methods. Laravel will automatically take care of passing the user into the gate closure. It is typical to call the gate authorization methods within your application's controllers before performing an action that requires authorization:
+要使用權限授權操作，您應該使用 `Gate` 門面提供的 `allows` 或 `denies` 方法。請注意，您不需要將目前驗證的使用者傳遞給這些方法。Laravel 將自動處理將使用者傳遞到權限閉包中。在執行需要授權的操作之前，在應用程式的控制器中呼叫權限授權方法是很典型的：
 
 ```php
 <?php
@@ -111,7 +109,7 @@ class PostController extends Controller
 }
 ```
 
-If you would like to determine if a user other than the currently authenticated user is authorized to perform an action, you may use the `forUser` method on the `Gate` facade:
+如果您想確定除了目前驗證的使用者之外的其他使用者是否被授權執行操作，您可以在 `Gate` 門面上使用 `forUser` 方法：
 
 ```php
 if (Gate::forUser($user)->allows('update-post', $post)) {
@@ -123,7 +121,7 @@ if (Gate::forUser($user)->denies('update-post', $post)) {
 }
 ```
 
-You may authorize multiple actions at a time using the `any` or `none` methods:
+您可以使用 `any` 或 `none` 方法一次授權多個操作：
 
 ```php
 if (Gate::any(['update-post', 'delete-post'], $post)) {
@@ -135,21 +133,20 @@ if (Gate::none(['update-post', 'delete-post'], $post)) {
 }
 ```
 
-<a name="authorizing-or-throwing-exceptions"></a>
-#### Authorizing or Throwing Exceptions
+#### 授權或拋出例外
 
-If you would like to attempt to authorize an action and automatically throw an `Illuminate\Auth\Access\AuthorizationException` if the user is not allowed to perform the given action, you may use the `Gate` facade's `authorize` method. Instances of `AuthorizationException` are automatically converted to a 403 HTTP response by Laravel:
+如果您想嘗試授權操作並在不允許使用者執行給定操作時自動拋出 `Illuminate\Auth\Access\AuthorizationException`，您可以使用 `Gate` 門面的 `authorize` 方法。`AuthorizationException` 的實例會被 Laravel 自動轉換為 403 HTTP 回應：
 
 ```php
 Gate::authorize('update-post', $post);
 
-// The action is authorized...
+// 權限已授權...
 ```
 
 <a name="gates-supplying-additional-context"></a>
-#### Supplying Additional Context
+#### 提供額外上下文
 
-The gate methods for authorizing abilities (`allows`, `denies`, `check`, `any`, `none`, `authorize`, `can`, `cannot`) and the authorization [Blade directives](#via-blade-templates) (`@can`, `@cannot`, `@canany`) can receive an array as their second argument. These array elements are passed as parameters to the gate closure, and can be used for additional context when making authorization decisions:
+用於授權權限的門方法（`allows`、`denies`、`check`、`any`、`none`、`authorize`、`can`、`cannot`）和授權[Blade指示詞](#via-blade-templates)（`@can`、`@cannot`、`@canany`）可以接受陣列作為它們的第二個引數。這些陣列元素將作為參數傳遞給門閂閉包，並可用於在做出授權決策時提供額外上下文：
 
 ```php
 use App\Models\Category;
@@ -172,9 +169,9 @@ if (Gate::check('create-post', [$category, $pinned])) {
 ```
 
 <a name="gate-responses"></a>
-### Gate Responses
+### 門回應
 
-So far, we have only examined gates that return simple boolean values. However, sometimes you may wish to return a more detailed response, including an error message. To do so, you may return an `Illuminate\Auth\Access\Response` from your gate:
+到目前為止，我們只檢查了返回簡單布林值的門。但有時您可能希望返回更詳細的回應，包括錯誤訊息。為此，您可以從門中返回一個 `Illuminate\Auth\Access\Response`：
 
 ```php
 use App\Models\User;
@@ -188,7 +185,7 @@ Gate::define('edit-settings', function (User $user) {
 });
 ```
 
-Even when you return an authorization response from your gate, the `Gate::allows` method will still return a simple boolean value; however, you may use the `Gate::inspect` method to get the full authorization response returned by the gate:
+即使您從門中返回授權回應，`Gate::allows` 方法仍將返回簡單布林值；但是，您可以使用 `Gate::inspect` 方法來獲取門返回的完整授權回應：
 
 ```php
 $response = Gate::inspect('edit-settings');
@@ -200,18 +197,18 @@ if ($response->allowed()) {
 }
 ```
 
-When using the `Gate::authorize` method, which throws an `AuthorizationException` if the action is not authorized, the error message provided by the authorization response will be propagated to the HTTP response:
+當使用 `Gate::authorize` 方法時，如果未授權操作，將拋出 `AuthorizationException`，授權回應提供的錯誤訊息將傳播到HTTP回應：
 
 ```php
 Gate::authorize('edit-settings');
 
-// The action is authorized...
+// 權限已授權...
 ```
 
 <a name="customizing-gate-response-status"></a>
-#### Customizing The HTTP Response Status
+#### 自訂HTTP回應狀態
 
-When an action is denied via a Gate, a `403` HTTP response is returned; however, it can sometimes be useful to return an alternative HTTP status code. You may customize the HTTP status code returned for a failed authorization check using the `denyWithStatus` static constructor on the `Illuminate\Auth\Access\Response` class:
+當通過門拒絕操作時，將返回 `403` HTTP回應；但有時將返回替代HTTP狀態碼可能很有用。您可以使用 `Illuminate\Auth\Access\Response` 類的 `denyWithStatus` 靜態構造函數來自訂未通過授權檢查時返回的HTTP狀態碼：
 
 ```php
 use App\Models\User;
@@ -225,7 +222,7 @@ Gate::define('edit-settings', function (User $user) {
 });
 ```
 
-Because hiding resources via a `404` response is such a common pattern for web applications, the `denyAsNotFound` method is offered for convenience:
+因為通過 `404` 回應隱藏資源對於Web應用程序是一種常見模式，所以提供了 `denyAsNotFound` 方法以方便使用：
 
 ```php
 use App\Models\User;
@@ -240,9 +237,9 @@ Gate::define('edit-settings', function (User $user) {
 ```
 
 <a name="intercepting-gate-checks"></a>
-### Intercepting Gate Checks
+### 截取權限檢查
 
-Sometimes, you may wish to grant all abilities to a specific user. You may use the `before` method to define a closure that is run before all other authorization checks:
+有時候，您可能希望將所有權限授予特定使用者。您可以使用 `before` 方法來定義在所有其他授權檢查之前運行的閉包：
 
 ```php
 use App\Models\User;
@@ -255,9 +252,9 @@ Gate::before(function (User $user, string $ability) {
 });
 ```
 
-If the `before` closure returns a non-null result that result will be considered the result of the authorization check.
+如果 `before` 閉包返回非空結果，該結果將被視為授權檢查的結果。
 
-You may use the `after` method to define a closure to be executed after all other authorization checks:
+您可以使用 `after` 方法來定義在所有其他授權檢查之後執行的閉包：
 
 ```php
 use App\Models\User;
@@ -269,12 +266,12 @@ Gate::after(function (User $user, string $ability, bool|null $result, mixed $arg
 });
 ```
 
-Values returned by `after` closures will not override the result of the authorization check unless the gate or policy returned `null`.
+`after` 閉包返回的值不會覆蓋授權檢查的結果，除非 gate 或 policy 返回 `null`。
 
 <a name="inline-authorization"></a>
-### Inline Authorization
+### 內嵌授權
 
-Occasionally, you may wish to determine if the currently authenticated user is authorized to perform a given action without writing a dedicated gate that corresponds to the action. Laravel allows you to perform these types of "inline" authorization checks via the `Gate::allowIf` and `Gate::denyIf` methods. Inline authorization does not execute any defined ["before" or "after" authorization hooks](#intercepting-gate-checks):
+偶爾，您可能希望確定當前已驗證的使用者是否有權執行特定操作，而無需編寫與該操作對應的專用 gate。Laravel 允許您通過 `Gate::allowIf` 和 `Gate::denyIf` 方法執行這些類型的「內嵌」授權檢查。內嵌授權不會執行任何定義的 ["before" 或 "after" 授權鉤子](#intercepting-gate-checks)：
 
 ```php
 use App\Models\User;
@@ -285,37 +282,37 @@ Gate::allowIf(fn (User $user) => $user->isAdministrator());
 Gate::denyIf(fn (User $user) => $user->banned());
 ```
 
-If the action is not authorized or if no user is currently authenticated, Laravel will automatically throw an `Illuminate\Auth\Access\AuthorizationException` exception. Instances of `AuthorizationException` are automatically converted to a 403 HTTP response by Laravel's exception handler.
+如果操作未經授權或當前未驗證任何使用者，Laravel 將自動拋出 `Illuminate\Auth\Access\AuthorizationException` 例外。`AuthorizationException` 的實例將被 Laravel 的例外處理程序自動轉換為 403 HTTP 回應。
 
 <a name="creating-policies"></a>
-## Creating Policies
+## 建立原則
 
 <a name="generating-policies"></a>
-### Generating Policies
+### 生成原則
 
-Policies are classes that organize authorization logic around a particular model or resource. For example, if your application is a blog, you may have an `App\Models\Post` model and a corresponding `App\Policies\PostPolicy` to authorize user actions such as creating or updating posts.
+原則是組織特定模型或資源周圍的授權邏輯的類別。例如，如果您的應用程式是一個部落格，您可能會有一個 `App\Models\Post` 模型和相應的 `App\Policies\PostPolicy` 來授權使用者執行動作，如創建或更新文章。
 
-You may generate a policy using the `make:policy` Artisan command. The generated policy will be placed in the `app/Policies` directory. If this directory does not exist in your application, Laravel will create it for you:
+您可以使用 `make:policy` Artisan 命令生成一個原則。生成的原則將放置在 `app/Policies` 目錄中。如果您的應用程式中不存在此目錄，Laravel 將為您創建它：
 
 ```shell
 php artisan make:policy PostPolicy
 ```
 
-The `make:policy` command will generate an empty policy class. If you would like to generate a class with example policy methods related to viewing, creating, updating, and deleting the resource, you may provide a `--model` option when executing the command:
+`make:policy` 命令將生成一個空的原則類別。如果您想生成一個包含與查看、創建、更新和刪除資源相關的示例原則方法的類別，您可以在執行命令時提供 `--model` 選項：
 
 ```shell
 php artisan make:policy PostPolicy --model=Post
 ```
 
 <a name="registering-policies"></a>
-### Registering Policies
+### 註冊原則
 
 <a name="policy-discovery"></a>
-#### Policy Discovery
+#### 原則發現
 
-By default, Laravel automatically discover policies as long as the model and policy follow standard Laravel naming conventions. Specifically, the policies must be in a `Policies` directory at or above the directory that contains your models. So, for example, the models may be placed in the `app/Models` directory while the policies may be placed in the `app/Policies` directory. In this situation, Laravel will check for policies in `app/Models/Policies` then `app/Policies`. In addition, the policy name must match the model name and have a `Policy` suffix. So, a `User` model would correspond to a `UserPolicy` policy class.
+預設情況下，只要模型和原則遵循標準的 Laravel 命名慣例，Laravel 將自動發現原則。具體來說，原則必須位於包含您的模型的目錄或其上方的 `Policies` 目錄中。例如，模型可以放在 `app/Models` 目錄中，而原則可以放在 `app/Policies` 目錄中。在這種情況下，Laravel 將在 `app/Models/Policies` 然後是 `app/Policies` 中檢查原則。此外，原則名稱必須與模型名稱匹配並以 `Policy` 結尾。因此，`User` 模型將對應於 `UserPolicy` 原則類。
 
-If you would like to define your own policy discovery logic, you may register a custom policy discovery callback using the `Gate::guessPolicyNamesUsing` method. Typically, this method should be called from the `boot` method of your application's `AppServiceProvider`:
+如果您想定義自己的原則發現邏輯，您可以使用 `Gate::guessPolicyNamesUsing` 方法註冊自定義的原則發現回調。通常，應該從應用程式的 `AppServiceProvider` 的 `boot` 方法中調用此方法：
 
 ```php
 use Illuminate\Support\Facades\Gate;
@@ -326,9 +323,9 @@ Gate::guessPolicyNamesUsing(function (string $modelClass) {
 ```
 
 <a name="manually-registering-policies"></a>
-#### Manually Registering Policies
+#### 手動註冊原則
 
-Using the `Gate` facade, you may manually register policies and their corresponding models within the `boot` method of your application's `AppServiceProvider`:
+使用 `Gate` 門面，您可以在應用程式的 `AppServiceProvider` 的 `boot` 方法中手動註冊原則及其對應的模型：
 
 ```php
 use App\Models\Order;
@@ -345,14 +342,14 @@ public function boot(): void
 ```
 
 <a name="writing-policies"></a>
-## Writing Policies
+## 撰寫原則
 
 <a name="policy-methods"></a>
-### Policy Methods
+### 原則方法
 
-Once the policy class has been registered, you may add methods for each action it authorizes. For example, let's define an `update` method on our `PostPolicy` which determines if a given `App\Models\User` can update a given `App\Models\Post` instance.
+一旦原則類別被註冊，您可以為其授權的每個操作添加方法。例如，讓我們在我們的 `PostPolicy` 上定義一個 `update` 方法，該方法確定給定的 `App\Models\User` 是否可以更新給定的 `App\Models\Post` 實例。
 
-The `update` method will receive a `User` and a `Post` instance as its arguments, and should return `true` or `false` indicating whether the user is authorized to update the given `Post`. So, in this example, we will verify that the user's `id` matches the `user_id` on the post:
+`update` 方法將接收 `User` 和 `Post` 實例作為其引數，並應返回 `true` 或 `false`，指示用戶是否有權限更新給定的 `Post`。因此，在此示例中，我們將驗證用戶的 `id` 是否與帖子上的 `user_id` 匹配：
 
 ```php
 <?php
@@ -374,17 +371,17 @@ class PostPolicy
 }
 ```
 
-You may continue to define additional methods on the policy as needed for the various actions it authorizes. For example, you might define `view` or `delete` methods to authorize various `Post` related actions, but remember you are free to give your policy methods any name you like.
+您可以根據需要在策略上繼續定義其他方法，以授權各種操作。例如，您可以定義 `view` 或 `delete` 方法來授權各種與 `Post` 相關的操作，但請記住，您可以自由地為策略方法取任何您喜歡的名稱。
 
-If you used the `--model` option when generating your policy via the Artisan console, it will already contain methods for the `viewAny`, `view`, `create`, `update`, `delete`, `restore`, and `forceDelete` actions.
+如果您在通過 Artisan 控制台生成策略時使用了 `--model` 選項，它將已包含用於 `viewAny`、`view`、`create`、`update`、`delete`、`restore` 和 `forceDelete` 操作的方法。
 
 > [!NOTE]  
-> All policies are resolved via the Laravel [service container](/docs/{{version}}/container), allowing you to type-hint any needed dependencies in the policy's constructor to have them automatically injected.
+> 所有策略都通過 Laravel [service container](/docs/{{version}}/container) 解析，這使您可以在策略的建構子中對所需的依賴進行型別提示，以便自動注入它們。
 
 <a name="policy-responses"></a>
-### Policy Responses
+### 策略回應
 
-So far, we have only examined policy methods that return simple boolean values. However, sometimes you may wish to return a more detailed response, including an error message. To do so, you may return an `Illuminate\Auth\Access\Response` instance from your policy method:
+到目前為止，我們僅檢查了返回簡單布林值的策略方法。但有時您可能希望返回更詳細的回應，包括錯誤消息。為此，您可以從策略方法返回一個 `Illuminate\Auth\Access\Response` 實例：
 
 ```php
 use App\Models\Post;
@@ -402,7 +399,7 @@ public function update(User $user, Post $post): Response
 }
 ```
 
-When returning an authorization response from your policy, the `Gate::allows` method will still return a simple boolean value; however, you may use the `Gate::inspect` method to get the full authorization response returned by the gate:
+從策略返回授權回應時，`Gate::allows` 方法仍將返回簡單布林值；但您可以使用 `Gate::inspect` 方法來獲取閘返回的完整授權回應：
 
 ```php
 use Illuminate\Support\Facades\Gate;
@@ -416,18 +413,18 @@ if ($response->allowed()) {
 }
 ```
 
-When using the `Gate::authorize` method, which throws an `AuthorizationException` if the action is not authorized, the error message provided by the authorization response will be propagated to the HTTP response:
+當使用 `Gate::authorize` 方法時，如果未授權操作，將拋出 `AuthorizationException`，授權回應提供的錯誤消息將傳播到 HTTP 回應：
 
 ```php
 Gate::authorize('update', $post);
 
-// The action is authorized...
+// 操作已授權...
 ```
 
 <a name="customizing-policy-response-status"></a>
-#### Customizing the HTTP Response Status
+#### 自定義 HTTP 回應狀態
 
-When an action is denied via a policy method, a `403` HTTP response is returned; however, it can sometimes be useful to return an alternative HTTP status code. You may customize the HTTP status code returned for a failed authorization check using the `denyWithStatus` static constructor on the `Illuminate\Auth\Access\Response` class:
+當通過權限方法拒絕操作時，將返回 `403` HTTP 回應；然而，有時將返回替代的 HTTP 狀態碼可能會很有用。您可以使用 `Illuminate\Auth\Access\Response` 類的 `denyWithStatus` 靜態建構器自訂失敗授權檢查返回的 HTTP 狀態碼：
 
 ```php
 use App\Models\Post;
@@ -445,7 +442,7 @@ public function update(User $user, Post $post): Response
 }
 ```
 
-Because hiding resources via a `404` response is such a common pattern for web applications, the `denyAsNotFound` method is offered for convenience:
+因為通過 `404` 回應隱藏資源對於 Web 應用程式來說是一種常見的模式，所以提供了 `denyAsNotFound` 方法以方便使用：
 
 ```php
 use App\Models\Post;
@@ -464,9 +461,9 @@ public function update(User $user, Post $post): Response
 ```
 
 <a name="methods-without-models"></a>
-### Methods Without Models
+### 沒有模型的方法
 
-Some policy methods only receive an instance of the currently authenticated user. This situation is most common when authorizing `create` actions. For example, if you are creating a blog, you may wish to determine if a user is authorized to create any posts at all. In these situations, your policy method should only expect to receive a user instance:
+某些權限方法僅接收目前已驗證使用者的實例。這種情況在授權 `create` 操作時最常見。例如，如果您正在建立一個部落格，您可能希望確定使用者是否有權建立任何文章。在這些情況下，您的權限方法應僅期望接收使用者實例：
 
 ```php
 /**
@@ -479,9 +476,9 @@ public function create(User $user): bool
 ```
 
 <a name="guest-users"></a>
-### Guest Users
+### 訪客使用者
 
-By default, all gates and policies automatically return `false` if the incoming HTTP request was not initiated by an authenticated user. However, you may allow these authorization checks to pass through to your gates and policies by declaring an "optional" type-hint or supplying a `null` default value for the user argument definition:
+預設情況下，如果傳入的 HTTP 請求不是由已驗證使用者發起，則所有閘道和權限都會自動返回 `false`。但是，您可以通過聲明 "optional" 型提示或為使用者參數定義提供 `null` 默認值，使這些授權檢查通過到您的閘道和權限：
 
 ```php
 <?php
@@ -504,9 +501,9 @@ class PostPolicy
 ```
 
 <a name="policy-filters"></a>
-### Policy Filters
+### 權限過濾器
 
-For certain users, you may wish to authorize all actions within a given policy. To accomplish this, define a `before` method on the policy. The `before` method will be executed before any other methods on the policy, giving you an opportunity to authorize the action before the intended policy method is actually called. This feature is most commonly used for authorizing application administrators to perform any action:
+對於某些使用者，您可能希望授權給特定權限中的所有操作。為了實現這一點，在權限中定義一個 `before` 方法。`before` 方法將在權限的其他方法之前執行，讓您有機會在實際調用預期的權限方法之前授權該操作。這個功能最常用於授權應用程式管理員執行任何操作：
 
 ```php
 use App\Models\User;
@@ -524,18 +521,18 @@ public function before(User $user, string $ability): bool|null
 }
 ```
 
-If you would like to deny all authorization checks for a particular type of user then you may return `false` from the `before` method. If `null` is returned, the authorization check will fall through to the policy method.
+如果您希望拒絕特定類型使用者的所有授權檢查，則可以從 `before` 方法返回 `false`。如果返回 `null`，則授權檢查將通過到權限方法。
 
 > [!WARNING]  
-> The `before` method of a policy class will not be called if the class doesn't contain a method with a name matching the name of the ability being checked.
+> 如果類別中不包含與正在檢查的權限名稱相符的方法，則不會呼叫權限類別的 `before` 方法。
 
 <a name="authorizing-actions-using-policies"></a>
-## Authorizing Actions Using Policies
+## 使用權限授權操作
 
 <a name="via-the-user-model"></a>
-### Via the User Model
+### 透過使用者模型
 
-The `App\Models\User` model that is included with your Laravel application includes two helpful methods for authorizing actions: `can` and `cannot`. The `can` and `cannot` methods receive the name of the action you wish to authorize and the relevant model. For example, let's determine if a user is authorized to update a given `App\Models\Post` model. Typically, this will be done within a controller method:
+您的 Laravel 應用程式中包含的 `App\Models\User` 模型提供了兩個有用的方法來授權操作：`can` 和 `cannot`。`can` 和 `cannot` 方法接收您希望授權的操作名稱以及相關的模型。例如，讓我們來確定使用者是否有權限更新特定的 `App\Models\Post` 模型。通常，這將在控制器方法中完成：
 
 ```php
 <?php
@@ -565,12 +562,12 @@ class PostController extends Controller
 }
 ```
 
-If a [policy is registered](#registering-policies) for the given model, the `can` method will automatically call the appropriate policy and return the boolean result. If no policy is registered for the model, the `can` method will attempt to call the closure-based Gate matching the given action name.
+如果為給定模型[註冊了權限](#registering-policies)，`can` 方法將自動呼叫適當的權限並返回布林結果。如果未為模型註冊權限，`can` 方法將嘗試呼叫基於閉包的 Gate，以符合給定操作名稱。
 
 <a name="user-model-actions-that-dont-require-models"></a>
-#### Actions That Don't Require Models
+#### 不需要模型的操作
 
-Remember, some actions may correspond to policy methods like `create` that do not require a model instance. In these situations, you may pass a class name to the `can` method. The class name will be used to determine which policy to use when authorizing the action:
+請記住，某些操作可能對應到不需要模型實例的權限方法，例如 `create`。在這些情況下，您可以將類別名稱傳遞給 `can` 方法。類別名稱將用於確定在授權操作時要使用哪個權限：
 
 ```php
 <?php
@@ -601,11 +598,11 @@ class PostController extends Controller
 ```
 
 <a name="via-the-gate-facade"></a>
-### Via the `Gate` Facade
+### 透過 `Gate` Facade
 
-In addition to helpful methods provided to the `App\Models\User` model, you can always authorize actions via the `Gate` facade's `authorize` method.
+除了提供給 `App\Models\User` 模型的有用方法之外，您始終可以透過 `Gate` Facade 的 `authorize` 方法來授權操作。
 
-Like the `can` method, this method accepts the name of the action you wish to authorize and the relevant model. If the action is not authorized, the `authorize` method will throw an `Illuminate\Auth\Access\AuthorizationException` exception which the Laravel exception handler will automatically convert to an HTTP response with a 403 status code:
+與 `can` 方法類似，此方法接受您希望授權的操作名稱以及相關的模型。如果未獲授權，`authorize` 方法將拋出一個 `Illuminate\Auth\Access\AuthorizationException` 例外，Laravel 例外處理程序將自動將其轉換為帶有 403 狀態碼的 HTTP 回應：
 
 ```php
 <?php
@@ -636,10 +633,9 @@ class PostController extends Controller
 }
 ```
 
-<a name="controller-actions-that-dont-require-models"></a>
-#### Actions That Don't Require Models
+#### 不需要模型的操作
 
-As previously discussed, some policy methods like `create` do not require a model instance. In these situations, you should pass a class name to the `authorize` method. The class name will be used to determine which policy to use when authorizing the action:
+如前所述，一些像 `create` 的權限方法並不需要模型實例。在這些情況下，您應該將類名傳遞給 `authorize` 方法。類名將用於確定在授權操作時要使用哪個權限策略：
 
 ```php
 use App\Models\Post;
@@ -662,10 +658,9 @@ public function create(Request $request): RedirectResponse
 }
 ```
 
-<a name="via-middleware"></a>
-### Via Middleware
+#### 通過中介層
 
-Laravel includes a middleware that can authorize actions before the incoming request even reaches your routes or controllers. By default, the `Illuminate\Auth\Middleware\Authorize` middleware may be attached to a route using the `can` [middleware alias](/docs/{{version}}/middleware#middleware-aliases), which is automatically registered by Laravel. Let's explore an example of using the `can` middleware to authorize that a user can update a post:
+Laravel 包含一個中介層，可以在傳入請求到達路由或控制器之前授權操作。默認情況下，`Illuminate\Auth\Middleware\Authorize` 中介層可以使用 `can` [中介層別名](/docs/{{version}}/middleware#middleware-aliases) 附加到路由上，該別名由 Laravel 自動註冊。讓我們探索一個使用 `can` 中介層來授權用戶是否可以更新帖子的示例：
 
 ```php
 use App\Models\Post;
@@ -675,9 +670,9 @@ Route::put('/post/{post}', function (Post $post) {
 })->middleware('can:update,post');
 ```
 
-In this example, we're passing the `can` middleware two arguments. The first is the name of the action we wish to authorize and the second is the route parameter we wish to pass to the policy method. In this case, since we are using [implicit model binding](/docs/{{version}}/routing#implicit-binding), an `App\Models\Post` model will be passed to the policy method. If the user is not authorized to perform the given action, an HTTP response with a 403 status code will be returned by the middleware.
+在這個示例中，我們將 `can` 中介層傳遞了兩個參數。第一個是我們希望授權的操作名稱，第二個是我們希望傳遞給權限方法的路由參數。在這種情況下，由於我們使用了[隱式模型繫結](/docs/{{version}}/routing#implicit-binding)，一個 `App\Models\Post` 模型將被傳遞給權限方法。如果用戶未獲得執行給定操作的授權，中介層將返回帶有 403 狀態碼的 HTTP 回應。
 
-For convenience, you may also attach the `can` middleware to your route using the `can` method:
+為了方便起見，您也可以使用 `can` 方法將 `can` 中介層附加到路由上：
 
 ```php
 use App\Models\Post;
@@ -687,18 +682,17 @@ Route::put('/post/{post}', function (Post $post) {
 })->can('update', 'post');
 ```
 
-<a name="middleware-actions-that-dont-require-models"></a>
-#### Actions That Don't Require Models
+#### 不需要模型的操作
 
-Again, some policy methods like `create` do not require a model instance. In these situations, you may pass a class name to the middleware. The class name will be used to determine which policy to use when authorizing the action:
+同樣，一些像 `create` 的權限方法並不需要模型實例。在這些情況下，您可以將類名傳遞給中介層。類名將用於確定在授權操作時要使用哪個權限策略：
 
 ```php
 Route::post('/post', function () {
-    // The current user may create posts...
+    // 當前用戶可以創建帖子...
 })->middleware('can:create,App\Models\Post');
 ```
 
-Specifying the entire class name within a string middleware definition can become cumbersome. For that reason, you may choose to attach the `can` middleware to your route using the `can` method:
+在字符串中介定義中指定完整的類名可能變得繁瑣。因此，您可以選擇使用 `can` 方法將 `can` 中介層附加到路由上。
 
 ```php
 use App\Models\Post;
@@ -709,9 +703,9 @@ Route::post('/post', function () {
 ```
 
 <a name="via-blade-templates"></a>
-### Via Blade Templates
+### 透過 Blade 模板
 
-When writing Blade templates, you may wish to display a portion of the page only if the user is authorized to perform a given action. For example, you may wish to show an update form for a blog post only if the user can actually update the post. In this situation, you may use the `@can` and `@cannot` directives:
+在撰寫 Blade 模板時，您可能希望僅在使用者被授權執行特定操作時顯示頁面的某部分。例如，您可能希望僅在使用者實際上可以更新文章時顯示一個更新表單。在這種情況下，您可以使用 `@can` 和 `@cannot` 指示詞：
 
 ```blade
 @can('update', $post)
@@ -729,7 +723,7 @@ When writing Blade templates, you may wish to display a portion of the page only
 @endcannot
 ```
 
-These directives are convenient shortcuts for writing `@if` and `@unless` statements. The `@can` and `@cannot` statements above are equivalent to the following statements:
+這些指示詞是撰寫 `@if` 和 `@unless` 陳述的便捷快捷方式。上述的 `@can` 和 `@cannot` 陳述等同於以下陳述：
 
 ```blade
 @if (Auth::user()->can('update', $post))
@@ -741,7 +735,7 @@ These directives are convenient shortcuts for writing `@if` and `@unless` statem
 @endunless
 ```
 
-You may also determine if a user is authorized to perform any action from a given array of actions. To accomplish this, use the `@canany` directive:
+您也可以確定使用者是否被授權執行給定動作陣列中的任何操作。為此，請使用 `@canany` 指示詞：
 
 ```blade
 @canany(['update', 'view', 'delete'], $post)
@@ -752,9 +746,9 @@ You may also determine if a user is authorized to perform any action from a give
 ```
 
 <a name="blade-actions-that-dont-require-models"></a>
-#### Actions That Don't Require Models
+#### 不需要模型的操作
 
-Like most of the other authorization methods, you may pass a class name to the `@can` and `@cannot` directives if the action does not require a model instance:
+與其他大多數授權方法一樣，如果動作不需要模型實例，您可以將類別名稱傳遞給 `@can` 和 `@cannot` 指示詞：
 
 ```blade
 @can('create', App\Models\Post::class)
@@ -767,9 +761,9 @@ Like most of the other authorization methods, you may pass a class name to the `
 ```
 
 <a name="supplying-additional-context"></a>
-### Supplying Additional Context
+### 提供額外上下文
 
-When authorizing actions using policies, you may pass an array as the second argument to the various authorization functions and helpers. The first element in the array will be used to determine which policy should be invoked, while the rest of the array elements are passed as parameters to the policy method and can be used for additional context when making authorization decisions. For example, consider the following `PostPolicy` method definition which contains an additional `$category` parameter:
+在使用策略授權操作時，您可以將陣列作為各種授權函數和輔助函式的第二個參數傳遞。陣列中的第一個元素將用於確定應該調用哪個策略，而陣列的其餘元素將作為參數傳遞給策略方法，並可用於在做出授權決策時提供額外上下文。例如，考慮以下 `PostPolicy` 方法定義，其中包含額外的 `$category` 參數：
 
 ```php
 /**
@@ -782,7 +776,7 @@ public function update(User $user, Post $post, int $category): bool
 }
 ```
 
-When attempting to determine if the authenticated user can update a given post, we can invoke this policy method like so:
+當嘗試確定驗證使用者是否可以更新給定的文章時，我們可以這樣調用此策略方法：
 
 ```php
 /**
@@ -801,11 +795,11 @@ public function update(Request $request, Post $post): RedirectResponse
 ```
 
 <a name="authorization-and-inertia"></a>
-## Authorization & Inertia
+## 授權與 Inertia
 
-Although authorization must always be handled on the server, it can often be convenient to provide your frontend application with authorization data in order to properly render your application's UI. Laravel does not define a required convention for exposing authorization information to an Inertia powered frontend.
+儘管授權必須始終在伺服器上處理，但通常可以方便地向前端應用程式提供授權資料，以便正確呈現應用程式的使用者介面。Laravel 並未為將授權資訊暴露給 Inertia 驅動的前端應用程式定義所需的慣例。
 
-However, if you are using one of Laravel's Inertia-based [starter kits](/docs/{{version}}/starter-kits), your application already contains a `HandleInertiaRequests` middleware. Within this middleware's `share` method, you may return shared data that will be provided to all Inertia pages in your application. This shared data can serve as a convenient location to define authorization information for the user:
+然而，如果您正在使用 Laravel 基於 Inertia 的 [入門套件](/docs/{{version}}/starter-kits) 之一，您的應用程式已經包含一個 `HandleInertiaRequests` 中介層。在這個中介層的 `share` 方法中，您可以返回共享資料，這些資料將提供給應用程式中所有 Inertia 頁面。這些共享資料可以作為定義使用者授權資訊的便利位置：
 
 ```php
 <?php

@@ -1,33 +1,33 @@
-# Middleware
+# 中介層
 
-- [Introduction](#introduction)
-- [Defining Middleware](#defining-middleware)
-- [Registering Middleware](#registering-middleware)
-    - [Global Middleware](#global-middleware)
-    - [Assigning Middleware to Routes](#assigning-middleware-to-routes)
-    - [Middleware Groups](#middleware-groups)
-    - [Middleware Aliases](#middleware-aliases)
-    - [Sorting Middleware](#sorting-middleware)
-- [Middleware Parameters](#middleware-parameters)
-- [Terminable Middleware](#terminable-middleware)
+- [簡介](#introduction)
+- [定義中介層](#defining-middleware)
+- [註冊中介層](#registering-middleware)
+    - [全域中介層](#global-middleware)
+    - [將中介層指派給路由](#assigning-middleware-to-routes)
+    - [中介層群組](#middleware-groups)
+    - [中介層別名](#middleware-aliases)
+    - [排序中介層](#sorting-middleware)
+- [中介層參數](#middleware-parameters)
+- [可終止的中介層](#terminable-middleware)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Middleware provide a convenient mechanism for inspecting and filtering HTTP requests entering your application. For example, Laravel includes a middleware that verifies the user of your application is authenticated. If the user is not authenticated, the middleware will redirect the user to your application's login screen. However, if the user is authenticated, the middleware will allow the request to proceed further into the application.
+中介層提供了一個方便的機制，用於檢查和過濾進入應用程式的 HTTP 請求。例如，Laravel 包含一個中介層，用於驗證應用程式的使用者是否已通過身分驗證。如果使用者未通過身分驗證，中介層將重新導向使用者到應用程式的登入畫面。但是，如果使用者已通過身分驗證，中介層將允許請求進一步進入應用程式。
 
-Additional middleware can be written to perform a variety of tasks besides authentication. For example, a logging middleware might log all incoming requests to your application. A variety of middleware are included in Laravel, including middleware for authentication and CSRF protection; however, all user-defined middleware are typically located in your application's `app/Http/Middleware` directory.
+除了身分驗證之外，可以編寫其他各種任務的中介層。例如，日誌記錄中介層可能會記錄所有進入應用程式的請求。Laravel 包含各種中介層，包括用於身分驗證和 CSRF 保護的中介層；但是，所有用戶定義的中介層通常位於您應用程式的 `app/Http/Middleware` 目錄中。
 
 <a name="defining-middleware"></a>
-## Defining Middleware
+## 定義中介層
 
-To create a new middleware, use the `make:middleware` Artisan command:
+要建立新的中介層，請使用 `make:middleware` Artisan 命令：
 
 ```shell
 php artisan make:middleware EnsureTokenIsValid
 ```
 
-This command will place a new `EnsureTokenIsValid` class within your `app/Http/Middleware` directory. In this middleware, we will only allow access to the route if the supplied `token` input matches a specified value. Otherwise, we will redirect the users back to the `/home` URI:
+此命令將在您的 `app/Http/Middleware` 目錄中放置一個新的 `EnsureTokenIsValid` 類別。在此中介層中，我們只允許存取路由，如果提供的 `token` 輸入與指定值匹配。否則，我們將重新導向使用者回到 `/home` URI：
 
 ```php
 <?php
@@ -56,17 +56,17 @@ class EnsureTokenIsValid
 }
 ```
 
-As you can see, if the given `token` does not match our secret token, the middleware will return an HTTP redirect to the client; otherwise, the request will be passed further into the application. To pass the request deeper into the application (allowing the middleware to "pass"), you should call the `$next` callback with the `$request`.
+如您所見，如果給定的 `token` 不符合我們的秘密 token，中介層將向客戶端返回 HTTP 重新導向；否則，請求將進一步傳遞到應用程式。要將請求傳遞到應用程式的更深層（允許中介層“通過”），您應該使用 `$request` 調用 `$next` 回呼。
 
-It's best to envision middleware as a series of "layers" HTTP requests must pass through before they hit your application. Each layer can examine the request and even reject it entirely.
+最好將中介層想像為 HTTP 請求在抵達應用程式之前必須通過的一系列「層」。每個層都可以檢查請求，甚至完全拒絕它。
 
 > [!NOTE]  
-> All middleware are resolved via the [service container](/docs/{{version}}/container), so you may type-hint any dependencies you need within a middleware's constructor.
+> 所有中介層都是透過[服務容器](/docs/{{version}}/container)解析的，因此您可以在中介層的建構子中使用型別提示來指定任何需要的相依性。
 
 <a name="middleware-and-responses"></a>
-#### Middleware and Responses
+#### 中介層與回應
 
-Of course, a middleware can perform tasks before or after passing the request deeper into the application. For example, the following middleware would perform some task **before** the request is handled by the application:
+當然，中介層可以在將請求傳遞到應用程式之前或之後執行任務。例如，以下中介層將在應用程式處理請求**之前**執行某些任務：
 
 ```php
 <?php
@@ -88,7 +88,7 @@ class BeforeMiddleware
 }
 ```
 
-However, this middleware would perform its task **after** the request is handled by the application:
+然而，這個中介層將在應用程式處理請求**之後**執行其任務：
 
 ```php
 <?php
@@ -113,12 +113,12 @@ class AfterMiddleware
 ```
 
 <a name="registering-middleware"></a>
-## Registering Middleware
+## 註冊中介層
 
 <a name="global-middleware"></a>
-### Global Middleware
+### 全域中介層
 
-If you want a middleware to run during every HTTP request to your application, you may append it to the global middleware stack in your application's `bootstrap/app.php` file:
+如果您希望一個中介層在每個 HTTP 請求到您的應用程式時運行，您可以將其附加到應用程式的 `bootstrap/app.php` 檔案中的全域中介層堆疊：
 
 ```php
 use App\Http\Middleware\EnsureTokenIsValid;
@@ -128,12 +128,12 @@ use App\Http\Middleware\EnsureTokenIsValid;
 })
 ```
 
-The `$middleware` object provided to the `withMiddleware` closure is an instance of `Illuminate\Foundation\Configuration\Middleware` and is responsible for managing the middleware assigned to your application's routes. The `append` method adds the middleware to the end of the list of global middleware. If you would like to add a middleware to the beginning of the list, you should use the `prepend` method.
+提供給 `withMiddleware` 閉包的 `$middleware` 物件是 `Illuminate\Foundation\Configuration\Middleware` 的一個實例，負責管理指派給您應用程式路由的中介層。`append` 方法將中介層新增至全域中介層清單的末端。如果您想要將中介層新增至清單的開頭，您應該使用 `prepend` 方法。
 
 <a name="manually-managing-laravels-default-global-middleware"></a>
-#### Manually Managing Laravel's Default Global Middleware
+#### 手動管理 Laravel 的預設全域中介層
 
-If you would like to manage Laravel's global middleware stack manually, you may provide Laravel's default stack of global middleware to the `use` method. Then, you may adjust the default middleware stack as necessary:
+如果您想要手動管理 Laravel 的全域中介層堆疊，您可以將 Laravel 的預設全域中介層堆疊提供給 `use` 方法。然後，您可以根據需要調整預設中介層堆疊：
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
@@ -151,9 +151,9 @@ If you would like to manage Laravel's global middleware stack manually, you may 
 ```
 
 <a name="assigning-middleware-to-routes"></a>
-### Assigning Middleware to Routes
+### 將中介層指派給路由
 
-If you would like to assign middleware to specific routes, you may invoke the `middleware` method when defining the route:
+如果您想要將中介層分配給特定路由，您可以在定義路由時調用 `middleware` 方法：
 
 ```php
 use App\Http\Middleware\EnsureTokenIsValid;
@@ -163,7 +163,7 @@ Route::get('/profile', function () {
 })->middleware(EnsureTokenIsValid::class);
 ```
 
-You may assign multiple middleware to the route by passing an array of middleware names to the `middleware` method:
+您可以通過將中介層名稱的數組傳遞給 `middleware` 方法，將多個中介層分配給路由：
 
 ```php
 Route::get('/', function () {
@@ -172,9 +172,9 @@ Route::get('/', function () {
 ```
 
 <a name="excluding-middleware"></a>
-#### Excluding Middleware
+#### 排除中介層
 
-When assigning middleware to a group of routes, you may occasionally need to prevent the middleware from being applied to an individual route within the group. You may accomplish this using the `withoutMiddleware` method:
+當將中介層分配給一組路由時，您可能偶爾需要防止中介層應用於該組中的個別路由。您可以使用 `withoutMiddleware` 方法來實現這一點：
 
 ```php
 use App\Http\Middleware\EnsureTokenIsValid;
@@ -190,7 +190,7 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
 });
 ```
 
-You may also exclude a given set of middleware from an entire [group](/docs/{{version}}/routing#route-groups) of route definitions:
+您還可以從整個 [組](/docs/{{version}}/routing#route-groups) 的路由定義中排除一組特定的中介層：
 
 ```php
 use App\Http\Middleware\EnsureTokenIsValid;
@@ -202,12 +202,12 @@ Route::withoutMiddleware([EnsureTokenIsValid::class])->group(function () {
 });
 ```
 
-The `withoutMiddleware` method can only remove route middleware and does not apply to [global middleware](#global-middleware).
+`withoutMiddleware` 方法僅能移除路由中介層，不適用於[全域中介層](#global-middleware)。
 
 <a name="middleware-groups"></a>
-### Middleware Groups
+### 中介層組
 
-Sometimes you may want to group several middleware under a single key to make them easier to assign to routes. You may accomplish this using the `appendToGroup` method within your application's `bootstrap/app.php` file:
+有時您可能希望將幾個中介層分組在單個鍵下，以便更容易將它們分配給路由。您可以在應用程式的 `bootstrap/app.php` 文件中使用 `appendToGroup` 方法來實現這一點：
 
 ```php
 use App\Http\Middleware\First;
@@ -226,7 +226,7 @@ use App\Http\Middleware\Second;
 })
 ```
 
-Middleware groups may be assigned to routes and controller actions using the same syntax as individual middleware:
+中介層組可以使用與單個中介層相同的語法分配給路由和控制器行為：
 
 ```php
 Route::get('/', function () {
@@ -239,13 +239,13 @@ Route::middleware(['group-name'])->group(function () {
 ```
 
 <a name="laravels-default-middleware-groups"></a>
-#### Laravel's Default Middleware Groups
+#### Laravel 預設中介層組
 
-Laravel includes predefined `web` and `api` middleware groups that contain common middleware you may want to apply to your web and API routes. Remember, Laravel automatically applies these middleware groups to the corresponding `routes/web.php` and `routes/api.php` files:
+Laravel 包含預定義的 `web` 和 `api` 中介層組，其中包含您可能希望應用於 Web 和 API 路由的常見中介層。請記住，Laravel 自動將這些中介層組應用於相應的 `routes/web.php` 和 `routes/api.php` 文件：
 
 <div class="overflow-auto">
 
-| The `web` Middleware Group |
+| `web` 中介層組 |
 | --- |
 | `Illuminate\Cookie\Middleware\EncryptCookies` |
 | `Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse` |
@@ -258,13 +258,13 @@ Laravel includes predefined `web` and `api` middleware groups that contain commo
 
 <div class="overflow-auto">
 
-| The `api` Middleware Group |
+| `api` 中介層群組 |
 | --- |
 | `Illuminate\Routing\Middleware\SubstituteBindings` |
 
 </div>
 
-If you would like to append or prepend middleware to these groups, you may use the `web` and `api` methods within your application's `bootstrap/app.php` file. The `web` and `api` methods are convenient alternatives to the `appendToGroup` method:
+如果您想要附加或預先設置中介層到這些群組，您可以在應用程式的 `bootstrap/app.php` 檔案中使用 `web` 和 `api` 方法。`web` 和 `api` 方法是 `appendToGroup` 方法的方便替代方式：
 
 ```php
 use App\Http\Middleware\EnsureTokenIsValid;
@@ -281,7 +281,7 @@ use App\Http\Middleware\EnsureUserIsSubscribed;
 })
 ```
 
-You may even replace one of Laravel's default middleware group entries with a custom middleware of your own:
+您甚至可以用自己的自訂中介層取代 Laravel 預設的中介層群組之一：
 
 ```php
 use App\Http\Middleware\StartCustomSession;
@@ -292,7 +292,7 @@ $middleware->web(replace: [
 ]);
 ```
 
-Or, you may remove a middleware entirely:
+或者，您可以完全移除一個中介層：
 
 ```php
 $middleware->web(remove: [
@@ -301,9 +301,9 @@ $middleware->web(remove: [
 ```
 
 <a name="manually-managing-laravels-default-middleware-groups"></a>
-#### Manually Managing Laravel's Default Middleware Groups
+#### 手動管理 Laravel 的預設中介層群組
 
-If you would like to manually manage all of the middleware within Laravel's default `web` and `api` middleware groups, you may redefine the groups entirely. The example below will define the `web` and `api` middleware groups with their default middleware, allowing you to customize them as necessary:
+如果您想要手動管理 Laravel 預設的 `web` 和 `api` 中介層群組中的所有中介層，您可以重新定義這些群組。下面的範例將定義 `web` 和 `api` 中介層群組以及它們的預設中介層，讓您可以根據需要進行自訂：
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
@@ -326,12 +326,12 @@ If you would like to manually manage all of the middleware within Laravel's defa
 ```
 
 > [!NOTE]  
-> By default, the `web` and `api` middleware groups are automatically applied to your application's corresponding `routes/web.php` and `routes/api.php` files by the `bootstrap/app.php` file.
+> 預設情況下，`web` 和 `api` 中介層群組會自動應用到應用程式對應的 `routes/web.php` 和 `routes/api.php` 檔案中，這是由 `bootstrap/app.php` 檔案處理的。
 
 <a name="middleware-aliases"></a>
-### Middleware Aliases
+### 中介層別名
 
-You may assign aliases to middleware in your application's `bootstrap/app.php` file. Middleware aliases allow you to define a short alias for a given middleware class, which can be especially useful for middleware with long class names:
+您可以在應用程式的 `bootstrap/app.php` 檔案中為中介層指定別名。中介層別名允許您為給定的中介層類別定義簡短的別名，這對於具有較長類別名稱的中介層尤其有用：
 
 ```php
 use App\Http\Middleware\EnsureUserIsSubscribed;
@@ -343,7 +343,7 @@ use App\Http\Middleware\EnsureUserIsSubscribed;
 })
 ```
 
-Once the middleware alias has been defined in your application's `bootstrap/app.php` file, you may use the alias when assigning the middleware to routes:
+一旦中介層別名在應用程式的 `bootstrap/app.php` 檔案中定義，您可以在指定中介層給路由時使用該別名：
 
 ```php
 Route::get('/profile', function () {
@@ -351,11 +351,12 @@ Route::get('/profile', function () {
 })->middleware('subscribed');
 ```
 
-For convenience, some of Laravel's built-in middleware are aliased by default. For example, the `auth` middleware is an alias for the `Illuminate\Auth\Middleware\Authenticate` middleware. Below is a list of the default middleware aliases:
+為方便起見，一些 Laravel 內建的中介層已經預設有別名。例如，`auth` 中介層是 `Illuminate\Auth\Middleware\Authenticate` 中介層的別名。以下是一些預設中介層別名的清單：
+
 
 <div class="overflow-auto">
 
-| Alias | Middleware |
+| 別名 | 中介層 |
 | --- | --- |
 | `auth` | `Illuminate\Auth\Middleware\Authenticate` |
 | `auth.basic` | `Illuminate\Auth\Middleware\AuthenticateWithBasicAuth` |
@@ -373,9 +374,9 @@ For convenience, some of Laravel's built-in middleware are aliased by default. F
 </div>
 
 <a name="sorting-middleware"></a>
-### Sorting Middleware
+### 分類中介層
 
-Rarely, you may need your middleware to execute in a specific order but not have control over their order when they are assigned to the route. In these situations, you may specify your middleware priority using the `priority` method in your application's `bootstrap/app.php` file:
+偶爾，您可能需要讓您的中介層按特定順序執行，但在指定給路由時卻無法控制它們的順序。在這些情況下，您可以在應用程式的 `bootstrap/app.php` 檔案中使用 `priority` 方法來指定您的中介層優先順序：
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
@@ -397,11 +398,11 @@ Rarely, you may need your middleware to execute in a specific order but not have
 ```
 
 <a name="middleware-parameters"></a>
-## Middleware Parameters
+## 中介層參數
 
-Middleware can also receive additional parameters. For example, if your application needs to verify that the authenticated user has a given "role" before performing a given action, you could create an `EnsureUserHasRole` middleware that receives a role name as an additional argument.
+中介層也可以接收額外的參數。例如，如果您的應用程式需要在執行特定操作之前驗證已驗證使用者是否具有特定的「角色」，您可以建立一個 `EnsureUserHasRole` 中介層，該中介層接收角色名稱作為額外參數。
 
-Additional middleware parameters will be passed to the middleware after the `$next` argument:
+額外的中介層參數將在 `$next` 參數之後傳遞給中介層：
 
 ```php
 <?php
@@ -431,7 +432,7 @@ class EnsureUserHasRole
 }
 ```
 
-Middleware parameters may be specified when defining the route by separating the middleware name and parameters with a `:`:
+在定義路由時，可以使用 `:` 將中介層名稱和參數分隔：
 
 ```php
 use App\Http\Middleware\EnsureUserHasRole;
@@ -441,7 +442,7 @@ Route::put('/post/{id}', function (string $id) {
 })->middleware(EnsureUserHasRole::class.':editor');
 ```
 
-Multiple parameters may be delimited by commas:
+多個參數可以用逗號分隔：
 
 ```php
 Route::put('/post/{id}', function (string $id) {
@@ -449,10 +450,9 @@ Route::put('/post/{id}', function (string $id) {
 })->middleware(EnsureUserHasRole::class.':editor,publisher');
 ```
 
-<a name="terminable-middleware"></a>
-## Terminable Middleware
+## 可終止中介層
 
-Sometimes a middleware may need to do some work after the HTTP response has been sent to the browser. If you define a `terminate` method on your middleware and your web server is using FastCGI, the `terminate` method will automatically be called after the response is sent to the browser:
+有時候一個中介層可能需要在 HTTP 回應已經送到瀏覽器後執行一些工作。如果在你的中介層上定義了 `terminate` 方法，並且你的網頁伺服器正在使用 FastCGI，則在回應送到瀏覽器後會自動呼叫 `terminate` 方法：
 
 ```php
 <?php
@@ -485,9 +485,9 @@ class TerminatingMiddleware
 }
 ```
 
-The `terminate` method should receive both the request and the response. Once you have defined a terminable middleware, you should add it to the list of routes or global middleware in your application's `bootstrap/app.php` file.
+`terminate` 方法應該接收到請求和回應。一旦你定義了一個可終止的中介層，你應該將其加入到路由列表或應用程式的全域中介層中，在你應用程式的 `bootstrap/app.php` 檔案中。
 
-When calling the `terminate` method on your middleware, Laravel will resolve a fresh instance of the middleware from the [service container](/docs/{{version}}/container). If you would like to use the same middleware instance when the `handle` and `terminate` methods are called, register the middleware with the container using the container's `singleton` method. Typically this should be done in the `register` method of your `AppServiceProvider`:
+當在你的中介層上呼叫 `terminate` 方法時，Laravel 會從[服務容器](/docs/{{version}}/container)中解析出一個新的中介層實例。如果你希望在呼叫 `handle` 和 `terminate` 方法時使用相同的中介層實例，請使用容器的 `singleton` 方法將中介層註冊到容器中。通常這應該在你的 `AppServiceProvider` 的 `register` 方法中完成：
 
 ```php
 use App\Http\Middleware\TerminatingMiddleware;
