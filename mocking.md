@@ -1,22 +1,22 @@
-# Mocking
+# 模擬
 
-- [Introduction](#introduction)
-- [Mocking Objects](#mocking-objects)
-- [Mocking Facades](#mocking-facades)
-    - [Facade Spies](#facade-spies)
-- [Interacting With Time](#interacting-with-time)
+- [簡介](#introduction)
+- [模擬物件](#mocking-objects)
+- [模擬Facades](#mocking-facades)
+    - [Facade間諜](#facade-spies)
+- [與時間互動](#interacting-with-time)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-When testing Laravel applications, you may wish to "mock" certain aspects of your application so they are not actually executed during a given test. For example, when testing a controller that dispatches an event, you may wish to mock the event listeners so they are not actually executed during the test. This allows you to only test the controller's HTTP response without worrying about the execution of the event listeners since the event listeners can be tested in their own test case.
+在測試 Laravel 應用程式時，您可能希望「模擬」應用程式的某些部分，以便在給定的測試中不實際執行它們。例如，當測試一個調度事件的控制器時，您可能希望模擬事件監聽器，以便在測試期間不實際執行它們。這樣您就可以僅測試控制器的 HTTP 回應，而不必擔心事件監聽器的執行，因為事件監聽器可以在它們自己的測試案例中進行測試。
 
-Laravel provides helpful methods for mocking events, jobs, and other facades out of the box. These helpers primarily provide a convenience layer over Mockery so you do not have to manually make complicated Mockery method calls.
+Laravel 提供了有用的方法來模擬事件、工作和其他Facades。這些輔助方法主要提供了一個方便的層面，使您不必手動進行複雜的 Mockery 方法呼叫。
 
 <a name="mocking-objects"></a>
-## Mocking Objects
+## 模擬物件
 
-When mocking an object that is going to be injected into your application via Laravel's [service container](/docs/{{version}}/container), you will need to bind your mocked instance into the container as an `instance` binding. This will instruct the container to use your mocked instance of the object instead of constructing the object itself:
+當模擬一個將通過 Laravel 的[服務容器](/docs/{{version}}/container)注入到您的應用程式中的物件時，您需要將您的模擬實例綁定到容器中作為 `instance` 綁定。這將指示容器使用您的物件的模擬實例，而不是構造物件本身：
 
 ```php tab=Pest
 use App\Service;
@@ -49,7 +49,7 @@ public function test_something_can_be_mocked(): void
 }
 ```
 
-In order to make this more convenient, you may use the `mock` method that is provided by Laravel's base test case class. For example, the following example is equivalent to the example above:
+為了使這更方便，您可以使用 Laravel 基本測試案例類提供的 `mock` 方法。例如，以下範例等同於上面的範例：
 
     use App\Service;
     use Mockery\MockInterface;
@@ -58,52 +58,58 @@ In order to make this more convenient, you may use the `mock` method that is pro
         $mock->shouldReceive('process')->once();
     });
 
-You may use the `partialMock` method when you only need to mock a few methods of an object. The methods that are not mocked will be executed normally when called:
+當您只需要模擬物件的一些方法時，您可以使用 `partialMock` 方法。未模擬的方法在調用時將正常執行：
 
     use App\Service;
     use Mockery\MockInterface;
 
-    $mock = $this->partialMock(Service::class, function (MockInterface $mock) {
-        $mock->shouldReceive('process')->once();
-    });
+```php
+$mock = $this->partialMock(Service::class, function (MockInterface $mock) {
+    $mock->shouldReceive('process')->once();
+});
+```
 
-Similarly, if you want to [spy](http://docs.mockery.io/en/latest/reference/spies.html) on an object, Laravel's base test case class offers a `spy` method as a convenient wrapper around the `Mockery::spy` method. Spies are similar to mocks; however, spies record any interaction between the spy and the code being tested, allowing you to make assertions after the code is executed:
+同樣地，如果您想要在一個物件上進行[監視](http://docs.mockery.io/en/latest/reference/spies.html)，Laravel 的基本測試案例類別提供了一個 `spy` 方法，作為對 `Mockery::spy` 方法的便捷封裝。監視器與模擬物件類似；然而，監視器記錄了監視器與被測試程式碼之間的任何互動，允許您在程式碼執行後進行斷言：
 
-    use App\Service;
+```php
+use App\Service;
 
-    $spy = $this->spy(Service::class);
+$spy = $this->spy(Service::class);
 
-    // ...
+// ...
 
-    $spy->shouldHaveReceived('process');
+$spy->shouldHaveReceived('process');
+```
 
 <a name="mocking-facades"></a>
-## Mocking Facades
+## 模擬 Facades
 
-Unlike traditional static method calls, [facades](/docs/{{version}}/facades) (including [real-time facades](/docs/{{version}}/facades#real-time-facades)) may be mocked. This provides a great advantage over traditional static methods and grants you the same testability that you would have if you were using traditional dependency injection. When testing, you may often want to mock a call to a Laravel facade that occurs in one of your controllers. For example, consider the following controller action:
+與傳統的靜態方法呼叫不同，[facades](/docs/{{version}}/facades)（包括[即時 facades](/docs/{{version}}/facades#real-time-facades)）可以被模擬。這比傳統的靜態方法提供了很大的優勢，並且為您提供了與使用傳統依賴注入時相同的可測性。在進行測試時，您可能經常希望模擬在您的控制器中發生的對 Laravel facade 的呼叫。例如，考慮以下控制器行為：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cache;
 
-    class UserController extends Controller
+class UserController extends Controller
+{
+    /**
+     * 檢索應用程式所有使用者的清單。
+     */
+    public function index(): array
     {
-        /**
-         * Retrieve a list of all users of the application.
-         */
-        public function index(): array
-        {
-            $value = Cache::get('key');
+        $value = Cache::get('key');
 
-            return [
-                // ...
-            ];
-        }
+        return [
+            // ...
+        ];
     }
+}
+```
 
-We can mock the call to the `Cache` facade by using the `shouldReceive` method, which will return an instance of a [Mockery](https://github.com/padraic/mockery) mock. Since facades are actually resolved and managed by the Laravel [service container](/docs/{{version}}/container), they have much more testability than a typical static class. For example, let's mock our call to the `Cache` facade's `get` method:
+我們可以使用 `shouldReceive` 方法模擬對 `Cache` facade 的呼叫，該方法將返回一個 [Mockery](https://github.com/padraic/mockery) 模擬的實例。由於 facades 實際上是由 Laravel 的[服務容器](/docs/{{version}}/container)解析和管理的，它們比典型的靜態類具有更多的可測性。例如，讓我們模擬對 `Cache` facade 的 `get` 方法的呼叫：
 
 ```php tab=Pest
 <?php
@@ -112,9 +118,9 @@ use Illuminate\Support\Facades\Cache;
 
 test('get index', function () {
     Cache::shouldReceive('get')
-                ->once()
-                ->with('key')
-                ->andReturn('value');
+        ->once()
+        ->with('key')
+        ->andReturn('value');
 
     $response = $this->get('/users');
 
@@ -135,9 +141,9 @@ class UserControllerTest extends TestCase
     public function test_get_index(): void
     {
         Cache::shouldReceive('get')
-                    ->once()
-                    ->with('key')
-                    ->andReturn('value');
+            ->once()
+            ->with('key')
+            ->andReturn('value');
 
         $response = $this->get('/users');
 
@@ -147,12 +153,12 @@ class UserControllerTest extends TestCase
 ```
 
 > [!WARNING]  
-> You should not mock the `Request` facade. Instead, pass the input you desire into the [HTTP testing methods](/docs/{{version}}/http-tests) such as `get` and `post` when running your test. Likewise, instead of mocking the `Config` facade, call the `Config::set` method in your tests.
+> 不應該模擬 `Request` facade。在執行測試時，應將所需的輸入傳遞給 [HTTP 測試方法](/docs/{{version}}/http-tests) 如 `get` 和 `post`。同樣地，不應該模擬 `Config` facade，應在測試中調用 `Config::set` 方法。
 
 <a name="facade-spies"></a>
 ### Facade Spies
 
-If you would like to [spy](http://docs.mockery.io/en/latest/reference/spies.html) on a facade, you may call the `spy` method on the corresponding facade. Spies are similar to mocks; however, spies record any interaction between the spy and the code being tested, allowing you to make assertions after the code is executed:
+如果您想要 [監視](http://docs.mockery.io/en/latest/reference/spies.html) 一個 facade，可以在相應的 facade 上調用 `spy` 方法。Spies 類似於模擬；但是，spies 會記錄 spy 與被測試代碼之間的任何交互，允許您在代碼執行後進行斷言：
 
 ```php tab=Pest
 <?php
@@ -186,9 +192,9 @@ public function test_values_are_be_stored_in_cache(): void
 ```
 
 <a name="interacting-with-time"></a>
-## Interacting With Time
+## 與時間互動
 
-When testing, you may occasionally need to modify the time returned by helpers such as `now` or `Illuminate\Support\Carbon::now()`. Thankfully, Laravel's base feature test class includes helpers that allow you to manipulate the current time:
+在測試時，您可能偶爾需要修改諸如 `now` 或 `Illuminate\Support\Carbon::now()` 等輔助函式返回的時間。幸運的是，Laravel 的基礎特性測試類別包含了幫助您操作當前時間的輔助函式：
 
 ```php tab=Pest
 test('time can be manipulated', function () {
@@ -235,31 +241,31 @@ public function test_time_can_be_manipulated(): void
 }
 ```
 
-You may also provide a closure to the various time travel methods. The closure will be invoked with time frozen at the specified time. Once the closure has executed, time will resume as normal:
+您也可以向各種時間旅行方法提供閉包。閉包將在指定時間凍結時間後被調用。一旦閉包執行完畢，時間將恢復正常：
 
     $this->travel(5)->days(function () {
-        // Test something five days into the future...
-    });
-    
-    $this->travelTo(now()->subDays(10), function () {
-        // Test something during a given moment...
+        // 測試未來五天的某事...
     });
 
-The `freezeTime` method may be used to freeze the current time. Similarly, the `freezeSecond` method will freeze the current time but at the start of the current second:
+    $this->travelTo(now()->subDays(10), function () {
+        // 在特定時刻測試某事...
+    });
+
+`freezeTime` 方法可用於凍結當前時間。同樣地，`freezeSecond` 方法將凍結當前時間，但在當前秒的開始：
 
     use Illuminate\Support\Carbon;
 
-    // Freeze time and resume normal time after executing closure...
+    // 凍結時間並在執行閉包後恢復正常時間...
     $this->freezeTime(function (Carbon $time) {
         // ...
     });
 
-    // Freeze time at the current second and resume normal time after executing closure...
+    // 在當前秒凍結時間並在執行閉包後恢復正常時間...
     $this->freezeSecond(function (Carbon $time) {
         // ...
     })
 
-As you would expect, all of the methods discussed above are primarily useful for testing time sensitive application behavior, such as locking inactive posts on a discussion forum:
+正如您所期望的那樣，上面討論的所有方法主要用於測試時間敏感的應用行為，例如在討論區上鎖定非活動帖子：  
 
 ```php tab=Pest
 use App\Models\Thread;
@@ -284,4 +290,4 @@ public function test_forum_threads_lock_after_one_week_of_inactivity()
 
     $this->assertTrue($thread->isLockedByInactivity());
 }
-```
+```  

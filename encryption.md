@@ -1,77 +1,81 @@
-# Encryption
+# 加密
 
-- [Introduction](#introduction)
-- [Configuration](#configuration)
-    - [Gracefully Rotating Encryption Keys](#gracefully-rotating-encryption-keys)
-- [Using the Encrypter](#using-the-encrypter)
+- [簡介](#introduction)
+- [組態設定](#configuration)
+    - [優雅地輪換加密金鑰](#gracefully-rotating-encryption-keys)
+- [使用加密器](#using-the-encrypter)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel's encryption services provide a simple, convenient interface for encrypting and decrypting text via OpenSSL using AES-256 and AES-128 encryption. All of Laravel's encrypted values are signed using a message authentication code (MAC) so that their underlying value can not be modified or tampered with once encrypted.
+Laravel 的加密服務提供了一個簡單、方便的介面，通過 OpenSSL 使用 AES-256 和 AES-128 加密來加密和解密文本。所有 Laravel 的加密值都使用訊息驗證碼（MAC）簽名，因此一旦加密，它們的基礎值就無法被修改或篡改。
 
 <a name="configuration"></a>
-## Configuration
+## 組態設定
 
-Before using Laravel's encrypter, you must set the `key` configuration option in your `config/app.php` configuration file. This configuration value is driven by the `APP_KEY` environment variable. You should use the `php artisan key:generate` command to generate this variable's value since the `key:generate` command will use PHP's secure random bytes generator to build a cryptographically secure key for your application. Typically, the value of the `APP_KEY` environment variable will be generated for you during [Laravel's installation](/docs/{{version}}/installation).
+在使用 Laravel 的加密器之前，您必須在 `config/app.php` 組態檔中設置 `key` 組態選項。這個組態值由 `APP_KEY` 環境變數驅動。您應該使用 `php artisan key:generate` 命令來生成這個變數的值，因為 `key:generate` 命令將使用 PHP 的安全隨機位元組生成器來為您的應用程式建立一個具有密碼安全性的金鑰。通常，`APP_KEY` 環境變數的值將在 [Laravel 的安裝](/docs/{{version}}/installation) 過程中為您生成。
 
 <a name="gracefully-rotating-encryption-keys"></a>
-### Gracefully Rotating Encryption Keys
+### 優雅地輪換加密金鑰
 
-If you change your application's encryption key, all authenticated user sessions will be logged out of your application. This is because every cookie, including session cookies, are encrypted by Laravel. In addition, it will no longer be possible to decrypt any data that was encrypted with your previous encryption key.
+如果您更改應用程式的加密金鑰，則所有已驗證的使用者會話將從您的應用程式中登出。這是因為 Laravel 加密了每個 cookie，包括會話 cookie。此外，將不再能夠解密使用先前加密金鑰加密的任何數據。
 
-To mitigate this issue, Laravel allows you to list your previous encryption keys in your application's `APP_PREVIOUS_KEYS` environment variable. This variable may contain a comma-delimited list of all of your previous encryption keys:
+為了減輕這個問題，Laravel 允許您在應用程式的 `APP_PREVIOUS_KEYS` 環境變數中列出先前的加密金鑰。此變數可以包含所有先前加密金鑰的逗號分隔列表：
 
 ```ini
 APP_KEY="base64:J63qRTDLub5NuZvP+kb8YIorGS6qFYHKVo6u7179stY="
 APP_PREVIOUS_KEYS="base64:2nLsGFGzyoae2ax3EF2Lyq/hH6QghBGLIq5uL+Gp8/w="
 ```
 
-When you set this environment variable, Laravel will always use the "current" encryption key when encrypting values. However, when decrypting values, Laravel will first try the current key, and if decryption fails using the current key, Laravel will try all previous keys until one of the keys is able to decrypt the value.
+當您設置此環境變數時，Laravel 將始終在加密值時使用“當前”加密金鑰。但是，在解密值時，Laravel 將首先嘗試使用當前金鑰，如果使用當前金鑰解密失敗，Laravel 將嘗試使用所有先前的金鑰，直到其中一個金鑰能夠解密該值。
 
-This approach to graceful decryption allows users to keep using your application uninterrupted even if your encryption key is rotated.
+這種優雅的解密方法讓使用者可以在您的加密金鑰輪換時繼續無間斷地使用應用程式。
 
 <a name="using-the-encrypter"></a>
-## Using the Encrypter
+## 使用加密器
 
 <a name="encrypting-a-value"></a>
-#### Encrypting a Value
+#### 加密值
 
-You may encrypt a value using the `encryptString` method provided by the `Crypt` facade. All encrypted values are encrypted using OpenSSL and the AES-256-CBC cipher. Furthermore, all encrypted values are signed with a message authentication code (MAC). The integrated message authentication code will prevent the decryption of any values that have been tampered with by malicious users:
+您可以使用`Crypt`外觀提供的`encryptString`方法來加密值。所有加密值都是使用OpenSSL和AES-256-CBC加密。此外，所有加密值都會使用訊息驗證碼（MAC）進行簽名。整合的訊息驗證碼將防止惡意使用者篡改的任何值被解密：
 
-    <?php
+```php
+<?php
 
-    namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-    use Illuminate\Http\RedirectResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Crypt;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
-    class DigitalOceanTokenController extends Controller
+class DigitalOceanTokenController extends Controller
+{
+    /**
+     * 儲存使用者的DigitalOcean API金鑰。
+     */
+    public function store(Request $request): RedirectResponse
     {
-        /**
-         * Store a DigitalOcean API token for the user.
-         */
-        public function store(Request $request): RedirectResponse
-        {
-            $request->user()->fill([
-                'token' => Crypt::encryptString($request->token),
-            ])->save();
+        $request->user()->fill([
+            'token' => Crypt::encryptString($request->token),
+        ])->save();
 
-            return redirect('/secrets');
-        }
+        return redirect('/secrets');
     }
+}
+```
 
 <a name="decrypting-a-value"></a>
-#### Decrypting a Value
+#### 解密值
 
-You may decrypt values using the `decryptString` method provided by the `Crypt` facade. If the value can not be properly decrypted, such as when the message authentication code is invalid, an `Illuminate\Contracts\Encryption\DecryptException` will be thrown:
+您可以使用`Crypt`外觀提供的`decryptString`方法來解密值。如果無法正確解密值，例如當訊息驗證碼無效時，將拋出`Illuminate\Contracts\Encryption\DecryptException`：
 
-    use Illuminate\Contracts\Encryption\DecryptException;
-    use Illuminate\Support\Facades\Crypt;
+```php
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 
-    try {
-        $decrypted = Crypt::decryptString($encryptedValue);
-    } catch (DecryptException $e) {
-        // ...
-    }
+try {
+    $decrypted = Crypt::decryptString($encryptedValue);
+} catch (DecryptException $e) {
+    // ...
+}
+```

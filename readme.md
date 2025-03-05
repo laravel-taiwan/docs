@@ -1,7 +1,7 @@
-# Laravel Documentation
+# Laravel 文件
 
-You can find the online version of the Laravel documentation at [https://laravel.com/docs](https://laravel.com/docs)
+您可以在 [https://laravel.com/docs](https://laravel.com/docs) 找到 Laravel 文件的線上版本。
 
-## Contribution Guidelines
+## 貢獻指南
 
-If you are submitting documentation for the **current stable release**, submit it to the corresponding branch. For example, documentation for Laravel 11 would be submitted to the `11.x` branch. Documentation intended for the next release of Laravel should be submitted to the `master` branch.
+如果您正在提交**當前穩定版本**的文件，請將其提交到相應的分支。例如，針對 Laravel 11 的文件應提交到 `11.x` 分支。針對下一個 Laravel 發行版的文件應提交到 `master` 分支。

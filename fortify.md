@@ -1,97 +1,93 @@
 # Laravel Fortify
 
-- [Introduction](#introduction)
-    - [What is Fortify?](#what-is-fortify)
-    - [When Should I Use Fortify?](#when-should-i-use-fortify)
-- [Installation](#installation)
-    - [Fortify Features](#fortify-features)
-    - [Disabling Views](#disabling-views)
-- [Authentication](#authentication)
-    - [Customizing User Authentication](#customizing-user-authentication)
-    - [Customizing the Authentication Pipeline](#customizing-the-authentication-pipeline)
-    - [Customizing Redirects](#customizing-authentication-redirects)
-- [Two Factor Authentication](#two-factor-authentication)
-    - [Enabling Two Factor Authentication](#enabling-two-factor-authentication)
-    - [Authenticating With Two Factor Authentication](#authenticating-with-two-factor-authentication)
-    - [Disabling Two Factor Authentication](#disabling-two-factor-authentication)
-- [Registration](#registration)
-    - [Customizing Registration](#customizing-registration)
-- [Password Reset](#password-reset)
-    - [Requesting a Password Reset Link](#requesting-a-password-reset-link)
-    - [Resetting the Password](#resetting-the-password)
-    - [Customizing Password Resets](#customizing-password-resets)
-- [Email Verification](#email-verification)
-    - [Protecting Routes](#protecting-routes)
-- [Password Confirmation](#password-confirmation)
+- [簡介](#introduction)
+    - [什麼是 Fortify?](#what-is-fortify)
+    - [何時應該使用 Fortify?](#when-should-i-use-fortify)
+- [安裝](#installation)
+    - [Fortify 功能](#fortify-features)
+    - [停用視圖](#disabling-views)
+- [認證](#authentication)
+    - [自訂使用者認證](#customizing-user-authentication)
+    - [自訂認證管道](#customizing-the-authentication-pipeline)
+    - [自訂重新導向](#customizing-authentication-redirects)
+- [雙因素認證](#two-factor-authentication)
+    - [啟用雙因素認證](#enabling-two-factor-authentication)
+    - [使用雙因素認證進行驗證](#authenticating-with-two-factor-authentication)
+    - [停用雙因素認證](#disabling-two-factor-authentication)
+- [註冊](#registration)
+    - [自訂註冊](#customizing-registration)
+- [重設密碼](#password-reset)
+    - [請求重設密碼連結](#requesting-a-password-reset-link)
+    - [重設密碼](#resetting-the-password)
+    - [自訂重設密碼](#customizing-password-resets)
+- [電子郵件驗證](#email-verification)
+    - [保護路由](#protecting-routes)
+- [密碼確認](#password-confirmation)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-[Laravel Fortify](https://github.com/laravel/fortify) is a frontend agnostic authentication backend implementation for Laravel. Fortify registers the routes and controllers needed to implement all of Laravel's authentication features, including login, registration, password reset, email verification, and more. After installing Fortify, you may run the `route:list` Artisan command to see the routes that Fortify has registered.
+[Laravel Fortify](https://github.com/laravel/fortify) 是 Laravel 的一個與前端無關的身份驗證後端實現。Fortify 註冊了實現 Laravel 所有身份驗證功能所需的路由和控制器，包括登錄、註冊、重設密碼、電子郵件驗證等。安裝 Fortify 後，您可以運行 `route:list` Artisan 命令來查看 Fortify 註冊的路由。
 
-Since Fortify does not provide its own user interface, it is meant to be paired with your own user interface which makes requests to the routes it registers. We will discuss exactly how to make requests to these routes in the remainder of this documentation.
+由於 Fortify 不提供自己的用戶界面，它應該與您自己的用戶界面配對，該界面向註冊的路由發送請求。我們將在本文檔的其餘部分中討論如何向這些路由發送請求。
 
 > [!NOTE]  
-> Remember, Fortify is a package that is meant to give you a head start implementing Laravel's authentication features. **You are not required to use it.** You are always free to manually interact with Laravel's authentication services by following the documentation available in the [authentication](/docs/{{version}}/authentication), [password reset](/docs/{{version}}/passwords), and [email verification](/docs/{{version}}/verification) documentation.
+> 請記住，Fortify 是一個套件，旨在幫助您快速實現 Laravel 的認證功能。**您並非必須使用它。** 您始終可以根據 [authentication](/docs/{{version}}/authentication)、[password reset](/docs/{{version}}/passwords) 和 [email verification](/docs/{{version}}/verification) 文件中提供的文檔，手動與 Laravel 的認證服務進行交互。
 
 <a name="what-is-fortify"></a>
-### What is Fortify?
+### Fortify 是什麼？
 
-As mentioned previously, Laravel Fortify is a frontend agnostic authentication backend implementation for Laravel. Fortify registers the routes and controllers needed to implement all of Laravel's authentication features, including login, registration, password reset, email verification, and more.
+如前所述，Laravel Fortify 是 Laravel 的一個與前端無關的身份驗證後端實現。Fortify 註冊了實現 Laravel 所有認證功能所需的路由和控制器，包括登錄、註冊、密碼重置、電子郵件驗證等。
 
-**You are not required to use Fortify in order to use Laravel's authentication features.** You are always free to manually interact with Laravel's authentication services by following the documentation available in the [authentication](/docs/{{version}}/authentication), [password reset](/docs/{{version}}/passwords), and [email verification](/docs/{{version}}/verification) documentation.
+**您並非必須使用 Fortify 來使用 Laravel 的認證功能。** 您始終可以根據 [authentication](/docs/{{version}}/authentication)、[password reset](/docs/{{version}}/passwords) 和 [email verification](/docs/{{version}}/verification) 文件中提供的文檔，手動與 Laravel 的認證服務進行交互。
 
-If you are new to Laravel, you may wish to explore the [Laravel Breeze](/docs/{{version}}/starter-kits) application starter kit before attempting to use Laravel Fortify. Laravel Breeze provides an authentication scaffolding for your application that includes a user interface built with [Tailwind CSS](https://tailwindcss.com). Unlike Fortify, Breeze publishes its routes and controllers directly into your application. This allows you to study and get comfortable with Laravel's authentication features before allowing Laravel Fortify to implement these features for you.
+如果您是 Laravel 的新手，您可能希望在嘗試使用 Laravel Fortify 之前探索 [Laravel Breeze](/docs/{{version}}/starter-kits) 應用程式起始套件。Laravel Breeze 為您的應用程式提供了一個使用 [Tailwind CSS](https://tailwindcss.com) 構建的用戶界面的身份驗證腳手架。與 Fortify 不同，Breeze 將其路由和控制器直接發布到您的應用程式中。這使您可以在允許 Laravel Fortify 實現這些功能之前，研究並熟悉 Laravel 的認證功能。
 
-Laravel Fortify essentially takes the routes and controllers of Laravel Breeze and offers them as a package that does not include a user interface. This allows you to still quickly scaffold the backend implementation of your application's authentication layer without being tied to any particular frontend opinions.
+Laravel Fortify 基本上將 Laravel Breeze 的路由和控制器作為一個不包含用戶界面的套件提供。這使您可以快速搭建應用程式身份驗證層的後端實現，而不受任何特定前端觀點的約束。
 
-<a name="when-should-i-use-fortify"></a>
-### When Should I Use Fortify?
+### 何時應該使用 Fortify？
 
-You may be wondering when it is appropriate to use Laravel Fortify. First, if you are using one of Laravel's [application starter kits](/docs/{{version}}/starter-kits), you do not need to install Laravel Fortify since all of Laravel's application starter kits already provide a full authentication implementation.
+您可能會想知道何時適合使用 Laravel Fortify。首先，如果您正在使用 Laravel 的[應用程式起始套件](/docs/{{version}}/starter-kits)之一，您無需安裝 Laravel Fortify，因為所有 Laravel 的應用程式起始套件已經提供完整的身分驗證實作。
 
-If you are not using an application starter kit and your application needs authentication features, you have two options: manually implement your application's authentication features or use Laravel Fortify to provide the backend implementation of these features.
+如果您沒有使用應用程式起始套件，且您的應用程式需要身分驗證功能，您有兩個選擇：手動實作您的應用程式的身分驗證功能，或使用 Laravel Fortify 提供這些功能的後端實作。
 
-If you choose to install Fortify, your user interface will make requests to Fortify's authentication routes that are detailed in this documentation in order to authenticate and register users.
+如果您選擇安裝 Fortify，您的使用者介面將向 Fortify 的身分驗證路由發出請求，這些路由在本文件中有詳細說明，以便對使用者進行身分驗證和註冊。
 
-If you choose to manually interact with Laravel's authentication services instead of using Fortify, you may do so by following the documentation available in the [authentication](/docs/{{version}}/authentication), [password reset](/docs/{{version}}/passwords), and [email verification](/docs/{{version}}/verification) documentation.
+如果您選擇手動與 Laravel 的身分驗證服務互動，而不是使用 Fortify，您可以按照[身分驗證](/docs/{{version}}/authentication)、[密碼重設](/docs/{{version}}/passwords)和[電子郵件驗證](/docs/{{version}}/verification)文件中提供的文件進行操作。
 
-<a name="laravel-fortify-and-laravel-sanctum"></a>
-#### Laravel Fortify and Laravel Sanctum
+### Laravel Fortify 和 Laravel Sanctum
 
-Some developers become confused regarding the difference between [Laravel Sanctum](/docs/{{version}}/sanctum) and Laravel Fortify. Because the two packages solve two different but related problems, Laravel Fortify and Laravel Sanctum are not mutually exclusive or competing packages.
+一些開發人員對於[Laravel Sanctum](/docs/{{version}}/sanctum)和 Laravel Fortify 之間的區別感到困惑。由於這兩個套件解決了兩個不同但相關的問題，Laravel Fortify 和 Laravel Sanctum 不是互斥或競爭的套件。
 
-Laravel Sanctum is only concerned with managing API tokens and authenticating existing users using session cookies or tokens. Sanctum does not provide any routes that handle user registration, password reset, etc.
+Laravel Sanctum 只關注管理 API 令牌並使用會話 cookie 或令牌對現有使用者進行身分驗證。Sanctum 不提供任何處理使用者註冊、密碼重設等的路由。
 
-If you are attempting to manually build the authentication layer for an application that offers an API or serves as the backend for a single-page application, it is entirely possible that you will utilize both Laravel Fortify (for user registration, password reset, etc.) and Laravel Sanctum (API token management, session authentication).
+如果您正試圖手動為提供 API 或作為單頁應用程式後端的應用程式建立身分驗證層，您完全可以同時使用 Laravel Fortify（用於使用者註冊、密碼重設等）和 Laravel Sanctum（API 令牌管理、會話身分驗證）。
 
-<a name="installation"></a>
-## Installation
+## 安裝
 
-To get started, install Fortify using the Composer package manager:
+要開始使用 Fortify，請使用 Composer 套件管理器安裝：
 
 ```shell
 composer require laravel/fortify
 ```
 
-Next, publish Fortify's resources using the `fortify:install` Artisan command:
+接下來，使用 `fortify:install` Artisan 指令發佈 Fortify 的資源：
 
 ```shell
 php artisan fortify:install
 ```
 
-This command will publish Fortify's actions to your `app/Actions` directory, which will be created if it does not exist. In addition, the `FortifyServiceProvider`, configuration file, and all necessary database migrations will be published.
+此指令將會發佈 Fortify 的動作到您的 `app/Actions` 目錄中，如果該目錄不存在則會被建立。此外，`FortifyServiceProvider`、組態檔案和所有必要的資料庫遷移也將被發佈。
 
-Next, you should migrate your database:
+接著，您應該遷移您的資料庫：
 
 ```shell
 php artisan migrate
 ```
 
-<a name="fortify-features"></a>
-### Fortify Features
+### Fortify 功能
 
-The `fortify` configuration file contains a `features` configuration array. This array defines which backend routes / features Fortify will expose by default. If you are not using Fortify in combination with [Laravel Jetstream](https://jetstream.laravel.com), we recommend that you only enable the following features, which are the basic authentication features provided by most Laravel applications:
+`fortify` 組態檔包含一個 `features` 組態陣列。此陣列定義了 Fortify 默認會公開的後端路由/功能。如果您沒有將 Fortify 與 [Laravel Jetstream](https://jetstream.laravel.com) 一起使用，我們建議您僅啟用以下功能，這些功能是大多數 Laravel 應用程式提供的基本身分驗證功能：
 
 ```php
 'features' => [
@@ -101,26 +97,25 @@ The `fortify` configuration file contains a `features` configuration array. This
 ],
 ```
 
-<a name="disabling-views"></a>
-### Disabling Views
+### 停用視圖
 
-By default, Fortify defines routes that are intended to return views, such as a login screen or registration screen. However, if you are building a JavaScript driven single-page application, you may not need these routes. For that reason, you may disable these routes entirely by setting the `views` configuration value within your application's `config/fortify.php` configuration file to `false`:
+預設情況下，Fortify 定義了預期返回視圏的路由，例如登入畫面或註冊畫面。但是，如果您正在建立一個由 JavaScript 驅動的單頁應用程式，您可能不需要這些路由。因此，您可以透過將應用程式的 `config/fortify.php` 組態檔中的 `views` 組態值設置為 `false` 來完全停用這些路由：
 
 ```php
 'views' => false,
 ```
 
-<a name="disabling-views-and-password-reset"></a>
-#### Disabling Views and Password Reset
+#### 停用視圖和密碼重設
 
-If you choose to disable Fortify's views and you will be implementing password reset features for your application, you should still define a route named `password.reset` that is responsible for displaying your application's "reset password" view. This is necessary because Laravel's `Illuminate\Auth\Notifications\ResetPassword` notification will generate the password reset URL via the `password.reset` named route.
+如果您選擇停用 Fortify 的視圖並且將為應用程式實現密碼重設功能，您仍應定義一個名為 `password.reset` 的路由，負責顯示您應用程式的「重設密碼」視圖。這是必要的，因為 Laravel 的 `Illuminate\Auth\Notifications\ResetPassword` 通知將通過 `password.reset` 命名路由生成密碼重設 URL。
+
 
 <a name="authentication"></a>
-## Authentication
+## 認證
 
-To get started, we need to instruct Fortify how to return our "login" view. Remember, Fortify is a headless authentication library. If you would like a frontend implementation of Laravel's authentication features that are already completed for you, you should use an [application starter kit](/docs/{{version}}/starter-kits).
+要開始，我們需要指示 Fortify 如何返回我們的 "login" 視圖。請記住，Fortify 是一個無界面的認證庫。如果您想要一個已經為您完成的 Laravel 認證功能的前端實現，您應該使用一個 [應用程式起始套件](/docs/{{version}}/starter-kits)。
 
-All of the authentication view's rendering logic may be customized using the appropriate methods available via the `Laravel\Fortify\Fortify` class. Typically, you should call this method from the `boot` method of your application's `App\Providers\FortifyServiceProvider` class. Fortify will take care of defining the `/login` route that returns this view:
+所有認證視圖的渲染邏輯都可以使用 `Laravel\Fortify\Fortify` 類中提供的適當方法進行自定義。通常，您應該從應用程式的 `App\Providers\FortifyServiceProvider` 類的 `boot` 方法中調用此方法。Fortify 將負責定義返回此視圖的 `/login` 路由：
 
     use Laravel\Fortify\Fortify;
 
@@ -136,18 +131,18 @@ All of the authentication view's rendering logic may be customized using the app
         // ...
     }
 
-Your login template should include a form that makes a POST request to `/login`. The `/login` endpoint expects a string `email` / `username` and a `password`. The name of the email / username field should match the `username` value within the `config/fortify.php` configuration file. In addition, a boolean `remember` field may be provided to indicate that the user would like to use the "remember me" functionality provided by Laravel.
+您的登入模板應包含一個提交 POST 請求到 `/login` 的表單。`/login` 端點期望一個字符串 `email` / `username` 和一個 `password`。電子郵件 / 使用者名稱字段的名稱應與 `config/fortify.php` 配置文件中的 `username` 值匹配。此外，可以提供一個布爾值 `remember` 字段，以指示用戶是否希望使用 Laravel 提供的 "記住我" 功能。
 
-If the login attempt is successful, Fortify will redirect you to the URI configured via the `home` configuration option within your application's `fortify` configuration file. If the login request was an XHR request, a 200 HTTP response will be returned.
+如果登入嘗試成功，Fortify 將將您重定向到您的應用程式 `fortify` 配置文件中的 `home` 配置選項配置的 URI。如果登入請求是一個 XHR 請求，將返回一個 200 HTTP 回應。
 
-If the request was not successful, the user will be redirected back to the login screen and the validation errors will be available to you via the shared `$errors` [Blade template variable](/docs/{{version}}/validation#quick-displaying-the-validation-errors). Or, in the case of an XHR request, the validation errors will be returned with the 422 HTTP response.
+如果請求不成功，用戶將被重定向回登入畫面，並且驗證錯誤將通過共享的 `$errors` [Blade 模板變數](/docs/{{version}}/validation#quick-displaying-the-validation-errors) 提供給您。或者，在 XHR 請求的情況下，驗證錯誤將隨著 422 HTTP 回應返回。
 
 <a name="customizing-user-authentication"></a>
-### Customizing User Authentication
+### 自定義使用者認證
 
-Fortify will automatically retrieve and authenticate the user based on the provided credentials and the authentication guard that is configured for your application. However, you may sometimes wish to have full customization over how login credentials are authenticated and users are retrieved. Thankfully, Fortify allows you to easily accomplish this using the `Fortify::authenticateUsing` method.
+Fortify 將根據提供的憑證和為您的應用程式配置的認證警衛自動檢索並驗證使用者。但是，有時您可能希望完全自定義如何驗證登入憑證和檢索使用者。幸運的是，Fortify 允許您輕鬆地使用 `Fortify::authenticateUsing` 方法來完成這個任務。
 
-This method accepts a closure which receives the incoming HTTP request. The closure is responsible for validating the login credentials attached to the request and returning the associated user instance. If the credentials are invalid or no user can be found, `null` or `false` should be returned by the closure. Typically, this method should be called from the `boot` method of your `FortifyServiceProvider`:
+該方法接受一個閉包，該閉包接收傳入的 HTTP 請求。閉包負責驗證附加到請求的登入憑證並返回相應的使用者實例。如果憑證無效或找不到使用者，閉包應該返回 `null` 或 `false`。通常，應該從您的 `FortifyServiceProvider` 的 `boot` 方法中調用此方法：
 
 ```php
 use App\Models\User;
@@ -174,30 +169,33 @@ public function boot(): void
 ```
 
 <a name="authentication-guard"></a>
-#### Authentication Guard
+#### 認證警衛
 
-You may customize the authentication guard used by Fortify within your application's `fortify` configuration file. However, you should ensure that the configured guard is an implementation of `Illuminate\Contracts\Auth\StatefulGuard`. If you are attempting to use Laravel Fortify to authenticate an SPA, you should use Laravel's default `web` guard in combination with [Laravel Sanctum](https://laravel.com/docs/sanctum).
+您可以在應用程式的 `fortify` 配置檔案中自定義 Fortify 使用的認證警衛。但是，您應確保配置的警衛是 `Illuminate\Contracts\Auth\StatefulGuard` 的實作。如果您嘗試使用 Laravel Fortify 來驗證 SPA，您應該使用 Laravel 的預設 `web` 警衛與 [Laravel Sanctum](https://laravel.com/docs/sanctum) 結合。
 
 <a name="customizing-the-authentication-pipeline"></a>
-### Customizing the Authentication Pipeline
+### 自定義認證管道
 
-Laravel Fortify authenticates login requests through a pipeline of invokable classes. If you would like, you may define a custom pipeline of classes that login requests should be piped through. Each class should have an `__invoke` method which receives the incoming `Illuminate\Http\Request` instance and, like [middleware](/docs/{{version}}/middleware), a `$next` variable that is invoked in order to pass the request to the next class in the pipeline.
+Laravel Fortify 通過一系列可調用類別來驗證登入請求。如果您希望，您可以定義一個自定義的類別管道，用於處理登入請求。每個類別應該有一個 `__invoke` 方法，該方法接收傳入的 `Illuminate\Http\Request` 實例和一個 `$next` 變數，類似於 [middleware](/docs/{{version}}/middleware)，以便將請求傳遞給管道中的下一個類別。
 
-To define your custom pipeline, you may use the `Fortify::authenticateThrough` method. This method accepts a closure which should return the array of classes to pipe the login request through. Typically, this method should be called from the `boot` method of your `App\Providers\FortifyServiceProvider` class.
+要定義您的自定義管道，您可以使用 `Fortify::authenticateThrough` 方法。此方法接受一個閉包，該閉包應返回一組類別陣列，用於通過登入請求的管道。通常，應該從您的 `App\Providers\FortifyServiceProvider` 類的 `boot` 方法中調用此方法。
 
-The example below contains the default pipeline definition that you may use as a starting point when making your own modifications:
+以下示例包含默認管線定義，您可以將其用作開始進行自定義修改的起點：
 
 ```php
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
+use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Illuminate\Http\Request;
 
 Fortify::authenticateThrough(function (Request $request) {
     return array_filter([
             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
             Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
             AttemptToAuthenticate::class,
             PrepareAuthenticatedSession::class,
@@ -205,12 +203,21 @@ Fortify::authenticateThrough(function (Request $request) {
 });
 ```
 
+#### 認證節流
+
+默認情況下，Fortify 將使用 `EnsureLoginIsNotThrottled` 中介層來節流認證嘗試。此中介層會對與用戶名和 IP 地址組合唯一的嘗試進行節流。
+
+有些應用可能需要不同的認證節流方法，例如僅按 IP 地址進行節流。因此，Fortify 允許您通過 `fortify.limiters.login` 配置選項指定自己的[速率限制器](/docs/{{version}}/routing#rate-limiting)。當然，此配置選項位於應用的 `config/fortify.php` 配置文件中。
+
+> [!NOTE]  
+> 同時使用節流、[雙因素認證](/docs/{{version}}/fortify#two-factor-authentication) 和外部 Web 應用程式防火牆（WAF）將為您的合法應用用戶提供最堅固的防禦。
+
 <a name="customizing-authentication-redirects"></a>
-### Customizing Redirects
+### 自定義重定向
 
-If the login attempt is successful, Fortify will redirect you to the URI configured via the `home` configuration option within your application's `fortify` configuration file. If the login request was an XHR request, a 200 HTTP response will be returned. After a user logs out of the application, the user will be redirected to the `/` URI.
+如果登錄嘗試成功，Fortify 將將您重定向到應用的 `fortify` 配置文件中 `home` 配置選項配置的 URI。如果登錄請求是 XHR 請求，將返回 200 HTTP 回應。用戶登出應用後，將重定向到 `/` URI。
 
-If you need advanced customization of this behavior, you may bind implementations of the `LoginResponse` and `LogoutResponse` contracts into the Laravel [service container](/docs/{{version}}/container). Typically, this should be done within the `register` method of your application's `App\Providers\FortifyServiceProvider` class:
+如果您需要對此行為進行高級自定義，您可以將 `LoginResponse` 和 `LogoutResponse` 合約的實現綁定到 Laravel [服務容器](/docs/{{version}}/container) 中。通常，這應該在應用的 `App\Providers\FortifyServiceProvider` 類的 `register` 方法中完成：
 
 ```php
 use Laravel\Fortify\Contracts\LogoutResponse;
@@ -230,11 +237,11 @@ public function register(): void
 ```
 
 <a name="two-factor-authentication"></a>
-## Two Factor Authentication
+## 雙因素認證
 
-When Fortify's two factor authentication feature is enabled, the user is required to input a six digit numeric token during the authentication process. This token is generated using a time-based one-time password (TOTP) that can be retrieved from any TOTP compatible mobile authentication application such as Google Authenticator.
+當 Fortify 的雙因素認證功能啟用時，用戶在認證過程中需要輸入一個六位數字令牌。此令牌是使用基於時間的一次性密碼（TOTP）生成的，可以從任何 TOTP 兼容的移動認證應用（如 Google Authenticator）檢索。
 
-Before getting started, you should first ensure that your application's `App\Models\User` model uses the `Laravel\Fortify\TwoFactorAuthenticatable` trait:
+在開始之前，您應該確保您的應用程式的 `App\Models\User` 模型使用 `Laravel\Fortify\TwoFactorAuthenticatable` 特性：
 
 ```php
 <?php
@@ -265,16 +272,14 @@ After choosing to enable two factor authentication, the user must still "confirm
 ```html
 @if (session('status') == 'two-factor-authentication-enabled')
     <div class="mb-4 font-medium text-sm">
-        Please finish configuring two factor authentication below.
+        請在下方完成配置雙因素認證。
     </div>
 @endif
-```
 
 Next, you should display the two factor authentication QR code for the user to scan into their authenticator application. If you are using Blade to render your application's frontend, you may retrieve the QR code SVG using the `twoFactorQrCodeSvg` method available on the user instance:
 
 ```php
 $request->user()->twoFactorQrCodeSvg();
-```
 
 If you are building a JavaScript powered frontend, you may make an XHR GET request to the `/user/two-factor-qr-code` endpoint to retrieve the user's two factor authentication QR code. This endpoint will return a JSON object containing an `svg` key.
 
@@ -288,10 +293,9 @@ If the request is successful, the user will be redirected back to the previous U
 ```html
 @if (session('status') == 'two-factor-authentication-confirmed')
     <div class="mb-4 font-medium text-sm">
-        Two factor authentication confirmed and enabled successfully.
+        雙因素認證已確認並成功啟用。
     </div>
 @endif
-```
 
 If the request to the two factor authentication confirmation endpoint was made via an XHR request, a `200` HTTP response will be returned.
 
@@ -302,7 +306,6 @@ You should also display the user's two factor recovery codes. These recovery cod
 
 ```php
 (array) $request->user()->recoveryCodes()
-```
 
 If you are building a JavaScript powered frontend, you may make an XHR GET request to the `/user/two-factor-recovery-codes` endpoint. This endpoint will return a JSON array containing the user's recovery codes.
 
@@ -329,7 +332,6 @@ public function boot(): void
 
     // ...
 }
-```
 
 Fortify will take care of defining the `/two-factor-challenge` route that returns this view. Your `two-factor-challenge` template should include a form that makes a POST request to the `/two-factor-challenge` endpoint. The `/two-factor-challenge` action expects a `code` field that contains a valid TOTP token or a `recovery_code` field that contains one of the user's recovery codes.
 
@@ -363,7 +365,6 @@ public function boot(): void
 
     // ...
 }
-```
 
 Fortify will take care of defining the `/register` route that returns this view. Your `register` template should include a form that makes a POST request to the `/register` endpoint defined by Fortify.
 
@@ -402,7 +403,6 @@ public function boot(): void
 
     // ...
 }
-```
 
 Fortify will take care of defining the `/forgot-password` endpoint that returns this view. Your `forgot-password` template should include a form that makes a POST request to the `/forgot-password` endpoint.
 
@@ -423,7 +423,6 @@ The value of the `$status` session variable will match one of the translation st
         {{ session('status') }}
     </div>
 @endif
-```
 
 If the request was not successful, the user will be redirected back to the request password reset link screen and the validation errors will be available to you via the shared `$errors` [Blade template variable](/docs/{{version}}/validation#quick-displaying-the-validation-errors). Or, in the case of an XHR request, the validation errors will be returned with a 422 HTTP response.
 
@@ -449,7 +448,6 @@ public function boot(): void
 
     // ...
 }
-```
 
 Fortify will take care of defining the route to display this view. Your `reset-password` template should include a form that makes a POST request to `/reset-password`.
 
@@ -466,7 +464,6 @@ If the password reset request was successful, Fortify will redirect back to the 
         {{ session('status') }}
     </div>
 @endif
-```
 
 If the request was an XHR request, a 200 HTTP response will be returned.
 
@@ -490,7 +487,7 @@ All of Fortify's view's rendering logic may be customized using the appropriate 
 use Laravel\Fortify\Fortify;
 
 /**
- * Bootstrap any application services.
+ * 啟動任何應用程式服務。
  */
 public function boot(): void
 {
@@ -500,7 +497,6 @@ public function boot(): void
 
     // ...
 }
-```
 
 Fortify will take care of defining the route that displays this view when a user is redirected to the `/email/verify` endpoint by Laravel's built-in `verified` middleware.
 
@@ -516,21 +512,19 @@ If the request to resend the verification link email was successful, Fortify wil
 ```blade
 @if (session('status') == 'verification-link-sent')
     <div class="mb-4 font-medium text-sm text-green-600">
-        A new email verification link has been emailed to you!
+        已發送新的電子郵件驗證連結至您的信箱！
     </div>
 @endif
-```
 
 <a name="protecting-routes"></a>
 ### Protecting Routes
 
-To specify that a route or group of routes requires that the user has verified their email address, you should attach Laravel's built-in `verified` middleware to the route. The `verified` middleware alias is automatically registered by Laravel and serves as an alias for the `Illuminate\Routing\Middleware\ValidateSignature` middleware:
+To specify that a route or group of routes requires that the user has verified their email address, you should attach Laravel's built-in `verified` middleware to the route. The `verified` middleware alias is automatically registered by Laravel and serves as an alias for the `Illuminate\Auth\Middleware\EnsureEmailIsVerified` middleware:
 
 ```php
 Route::get('/dashboard', function () {
     // ...
 })->middleware(['verified']);
-```
 
 <a name="password-confirmation"></a>
 ## Password Confirmation
@@ -545,7 +539,7 @@ All of Fortify's view rendering logic may be customized using the appropriate me
 use Laravel\Fortify\Fortify;
 
 /**
- * Bootstrap any application services.
+ * 啟動任何應用程式服務。
  */
 public function boot(): void
 {
@@ -557,8 +551,8 @@ public function boot(): void
 }
 ```
 
-Fortify will take care of defining the `/user/confirm-password` endpoint that returns this view. Your `confirm-password` template should include a form that makes a POST request to the `/user/confirm-password` endpoint. The `/user/confirm-password` endpoint expects a `password` field that contains the user's current password.
+Fortify 將負責定義 `/user/confirm-password` 端點，該端點將返回此視圖。您的 `confirm-password` 模板應包含一個表單，該表單會向 `/user/confirm-password` 端點發送 POST 請求。`/user/confirm-password` 端點期望包含一個 `password` 欄位，其中包含使用者的當前密碼。
 
-If the password matches the user's current password, Fortify will redirect the user to the route they were attempting to access. If the request was an XHR request, a 201 HTTP response will be returned.
+如果密碼與使用者的當前密碼匹配，Fortify 將重新導向使用者到他們嘗試訪問的路由。如果請求是一個 XHR 請求，將返回 201 HTTP 回應。
 
-If the request was not successful, the user will be redirected back to the confirm password screen and the validation errors will be available to you via the shared `$errors` Blade template variable. Or, in the case of an XHR request, the validation errors will be returned with a 422 HTTP response.
+如果請求不成功，使用者將被重新導向回確認密碼畫面，並且驗證錯誤將透過共享的 `$errors` Blade 模板變數提供給您。或者，在 XHR 請求的情況下，將通過 422 HTTP 回應返回驗證錯誤。

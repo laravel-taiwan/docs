@@ -1,91 +1,93 @@
-# Upgrade Guide
+# 升級指南
 
-- [Upgrading To 11.0 From 10.x](#upgrade-11.0)
+- [從 10.x 升級到 11.0](#upgrade-11.0)
 
 <a name="high-impact-changes"></a>
-## High Impact Changes
+## 高影響變更
 
 <div class="content-list" markdown="1">
 
-- [Updating Dependencies](#updating-dependencies)
-- [Application Structure](#application-structure)
-- [Floating-Point Types](#floating-point-types)
-- [Modifying Columns](#modifying-columns)
-- [SQLite Minimum Version](#sqlite-minimum-version)
-- [Updating Sanctum](#updating-sanctum)
+- [更新依賴項](#updating-dependencies)
+- [應用程式結構](#application-structure)
+- [浮點數類型](#floating-point-types)
+- [修改列](#modifying-columns)
+- [SQLite 最低版本](#sqlite-minimum-version)
+- [更新 Sanctum](#updating-sanctum)
 
 </div>
 
 <a name="medium-impact-changes"></a>
-## Medium Impact Changes
+## 中等影響變更
 
 <div class="content-list" markdown="1">
 
 - [Carbon 3](#carbon-3)
-- [Password Rehashing](#password-rehashing)
-- [Per-Second Rate Limiting](#per-second-rate-limiting)
+- [密碼重新雜湊](#password-rehashing)
+- [每秒速率限制](#per-second-rate-limiting)
+- [Spatie Once 套件](#spatie-once-package)
 
 </div>
 
 <a name="low-impact-changes"></a>
-## Low Impact Changes
+## 低影響變更
 
 <div class="content-list" markdown="1">
 
-- [Doctrine DBAL Removal](#doctrine-dbal-removal)
-- [Eloquent Model `casts` Method](#eloquent-model-casts-method)
-- [Spatial Types](#spatial-types)
-- [Spatie Once Package](#spatie-once-package)
-- [The `Enumerable` Contract](#the-enumerable-contract)
-- [The `UserProvider` Contract](#the-user-provider-contract)
-- [The `Authenticatable` Contract](#the-authenticatable-contract)
+- [Doctrine DBAL 移除](#doctrine-dbal-removal)
+- [Eloquent 模型 `casts` 方法](#eloquent-model-casts-method)
+- [空間類型](#spatial-types)
+- [`Enumerable` 合約](#the-enumerable-contract)
+- [`UserProvider` 合約](#the-user-provider-contract)
+- [`Authenticatable` 合約](#the-authenticatable-contract)
 
 </div>
 
 <a name="upgrade-11.0"></a>
-## Upgrading To 11.0 From 10.x
+## 從 10.x 升級到 11.0
 
 <a name="estimated-upgrade-time-??-minutes"></a>
-#### Estimated Upgrade Time: 15 Minutes
+#### 預估升級時間：15 分鐘
 
-> [!NOTE]
-> We attempt to document every possible breaking change. Since some of these breaking changes are in obscure parts of the framework only a portion of these changes may actually affect your application. Want to save time? You can use [Laravel Shift](https://laravelshift.com/) to help automate your application upgrades.
+> [!NOTE]  
+> 我們試圖記錄每一個可能的破壞性變更。由於一些這些破壞性變更位於框架的晦澀部分，只有部分這些變更可能實際影響您的應用程式。想要節省時間嗎？您可以使用 [Laravel Shift](https://laravelshift.com/) 來自動化您的應用程式升級。
 
 <a name="updating-dependencies"></a>
-### Updating Dependencies
+### 更新依賴項
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-#### PHP 8.2.0 Required
+#### 需要 PHP 8.2.0
 
-Laravel now requires PHP 8.2.0 or greater.
+Laravel 現在需要 PHP 8.2.0 或更高版本。
 
-#### curl 7.34.0 Required
+#### 需要 curl 7.34.0
 
-Laravel's HTTP client now requires curl 7.34.0 or greater.
+Laravel 的 HTTP 客戶端現在需要 curl 7.34.0 或更高版本。
 
-#### Composer Dependencies
+#### Composer 依賴項
 
-You should update the following dependencies in your application's `composer.json` file:
+您應該在應用程式的 `composer.json` 檔案中更新以下依賴項：
 
 <div class="content-list" markdown="1">
 
-- `laravel/framework` to `^11.0`
-- `nunomaduro/collision` to `^8.1`
-- `laravel/breeze` to `^2.0` (If installed)
-- `laravel/cashier` to `^15.0` (If installed)
-- `laravel/dusk` to `^8.0` (If installed)
-- `laravel/jetstream` to `^5.0` (If installed)
-- `laravel/octane` to `^2.3` (If installed)
-- `laravel/passport` to `^12.0` (If installed)
-- `laravel/sanctum` to `^4.0` (If installed)
-- `laravel/spark-stripe` to `^5.0` (If installed)
-- `laravel/telescope` to `^5.0` (If installed)
-- `inertiajs/inertia-laravel` to `^1.0` (If installed)
+- `laravel/framework` 升級至 `^11.0`
+- `nunomaduro/collision` 升級至 `^8.1`
+- `laravel/breeze` 升級至 `^2.0`（如果已安裝）
+- `laravel/cashier` 升級至 `^15.0`（如果已安裝）
+- `laravel/dusk` 升級至 `^8.0`（如果已安裝）
+- `laravel/jetstream` 升級至 `^5.0`（如果已安裝）
+- `laravel/octane` 升級至 `^2.3`（如果已安裝）
+- `laravel/passport` 升級至 `^12.0`（如果已安裝）
+- `laravel/sanctum` 升級至 `^4.0`（如果已安裝）
+- `laravel/scout` 升級至 `^10.0`（如果已安裝）
+- `laravel/spark-stripe` 升級至 `^5.0`（如果已安裝）
+- `laravel/telescope` 升級至 `^5.0`（如果已安裝）
+- `livewire/livewire` 升級至 `^3.4`（如果已安裝）
+- `inertiajs/inertia-laravel` 升級至 `^1.0`（如果已安裝）
 
 </div>
 
-If your application is using Laravel Cashier Stripe, Passport, Sanctum, Spark Stripe, or Telescope, you will need to publish their migrations to your application. Cashier Stripe, Passport, Sanctum, Spark Stripe, and Telescope **no longer automatically load migrations from their own migrations** directory. Therefore, you should run the following command to publish their migrations to your application:
+如果您的應用程式使用 Laravel Cashier Stripe、Passport、Sanctum、Spark Stripe 或 Telescope，您需要將它們的遷移發佈到您的應用程式。Cashier Stripe、Passport、Sanctum、Spark Stripe 和 Telescope **不再自動從它們自己的遷移目錄載入遷移**。因此，您應運行以下命令將它們的遷移發佈到您的應用程式：
 
 ```bash
 php artisan vendor:publish --tag=cashier-migrations
@@ -95,7 +97,7 @@ php artisan vendor:publish --tag=spark-migrations
 php artisan vendor:publish --tag=telescope-migrations
 ```
 
-In addition, you should review the upgrade guides for each of these packages to ensure you are aware of any additional breaking changes:
+此外，您應查看這些套件的升級指南，以確保您知曉任何其他重大變更：
 
 - [Laravel Cashier Stripe](#cashier-stripe)
 - [Laravel Passport](#passport)
@@ -103,54 +105,60 @@ In addition, you should review the upgrade guides for each of these packages to 
 - [Laravel Spark Stripe](#spark-stripe)
 - [Laravel Telescope](#telescope)
 
-If you have manually installed the Laravel installer, you should update the installer via Composer:
+如果您手動安裝了 Laravel 安裝程式，您應通過 Composer 更新安裝程式：
 
 ```bash
 composer global require laravel/installer:^5.6
 ```
 
-Finally, you may remove the `doctrine/dbal` Composer dependency if you have previously added it to your application, as Laravel is no longer dependent on this package.
+最後，如果您之前將 `doctrine/dbal` 添加到您的應用程式中，您可以移除該 Composer 依賴，因為 Laravel 不再依賴於此套件。
 
 <a name="application-structure"></a>
-### Application Structure
+### 應用程式結構
 
-Laravel 11 introduces a new default application structure with fewer default files. Namely, new Laravel applications contain fewer service providers, middleware, and configuration files.
+Laravel 11 引入了一個新的預設應用程式結構，具有較少的預設檔案。換句話說，新的 Laravel 應用程式包含較少的服務提供者、中介層和組態檔案。
 
-However, we do **not recommend** that Laravel 10 applications upgrading to Laravel 11 attempt to migrate their application structure, as Laravel 11 has been carefully tuned to also support the Laravel 10 application structure.
+然而，我們**不建議**將升級至 Laravel 11 的 Laravel 10 應用程式嘗試遷移其應用程式結構，因為 Laravel 11 已經經過精心調整，也支援 Laravel 10 的應用程式結構。
 
-<a name="authentication"></a>
-### Authentication
+### 誤證
 
-<a name="password-rehashing"></a>
-#### Password Rehashing
+#### 密碼重新雜湊
 
-Laravel 11 will automatically rehash your user's passwords during authentication if your hashing algorithm's "work factor" has been updated since the password was last hashed.
+**影響可能性：低**
 
-Typically, this should not disrupt your application; however, you may disable this behavior by adding the `rehash_on_login` option to your application's `config/hashing.php` configuration file:
+當您的雜湊演算法的「加密係數」自上次雜湊密碼以來已更新時，Laravel 11 將在認證期間自動重新雜湊您使用者的密碼。
 
-    'rehash_on_login' => false,
+通常情況下，這不應該影響您的應用程式；但是，如果您的 `User` 模型的「密碼」欄位名稱不是 `password`，您應該透過模型的 `authPasswordName` 屬性指定欄位名稱：
 
-<a name="the-user-provider-contract"></a>
-#### The `UserProvider` Contract
+```php
+protected $authPasswordName = 'custom_password_field';
+```
 
-**Likelihood Of Impact: Low**
+或者，您可以通過將 `rehash_on_login` 選項添加到您應用程式的 `config/hashing.php` 配置文件來禁用密碼重新雜湊：
 
-The `Illuminate\Contracts\Auth\UserProvider` contract has received a new `rehashPasswordIfRequired` method. This method is responsible for re-hashing and storing the user's password in storage when the application's hashing algorithm work factor has changed.
+```php
+'rehash_on_login' => false,
+```
 
-If your application or package defines a class that implements this interface, you should add the new `rehashPasswordIfRequired` method to your implementation. A reference implementation can be found within the `Illuminate\Auth\EloquentUserProvider` class:
+#### `UserProvider` 合約
+
+**影響可能性：低**
+
+`Illuminate\Contracts\Auth\UserProvider` 合約已新增了一個新的 `rehashPasswordIfRequired` 方法。該方法負責在應用程式的雜湊演算法加密係數更改時重新雜湊並將使用者的密碼存儲在儲存庫中。
+
+如果您的應用程式或套件定義了一個實現此介面的類別，您應該將新的 `rehashPasswordIfRequired` 方法添加到您的實現中。您可以在 `Illuminate\Auth\EloquentUserProvider` 類中找到一個參考實現：
 
 ```php
 public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false);
 ```
 
-<a name="the-authenticatable-contract"></a>
-#### The `Authenticatable` Contract
+#### `Authenticatable` 合約
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The `Illuminate\Contracts\Auth\Authenticatable` contract has received a new `getAuthPasswordName` method. This method is responsible for returning the name of your authenticatable entity's password column.
+`Illuminate\Contracts\Auth\Authenticatable` 合約已新增了一個新的 `getAuthPasswordName` 方法。該方法負責返回您的可驗證實體的密碼欄位名稱。
 
-If your application or package defines a class that implements this interface, you should add the new `getAuthPasswordName` method to your implementation:
+如果您的應用程式或套件定義了一個實現此介面的類別，您應該將新的 `getAuthPasswordName` 方法添加到您的實現中：
 
 ```php
 public function getAuthPasswordName()
@@ -159,15 +167,13 @@ public function getAuthPasswordName()
 }
 ```
 
-The default `User` model included with Laravel receives this method automatically since the method is included within the `Illuminate\Auth\Authenticatable` trait.
+由於該方法包含在 `Illuminate\Auth\Authenticatable` 特性中，因此 Laravel 預設包含的 `User` 模型會自動接收此方法。
 
-<a name="the-authentication-exception-class"></a>
+#### `AuthenticationException` 類別
 
-#### The `AuthenticationException` Class
+**影響可能性：非常低**
 
-**Likelihood Of Impact: Very Low**
-
-The `redirectTo` method of the `Illuminate\Auth\AuthenticationException` class now requires an `Illuminate\Http\Request` instance as its first argument. If you are manually catching this exception and calling the `redirectTo` method, you should update your code accordingly:
+`Illuminate\Auth\AuthenticationException` 類別的 `redirectTo` 方法現在需要一個 `Illuminate\Http\Request` 實例作為其第一個引數。如果您正在手動捕獲此異常並調用 `redirectTo` 方法，您應更新您的程式碼：
 
 ```php
 if ($e instanceof AuthenticationException) {
@@ -175,55 +181,62 @@ if ($e instanceof AuthenticationException) {
 }
 ```
 
-<a name="cache"></a>
-### Cache
+#### 註冊時的電子郵件驗證通知
 
-<a name="cache-key-prefixes"></a>
-#### Cache Key Prefixes
+**影響可能性：非常低**
 
-**Likelihood Of Impact: Very Low**
+如果您的應用程式的 `EventServiceProvider` 未註冊 `SendEmailVerificationNotification` 監聽器，且您不希望 Laravel 自動為您註冊它，您應在您的應用程式的 `EventServiceProvider` 中定義一個空的 `configureEmailVerification` 方法：
 
-Previously, if a cache key prefix was defined for the DynamoDB, Memcached, or Redis cache stores, Laravel would append a `:` to the prefix. In Laravel 11, the cache key prefix does not receive the `:` suffix. If you would like to maintain the previous prefixing behavior, you can manually add the `:` suffix to your cache key prefix.
+```php
+protected function configureEmailVerification()
+{
+    // ...
+}
+```
 
-<a name="collections"></a>
-### Collections
+### 快取
 
-<a name="the-enumerable-contract"></a>
-#### The `Enumerable` Contract
+#### 快取金鑰前綴
 
-**Likelihood Of Impact: Low**
+**影響可能性：非常低**
 
-The `dump` method of the `Illuminate\Support\Enumerable` contract has been updated to accept a variadic `...$args` argument. If you are implementing this interface you should update your implementation accordingly:
+在 Laravel 11 中，如果為 DynamoDB、Memcached 或 Redis 快取存儲設定了快取金鑰前綴，先前 Laravel 會在前綴後附加 `:`。現在，快取金鑰前綴不再接收 `:` 後綴。如果您想保留先前的前綴行為，您可以手動將 `:` 後綴添加到您的快取金鑰前綴。
+
+### 集合
+
+#### `Enumerable` 合約
+
+**影響可能性：低**
+
+`Illuminate\Support\Enumerable` 合約的 `dump` 方法已更新為接受可變參數 `...$args`。如果您正在實現此介面，您應相應更新您的實現：
 
 ```php
 public function dump(...$args);
 ```
 
-<a name="database"></a>
-### Database
+### 資料庫
 
-<a name="sqlite-minimum-version"></a>
-#### SQLite 3.35.0+
+#### SQLite 3.26.0+
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-If your application is utilizing an SQLite database, SQLite 3.35.0 or greater is required.
+如果您的應用程式正在使用 SQLite 資料庫，則需要使用 SQLite 3.26.0 或更高版本。
 
 <a name="eloquent-model-casts-method"></a>
-#### Eloquent Model `casts` Method
+#### Eloquent 模型 `casts` 方法
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The base Eloquent model class now defines a `casts` method in order to support the definition of attribute casts. If one of your application's models is defining a `casts` relationship, it may conflict with the `casts` method now present on the base Eloquent model class.
+基本的 Eloquent 模型類現在定義了一個 `casts` 方法，以支援屬性轉換的定義。如果您的應用程式中的某個模型正在定義一個 `casts` 關係，則可能會與基本的 Eloquent 模型類中現在存在的 `casts` 方法發生衝突。
 
 <a name="modifying-columns"></a>
-#### Modifying Columns
+#### 修改欄位
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-When modifying a column, you must now explicitly include all the modifiers you want to keep on the column definition after it is changed. Any missing attributes will be dropped. For example, to retain the `unsigned`, `default`, and `comment` attributes, you must call each modifier explicitly when changing the column, even if those attributes have been assigned to the column by a previous migration.
+在修改欄位時，您現在必須明確地在變更後的欄位定義中包含您想要保留的所有修飾詞。任何遺漏的屬性將被刪除。例如，要保留 `unsigned`、`default` 和 `comment` 屬性，您必須在變更欄位時明確調用每個修飾詞，即使這些屬性已經被之前的遷移指定給欄位。
 
-For example, imagine you have a migration that creates a `votes` column with the `unsigned`, `default`, and `comment` attributes:
+例如，假設您有一個遷移，創建了一個帶有 `unsigned`、`default` 和 `comment` 屬性的 `votes` 欄位：
 
 ```php
 Schema::create('users', function (Blueprint $table) {
@@ -231,7 +244,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-Later, you write a migration that changes the column to be `nullable` as well:
+稍後，您編寫了一個將該欄位更改為可為 `null` 的遷移：
 
 ```php
 Schema::table('users', function (Blueprint $table) {
@@ -239,7 +252,7 @@ Schema::table('users', function (Blueprint $table) {
 });
 ```
 
-In Laravel 10, this migration would retain the `unsigned`, `default`, and `comment` attributes on the column. However, in Laravel 11, the migration must now also include all of the attributes that were previously defined on the column. Otherwise, they will be dropped:
+在 Laravel 10 中，此遷移將保留欄位上的 `unsigned`、`default` 和 `comment` 屬性。但是，在 Laravel 11 中，該遷移現在還必須包含先前在欄位上定義的所有屬性。否則，它們將被刪除：
 
 ```php
 Schema::table('users', function (Blueprint $table) {
@@ -252,7 +265,7 @@ Schema::table('users', function (Blueprint $table) {
 });
 ```
 
-The `change` method does not change the indexes of the column. Therefore, you may use index modifiers to explicitly add or drop an index when modifying the column:
+`change` 方法不會更改欄位的索引。因此，在修改欄位時，您可以使用索引修飾詞來明確添加或刪除索引：
 
 ```php
 // Add an index...
@@ -262,34 +275,34 @@ $table->bigIncrements('id')->primary()->change();
 $table->char('postal_code', 10)->unique(false)->change();
 ```
 
-If you do not want to update all of the existing "change" migrations in your application to retain the column's existing attributes, you may simply [squash your migrations](/docs/{{version}}/migrations#squashing-migrations):
+如果您不想更新應用程式中的所有現有 "change" 遷移以保留欄位的現有屬性，您可以簡單地[壓縮您的遷移](/docs/{{version}}/migrations#squashing-migrations)。
 
 ```bash
 php artisan schema:dump
 ```
 
-Once your migrations have been squashed, Laravel will "migrate" the database using your application's schema file before running any pending migrations.
+一旦您的遷移被壓縮，Laravel 將在運行任何待處理的遷移之前使用應用程式的結構檔案來“遷移”資料庫。
 
 <a name="floating-point-types"></a>
-#### Floating-Point Types
+#### 浮點數類型
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-The `double` and `float` migration column types have been rewritten to be consistent across all databases.
+`double` 和 `float` 遷移欄位類型已被重寫以在所有資料庫中保持一致。
 
-The `double` column type now creates a `DOUBLE` equivalent column without total digits and places (digits after decimal point), which is the standard SQL syntax. Therefore, you may remove the arguments for `$total` and `$places`:
+`double` 欄位類型現在創建一個不帶總位數和位數（小數點後的位數）的 `DOUBLE` 等效欄位，這是標準的 SQL 語法。因此，您可以刪除 `$total` 和 `$places` 的引數：
 
 ```php
 $table->double('amount');
 ```
 
-The `float` column type now creates a `FLOAT` equivalent column without total digits and places (digits after decimal point), but with an optional `$precision` specification to determine storage size as a 4-byte single-precision column or an 8-byte double-precision column. Therefore, you may remove the arguments for `$total` and `$places` and specify the optional `$precision` to your desired value and according to your database's documentation:
+`float` 欄位類型現在創建一個不帶總位數和位數（小數點後的位數）的 `FLOAT` 等效欄位，但具有可選的 `$precision` 規格，以確定存儲大小為 4 字節單精度列或 8 字節雙精度列。因此，您可以刪除 `$total` 和 `$places` 的引數，並根據您的需求和您的資料庫文檔指定可選的 `$precision` 值：
 
 ```php
 $table->float('amount', precision: 53);
 ```
 
-The `unsignedDecimal`, `unsignedDouble`, and `unsignedFloat` methods have been removed, as the unsigned modifier for these column types has been deprecated by MySQL, and was never standardized on other database systems. However, if you wish to continue using the deprecated unsigned attribute for these column types, you may chain the `unsigned` method onto the column's definition:
+`unsignedDecimal`、`unsignedDouble` 和 `unsignedFloat` 方法已被移除，因為這些欄位類型的無符號修飾符已被 MySQL 棄用，並且從未在其他資料庫系統上標準化。但是，如果您希望繼續使用這些欄位類型的已棄用無符號屬性，您可以將 `unsigned` 方法鏈接到欄位的定義上：
 
 ```php
 $table->decimal('amount', total: 8, places: 2)->unsigned();
@@ -298,23 +311,25 @@ $table->float('amount', precision: 53)->unsigned();
 ```
 
 <a name="dedicated-mariadb-driver"></a>
-#### Dedicated MariaDB Driver
+#### 專用 MariaDB 驅動程式
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-Instead of always utilizing the MySQL driver when connecting to MariaDB databases, Laravel 11 adds a dedicated database driver for MariaDB.
+在連接到 MariaDB 資料庫時，Laravel 11 不再始終使用 MySQL 驅動程式，而是新增了一個專用的 MariaDB 資料庫驅動程式。
 
-If your application connects to a MariaDB database, you may update the connection configuration to the new `mariadb` driver to benefit from MariaDB specific features in the future:
+如果您的應用程式連接到 MariaDB 資料庫，您可以將連線配置更新為新的 `mariadb` 驅動程式，以便在未來受益於 MariaDB 的特定功能：
 
+```php
     'driver' => 'mariadb',
     'url' => env('DB_URL'),
     'host' => env('DB_HOST', '127.0.0.1'),
     'port' => env('DB_PORT', '3306'),
     // ...
+```
 
-Currently, the new MariaDB driver behaves like the current MySQL driver with one exception: the `uuid` schema builder method creates native UUID columns instead of `char(36)` columns.
+目前，新的 MariaDB 驅動程式的行為與目前的 MySQL 驅動程式相同，唯一的例外是 `uuid` 結構生成器方法會建立原生的 UUID 欄位，而不是 `char(36)` 欄位。
 
-If your existing migrations utilize the `uuid` schema builder method and you choose to use the new `mariadb` database driver, you should update your migration's invocations of the `uuid` method to `char` to avoid breaking changes or unexpected behavior:
+如果您現有的遷移使用 `uuid` 結構生成器方法，並且您選擇使用新的 `mariadb` 資料庫驅動程式，您應該更新遷移中對 `uuid` 方法的調用為 `char`，以避免破壞性變更或意外行為：
 
 ```php
 Schema::table('users', function (Blueprint $table) {
@@ -325,122 +340,116 @@ Schema::table('users', function (Blueprint $table) {
 ```
 
 <a name="spatial-types"></a>
-#### Spatial Types
+#### 空間類型
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The spatial column types of database migrations have been rewritten to be consistent across all databases. Therefore, you may remove `point`, `lineString`, `polygon`, `geometryCollection`, `multiPoint`, `multiLineString`, `multiPolygon`, and `multiPolygonZ` methods from your migrations and use `geometry` or `geography` methods instead:
+資料庫遷移的空間欄位類型已經重寫，以使所有資料庫保持一致。因此，您可以從遷移中刪除 `point`、`lineString`、`polygon`、`geometryCollection`、`multiPoint`、`multiLineString`、`multiPolygon` 和 `multiPolygonZ` 方法，並改為使用 `geometry` 或 `geography` 方法：
 
 ```php
 $table->geometry('shapes');
 $table->geography('coordinates');
 ```
 
-To explicitly restrict the type or the spatial reference system identifier for values stored in the column on MySQL, MariaDB, and PostgreSQL, you may pass the `subtype` and `srid` to the method:
+要在 MySQL、MariaDB 和 PostgreSQL 上明確限制存儲在欄位中的值的類型或空間參考系統識別符，您可以將 `subtype` 和 `srid` 傳遞給方法：
 
 ```php
 $table->geometry('dimension', subtype: 'polygon', srid: 0);
 $table->geography('latitude', subtype: 'point', srid: 4326);
 ```
 
-The `isGeometry` and `projection` column modifiers of the PostgreSQL grammar have been removed accordingly.
+相應地，PostgreSQL 語法的 `isGeometry` 和 `projection` 欄位修改器已被移除。
 
 <a name="doctrine-dbal-removal"></a>
-#### Doctrine DBAL Removal
+#### Doctrine DBAL 移除
 
-**Likelihood Of Impact: Low**
+**影響可能性：低**
 
-The following list of Doctrine DBAL related classes and methods have been removed. Laravel is no longer dependent on this package and registering custom Doctrines types is no longer necessary for the proper creation and alteration of various column types that previously required custom types:
+以下與 Doctrine DBAL 相關的類和方法已被移除。Laravel 不再依賴於此套件，並且不再需要註冊自定義 Doctrine 類型以正確創建和修改以前需要自定義類型的各種欄位類型：
 
 <div class="content-list" markdown="1">
 
-- `Illuminate\Database\Schema\Builder::$alwaysUsesNativeSchemaOperationsIfPossible` class property
-- `Illuminate\Database\Schema\Builder::useNativeSchemaOperationsIfPossible()` method
-- `Illuminate\Database\Connection::usingNativeSchemaOperations()` method
-- `Illuminate\Database\Connection::isDoctrineAvailable()` method
-- `Illuminate\Database\Connection::getDoctrineConnection()` method
-- `Illuminate\Database\Connection::getDoctrineSchemaManager()` method
-- `Illuminate\Database\Connection::getDoctrineColumn()` method
-- `Illuminate\Database\Connection::registerDoctrineType()` method
-- `Illuminate\Database\DatabaseManager::registerDoctrineType()` method
-- `Illuminate\Database\PDO` directory
-- `Illuminate\Database\DBAL\TimestampType` class
-- `Illuminate\Database\Schema\Grammars\ChangeColumn` class
-- `Illuminate\Database\Schema\Grammars\RenameColumn` class
-- `Illuminate\Database\Schema\Grammars\Grammar::getDoctrineTableDiff()` method
+- `Illuminate\Database\Schema\Builder::$alwaysUsesNativeSchemaOperationsIfPossible` 類屬性
+- `Illuminate\Database\Schema\Builder::useNativeSchemaOperationsIfPossible()` 方法
+- `Illuminate\Database\Connection::usingNativeSchemaOperations()` 方法
+- `Illuminate\Database\Connection::isDoctrineAvailable()` 方法
+- `Illuminate\Database\Connection::getDoctrineConnection()` 方法
+- `Illuminate\Database\Connection::getDoctrineSchemaManager()` 方法
+- `Illuminate\Database\Connection::getDoctrineColumn()` 方法
+- `Illuminate\Database\Connection::registerDoctrineType()` 方法
+- `Illuminate\Database\DatabaseManager::registerDoctrineType()` 方法
+- `Illuminate\Database\PDO` 目錄
+- `Illuminate\Database\DBAL\TimestampType` 類
+- `Illuminate\Database\Schema\Grammars\ChangeColumn` 類
+- `Illuminate\Database\Schema\Grammars\RenameColumn` 類
+- `Illuminate\Database\Schema\Grammars\Grammar::getDoctrineTableDiff()` 方法
 
-</div>
+此外，在應用程式的 `database` 組態檔中透過 `dbal.types` 註冊自訂 Doctrine 類型已不再需要。
 
-In addition, registering custom Doctrine types via `dbal.types` in your application's `database` configuration file is no longer required.
-
-If you were previously using Doctrine DBAL to inspect your database and its associated tables, you may use Laravel's new native schema methods (`Schema::getTables()`, `Schema::getColumns()`, `Schema::getIndexes()`, `Schema::getForeignKeys()`, etc.) instead.
+如果您之前使用 Doctrine DBAL 來檢視您的資料庫及其相關表格，您現在可以改用 Laravel 的新原生結構方法（`Schema::getTables()`、`Schema::getColumns()`、`Schema::getIndexes()`、`Schema::getForeignKeys()` 等）。
 
 <a name="deprecated-schema-methods"></a>
-#### Deprecated Schema Methods
+#### 已棄用的結構方法
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The deprecated, Doctrine based `Schema::getAllTables()`, `Schema::getAllViews()`, and `Schema::getAllTypes()` methods have been removed in favor of new Laravel native `Schema::getTables()`, `Schema::getViews()`, and `Schema::getTypes()` methods.
+已棄用的基於 Doctrine 的 `Schema::getAllTables()`、`Schema::getAllViews()` 和 `Schema::getAllTypes()` 方法已被移除，改用新的 Laravel 原生 `Schema::getTables()`、`Schema::getViews()` 和 `Schema::getTypes()` 方法。
 
-When using PostgreSQL and SQL Server, none of the new schema methods will accept a three-part reference (e.g. `database.schema.table`). Therefore, you should use `connection()` to declare the database instead:
+在使用 PostgreSQL 和 SQL Server 時，新的結構方法都不接受三部分引用（例如 `database.schema.table`）。因此，您應該使用 `connection()` 來宣告資料庫：
 
 ```php
 Schema::connection('database')->hasTable('schema.table');
 ```
 
 <a name="get-column-types"></a>
-#### Schema Builder `getColumnType()` Method
+#### 結構建立器 `getColumnType()` 方法
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The `Schema::getColumnType()` method now always returns actual type of the given column, not the Doctrine DBAL equivalent type.
+`Schema::getColumnType()` 方法現在始終返回給定欄位的實際類型，而不是 Doctrine DBAL 等效類型。
 
 <a name="database-connection-interface"></a>
-#### Database Connection Interface
+#### 資料庫連線介面
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The `Illuminate\Database\ConnectionInterface` interface has received a new `scalar` method. If you are defining your own implementation of this interface, you should add the `scalar` method to your implementation:
+`Illuminate\Database\ConnectionInterface` 介面已新增了一個新的 `scalar` 方法。如果您正在定義此介面的自訂實作，應將 `scalar` 方法添加到您的實作中：
 
 ```php
 public function scalar($query, $bindings = [], $useReadPdo = true);
 ```
 
 <a name="dates"></a>
-### Dates
+### 日期
 
 <a name="carbon-3"></a>
 #### Carbon 3
 
-**Likelihood Of Impact: Medium**
+**影響可能性：中等**
 
-Laravel 11 supports both Carbon 2 and Carbon 3. Carbon is a date manipulation library utilized extensively by Laravel and packages throughout the ecosystem. If you install Carbon 3, you should review Carbon's [change log](https://github.com/briannesbitt/Carbon/releases/tag/3.0.0).
+Laravel 11 同時支援 Carbon 2 和 Carbon 3。Carbon 是 Laravel 及生態系統中各個套件廣泛使用的日期操作庫。如果您升級到 Carbon 3，請注意 `diffIn*` 方法現在返回浮點數，並且可能返回負值以指示時間方向，這與 Carbon 2 有顯著變化。請查看 Carbon 的 [變更日誌](https://github.com/briannesbitt/Carbon/releases/tag/3.0.0) 和 [文件](https://carbon.nesbot.com/docs/#api-carbon-3) 以獲得有關如何處理這些變更和其他變更的詳細資訊。
 
-<a name="mail"></a>
-### Mail
+### 郵件
 
-<a name="the-mailer-contract"></a>
-#### The `Mailer` Contract
+#### 郵件器合約
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The `Illuminate\Contracts\Mail\Mailer` contract has received a new `sendNow` method. If your application or package is manually implementing this contract, you should add the new `sendNow` method to your implementation:
+`Illuminate\Contracts\Mail\Mailer` 合約已新增 `sendNow` 方法。如果您的應用程式或套件正在手動實作此合約，您應該將新的 `sendNow` 方法添加到您的實作中：
 
 ```php
 public function sendNow($mailable, array $data = [], $callback = null);
 ```
 
-<a name="packages"></a>
-### Packages
+### 套件
 
-<a name="publishing-service-providers"></a>
-#### Publishing Service Providers to the Application
+#### 將服務提供者發佈至應用程式
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-If you have written a Laravel package that manually publishes a service provider to the application's `app/Providers` directory and manually modifies the application's `config/app.php` configuration file to register the service provider, you should update your package to utilize the new `ServiceProvider::addProviderToBootstrapFile` method.
+如果您撰寫了一個 Laravel 套件，手動將服務提供者發佈到應用程式的 `app/Providers` 目錄並手動修改應用程式的 `config/app.php` 配置檔以註冊服務提供者，您應該更新您的套件以使用新的 `ServiceProvider::addProviderToBootstrapFile` 方法。
 
-The `addProviderToBootstrapFile` method will automatically add the service provider you have published to the application's `bootstrap/providers.php` file, since the `providers` array does not exist within the `config/app.php` configuration file in new Laravel 11 applications.
+`addProviderToBootstrapFile` 方法將自動將您發佈的服務提供者添加到應用程式的 `bootstrap/providers.php` 檔案中，因為在新的 Laravel 11 應用程式中，`config/app.php` 配置檔中不存在 `providers` 陣列。
 
 ```php
 use Illuminate\Support\ServiceProvider;
@@ -448,54 +457,51 @@ use Illuminate\Support\ServiceProvider;
 ServiceProvider::addProviderToBootstrapFile(Provider::class);
 ```
 
-<a name="queues"></a>
-### Queues
+### 佇列
 
-<a name="the-batch-repository-interface"></a>
-#### The `BatchRepository` Interface
+#### `BatchRepository` 介面
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-The `Illuminate\Bus\BatchRepository` interface has received a new `rollBack` method. If you are implementing this interface within your own package or application, you should add this method to your implementation:
+`Illuminate\Bus\BatchRepository` 介面已新增 `rollBack` 方法。如果您正在您自己的套件或應用程式中實作此介面，您應該將此方法添加到您的實作中：
 
 ```php
 public function rollBack();
 ```
 
-<a name="synchronous-jobs-in-database-transactions"></a>
-#### Synchronous Jobs in Database Transactions
+#### 資料庫交易中的同步工作
 
-**Likelihood Of Impact: Very Low**
+**影響可能性：非常低**
 
-Previously, synchronous jobs (jobs using the `sync` queue driver) would execute immediately, regardless of whether the `after_commit` configuration option of the queue connection was set to `true` or the `afterCommit` method was invoked on the job.
+先前，同步工作（使用 `sync` 佇列驅動程式的工作）將立即執行，無論佇列連線的 `after_commit` 配置選項是否設為 `true` 或工作中是否調用了 `afterCommit` 方法。
 
-In Laravel 11, synchronous queue jobs will now respect the "after commit" configuration of the queue connection or job.
+在 Laravel 11 中，同步佇列作業現在會尊重佇列連線或作業的「提交後」組態。
 
 <a name="rate-limiting"></a>
-### Rate Limiting
+### 速率限制
 
 <a name="per-second-rate-limiting"></a>
-#### Per-Second Rate Limiting
+#### 每秒速率限制
 
-**Likelihood Of Impact: Medium**
+**影響可能性：中**
 
-Laravel 11 supports per-second rate limiting instead of being limited to per-minute granularity. There are a variety of potential breaking changes you should be aware of related to this change.
+Laravel 11 支援每秒速率限制，而不再限制於每分鐘的粒度。與此更改相關的潛在破壞性變更有多種，您應該注意這些變更。
 
-The `GlobalLimit` class constructor now accepts seconds instead of minutes. This class is not documented and would not typically be used by your application:
+`GlobalLimit` 類別的建構子現在接受秒數而非分鐘數。這個類別沒有文件記載，通常不會被應用程式使用：
 
 ```php
 new GlobalLimit($attempts, 2 * 60);
 ```
 
-The `Limit` class constructor now accepts seconds instead of minutes. All documented usages of this class are limited to static constructors such as `Limit::perMinute` and `Limit::perSecond`. However, if you are instantiating this class manually, you should update your application to provide seconds to the class's constructor:
+`Limit` 類別的建構子現在接受秒數而非分鐘數。這個類別的所有文件化用法都限於靜態建構器，如 `Limit::perMinute` 和 `Limit::perSecond`。但是，如果您手動實例化這個類別，應該更新應用程式以向類別的建構子提供秒數：
 
 ```php
 new Limit($key, $attempts, 2 * 60);
 ```
 
-The `Limit` class's `decayMinutes` property has been renamed to `decaySeconds` and now contains seconds instead of minutes.
+`Limit` 類別的 `decayMinutes` 屬性已更名為 `decaySeconds`，並且現在包含秒數而非分鐘數。
 
-The `Illuminate\Queue\Middleware\ThrottlesExceptions` and `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis` class constructors now accept seconds instead of minutes:
+`Illuminate\Queue\Middleware\ThrottlesExceptions` 和 `Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis` 類別的建構子現在接受秒數而非分鐘數：
 
 ```php
 new ThrottlesExceptions($attempts, 2 * 60);
@@ -506,55 +512,55 @@ new ThrottlesExceptionsWithRedis($attempts, 2 * 60);
 ### Cashier Stripe
 
 <a name="updating-cashier-stripe"></a>
-#### Updating Cashier Stripe
+#### 更新 Cashier Stripe
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-Laravel 11 no longer supports Cashier Stripe 14.x. Therefore, you should update your application's Laravel Cashier Stripe dependency to `^15.0` in your `composer.json` file.
+Laravel 11 不再支援 Cashier Stripe 14.x。因此，您應該將應用程式的 Laravel Cashier Stripe 依賴性更新為 `^15.0` 在您的 `composer.json` 檔案中。
 
-Cashier Stripe 15.0 no longer automatically loads migrations from its own migrations directory. Instead, you should run the following command to publish Cashier Stripe's migrations to your application:
+Cashier Stripe 15.0 不再自動從自己的遷移目錄載入遷移。相反，您應該執行以下命令將 Cashier Stripe 的遷移發佈到您的應用程式：
 
 ```shell
 php artisan vendor:publish --tag=cashier-migrations
 ```
 
-Please review the complete [Cashier Stripe upgrade guide](https://github.com/laravel/cashier-stripe/blob/15.x/UPGRADE.md) for additional breaking changes.
+請查看完整的[Cashier Stripe 升級指南](https://github.com/laravel/cashier-stripe/blob/15.x/UPGRADE.md)以獲取額外的破壞性更改。
 
 <a name="spark-stripe"></a>
 ### Spark (Stripe)
 
 <a name="updating-spark-stripe"></a>
-#### Updating Spark Stripe
+#### 更新 Spark Stripe
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-Laravel 11 no longer supports Laravel Spark Stripe 4.x. Therefore, you should update your application's Laravel Spark Stripe dependency to `^5.0` in your `composer.json` file.
+Laravel 11 不再支援 Laravel Spark Stripe 4.x。因此，您應該將應用程式的 Laravel Spark Stripe 依賴性更新為 `^5.0` 在您的 `composer.json` 檔案中。
 
-Spark Stripe 5.0 no longer automatically loads migrations from its own migrations directory. Instead, you should run the following command to publish Spark Stripe's migrations to your application:
+Spark Stripe 5.0 不再自動從自己的遷移目錄加載遷移。相反，您應運行以下命令將 Spark Stripe 的遷移發佈到您的應用程式中：
 
 ```shell
 php artisan vendor:publish --tag=spark-migrations
 ```
 
-Please review the complete [Spark Stripe upgrade guide](https://spark.laravel.com/docs/spark-stripe/upgrade.html) for additional breaking changes.
+請查看完整的[Spark Stripe 升級指南](https://spark.laravel.com/docs/spark-stripe/upgrade.html)以獲取額外的破壞性更改。
 
 <a name="passport"></a>
 ### Passport
 
 <a name="updating-telescope"></a>
-#### Updating Passport
+#### 更新 Passport
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-Laravel 11 no longer supports Laravel Passport 11.x. Therefore, you should update your application's Laravel Passport dependency to `^12.0` in your `composer.json` file.
+Laravel 11 不再支援 Laravel Passport 11.x。因此，您應該將應用程式的 Laravel Passport 依賴性更新為 `^12.0` 在您的 `composer.json` 檔案中。
 
-Passport 12.0 no longer automatically loads migrations from its own migrations directory. Instead, you should run the following command to publish Passport's migrations to your application:
+Passport 12.0 不再自動從自己的遷移目錄加載遷移。相反，您應運行以下命令將 Passport 的遷移發佈到您的應用程式中：
 
 ```shell
 php artisan vendor:publish --tag=passport-migrations
 ```
 
-In addition, the password grant type is disabled by default. You may enable it by invoking the `enablePasswordGrant` method in the `boot` method of your application's `AppServiceProvider`:
+此外，密碼授權類型默認為禁用。您可以通過在應用程式的 `AppServiceProvider` 的 `boot` 方法中調用 `enablePasswordGrant` 方法來啟用它：
 
     public function boot(): void
     {
@@ -565,19 +571,19 @@ In addition, the password grant type is disabled by default. You may enable it b
 ### Sanctum
 
 <a name="updating-sanctum"></a>
-#### Updating Sanctum
+#### 更新 Sanctum
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-Laravel 11 no longer supports Laravel Sanctum 3.x. Therefore, you should update your application's Laravel Sanctum dependency to `^4.0` in your `composer.json` file.
+Laravel 11 不再支援 Laravel Sanctum 3.x。因此，您應該將應用程式的 Laravel Sanctum 依賴性更新為 `^4.0` 在您的 `composer.json` 檔案中。
 
-Sanctum 4.0 no longer automatically loads migrations from its own migrations directory. Instead, you should run the following command to publish Sanctum's migrations to your application:
+Sanctum 4.0 不再自動從自己的遷移目錄加載遷移。相反，您應運行以下命令將 Sanctum 的遷移發佈到您的應用程式中：
 
 ```shell
 php artisan vendor:publish --tag=sanctum-migrations
 ```
 
-Then, in your application's `config/sanctum.php` configuration file, you should update the references to the `authenticate_session`, `encrypt_cookies`, and `validate_csrf_token` middleware to the following:
+然後，在您應用程式的 `config/sanctum.php` 配置檔中，您應該將 `authenticate_session`、`encrypt_cookies` 和 `validate_csrf_token` 中介層的參考更新如下：
 
     'middleware' => [
         'authenticate_session' => Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
@@ -589,26 +595,28 @@ Then, in your application's `config/sanctum.php` configuration file, you should 
 ### Telescope
 
 <a name="updating-telescope"></a>
-#### Updating Telescope
+#### 更新 Telescope
 
-**Likelihood Of Impact: High**
+**影響可能性：高**
 
-Laravel 11 no longer supports Laravel Telescope 4.x. Therefore, you should update your application's Laravel Telescope dependency to `^5.0` in your `composer.json` file.
+Laravel 11 不再支援 Laravel Telescope 4.x。因此，您應該在您的應用程式的 `composer.json` 檔中將 Laravel Telescope 依賴更新為 `^5.0`。
 
-Telescope 5.0 no longer automatically loads migrations from its own migrations directory. Instead, you should run the following command to publish Telescope's migrations to your application:
+Telescope 5.0 不再自動從自己的遷移目錄加載遷移。相反，您應該執行以下命令將 Telescope 的遷移發佈到您的應用程式中：
 
 ```shell
 php artisan vendor:publish --tag=telescope-migrations
 ```
 
 <a name="spatie-once-package"></a>
-### Spatie Once Package
+### Spatie Once 套件
 
-**Likelihood Of Impact: Medium**
+**影響可能性：中**
 
-Laravel 11 now provides its own [`once` function](/docs/{{version}}/helpers#method-once) to ensure that a given closure is only executed once. Therefore, if your application has a dependency on the `spatie/once` package, you should remove it from your application's `composer.json` file to avoid conflicts.
+Laravel 11 現在提供自己的 [`once` 函式](/docs/{{version}}/helpers#method-once) 來確保給定的閉包僅執行一次。因此，如果您的應用程式依賴於 `spatie/once` 套件，您應該從您的應用程式的 `composer.json` 檔中刪除它，以避免衝突。
 
 <a name="miscellaneous"></a>
-### Miscellaneous
+### 其他
 
-We also encourage you to view the changes in the `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). While many of these changes are not required, you may wish to keep these files in sync with your application. Some of these changes will be covered in this upgrade guide, but others, such as changes to configuration files or comments, will not be. You can easily view the changes with the [GitHub comparison tool](https://github.com/laravel/laravel/compare/10.x...11.x) and choose which updates are important to you.
+我們也鼓勵您查看 `laravel/laravel` [GitHub 存儲庫](https://github.com/laravel/laravel) 中的變更。雖然許多這些變更並非必需，但您可能希望將這些檔案與您的應用程式保持同步。本次升級指南將涵蓋其中一些變更，但其他變更，如配置檔或註釋的更改，則不會。您可以使用 [GitHub 比較工具](https://github.com/laravel/laravel/compare/10.x...11.x) 輕鬆查看這些變更，並選擇哪些更新對您重要。
+
+I'm ready to translate. Please paste the Markdown content for me to work on.

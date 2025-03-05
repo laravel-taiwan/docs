@@ -1,20 +1,20 @@
-# Database Testing
+# 資料庫測試
 
-- [Introduction](#introduction)
-    - [Resetting the Database After Each Test](#resetting-the-database-after-each-test)
-- [Model Factories](#model-factories)
-- [Running Seeders](#running-seeders)
-- [Available Assertions](#available-assertions)
+- [簡介](#introduction)
+    - [每次測試後重置資料庫](#resetting-the-database-after-each-test)
+- [模型工廠](#model-factories)
+- [執行 Seeder](#running-seeders)
+- [可用的斷言](#available-assertions)
 
 <a name="introduction"></a>
-## Introduction
+## 簡介
 
-Laravel provides a variety of helpful tools and assertions to make it easier to test your database driven applications. In addition, Laravel model factories and seeders make it painless to create test database records using your application's Eloquent models and relationships. We'll discuss all of these powerful features in the following documentation.
+Laravel 提供了各種有用的工具和斷言，使得測試基於資料庫的應用程式更加容易。此外，Laravel 模型工廠和 Seeder 讓您可以輕鬆地使用應用程式的 Eloquent 模型和關聯來建立測試資料庫記錄。我們將在以下文件中討論所有這些強大的功能。
 
 <a name="resetting-the-database-after-each-test"></a>
-### Resetting the Database After Each Test
+### 每次測試後重置資料庫
 
-Before proceeding much further, let's discuss how to reset your database after each of your tests so that data from a previous test does not interfere with subsequent tests. Laravel's included `Illuminate\Foundation\Testing\RefreshDatabase` trait will take care of this for you. Simply use the trait on your test class:
+在繼續之前，讓我們討論如何在每次測試後重置您的資料庫，以免前一個測試的資料干擾後續的測試。Laravel 包含的 `Illuminate\Foundation\Testing\RefreshDatabase` 特性將為您處理這個問題。只需在您的測試類別中使用這個特性：
 
 ```php tab=Pest
 <?php
@@ -54,16 +54,16 @@ class ExampleTest extends TestCase
 }
 ```
 
-The `Illuminate\Foundation\Testing\RefreshDatabase` trait does not migrate your database if your schema is up to date. Instead, it will only execute the test within a database transaction. Therefore, any records added to the database by test cases that do not use this trait may still exist in the database.
+`Illuminate\Foundation\Testing\RefreshDatabase` 特性不會遷移您的資料庫，如果您的架構是最新的。相反，它只會在資料庫交易中執行測試。因此，任何由不使用此特性的測試案例添加到資料庫的記錄可能仍然存在於資料庫中。
 
-If you would like to totally reset the database, you may use the `Illuminate\Foundation\Testing\DatabaseMigrations` or `Illuminate\Foundation\Testing\DatabaseTruncation` traits instead. However, both of these options are significantly slower than the `RefreshDatabase` trait.
+如果您想完全重置資料庫，您可以改用 `Illuminate\Foundation\Testing\DatabaseMigrations` 或 `Illuminate\Foundation\Testing\DatabaseTruncation` 特性。不過，這兩個選項的速度比 `RefreshDatabase` 特性慢得多。
 
 <a name="model-factories"></a>
-## Model Factories
+## 模型工廠
 
-When testing, you may need to insert a few records into your database before executing your test. Instead of manually specifying the value of each column when you create this test data, Laravel allows you to define a set of default attributes for each of your [Eloquent models](/docs/{{version}}/eloquent) using [model factories](/docs/{{version}}/eloquent-factories).
+在進行測試時，您可能需要在執行測試之前將一些記錄插入您的資料庫。而不是在建立這些測試資料時手動指定每個欄位的值，Laravel 允許您為每個 [Eloquent 模型](/docs/{{version}}/eloquent) 定義一組預設屬性，使用 [模型工廠](/docs/{{version}}/eloquent-factories)。
 
-To learn more about creating and utilizing model factories to create models, please consult the complete [model factory documentation](/docs/{{version}}/eloquent-factories). Once you have defined a model factory, you may utilize the factory within your test to create models:
+要了解如何建立和利用模型工廠來建立模型，請參考完整的[model factory documentation](/docs/{{version}}/eloquent-factories)。一旦您定義了一個模型工廠，您可以在測試中使用該工廠來建立模型：
 
 ```php tab=Pest
 use App\Models\User;
@@ -87,9 +87,9 @@ public function test_models_can_be_instantiated(): void
 ```
 
 <a name="running-seeders"></a>
-## Running Seeders
+## 執行 Seeders
 
-If you would like to use [database seeders](/docs/{{version}}/seeding) to populate your database during a feature test, you may invoke the `seed` method. By default, the `seed` method will execute the `DatabaseSeeder`, which should execute all of your other seeders. Alternatively, you pass a specific seeder class name to the `seed` method:
+如果您想在功能測試期間使用[資料庫 seeders](/docs/{{version}}/seeding)來填充您的資料庫，您可以調用 `seed` 方法。預設情況下，`seed` 方法將執行 `DatabaseSeeder`，該類應該執行您的所有其他 seeders。或者，您可以將特定的 seeder 類名傳遞給 `seed` 方法：
 
 ```php tab=Pest
 <?php
@@ -155,7 +155,7 @@ class ExampleTest extends TestCase
 }
 ```
 
-Alternatively, you may instruct Laravel to automatically seed the database before each test that uses the `RefreshDatabase` trait. You may accomplish this by defining a `$seed` property on your base test class:
+或者，您可以指示 Laravel 在每次使用 `RefreshDatabase` 特性的測試之前自動填充資料庫。您可以通過在基本測試類上定義一個 `$seed` 屬性來完成這一點：
 
     <?php
 
@@ -166,40 +166,48 @@ Alternatively, you may instruct Laravel to automatically seed the database befor
     abstract class TestCase extends BaseTestCase
     {
         /**
-         * Indicates whether the default seeder should run before each test.
+         * 指示是否在每次測試之前運行默認 seeder。
          *
          * @var bool
          */
         protected $seed = true;
     }
 
-When the `$seed` property is `true`, the test will run the `Database\Seeders\DatabaseSeeder` class before each test that uses the `RefreshDatabase` trait. However, you may specify a specific seeder that should be executed by defining a `$seeder` property on your test class:
+當 `$seed` 屬性為 `true` 時，測試將在每次使用 `RefreshDatabase` 特性的測試之前運行 `Database\Seeders\DatabaseSeeder` 類。但是，您可以通過在您的測試類上定義一個 `$seeder` 屬性來指定應該執行的特定 seeder：
 
     use Database\Seeders\OrderStatusSeeder;
 
     /**
-     * Run a specific seeder before each test.
+     * 在每次測試之前運行特定 seeder。
      *
      * @var string
      */
     protected $seeder = OrderStatusSeeder::class;
 
 <a name="available-assertions"></a>
-## Available Assertions
+## 可用的斷言
 
-Laravel provides several database assertions for your [Pest](https://pestphp.com) or [PHPUnit](https://phpunit.de) feature tests. We'll discuss each of these assertions below.
+Laravel 為您的[Pest](https://pestphp.com)或[PHPUnit](https://phpunit.de)功能測試提供了幾個資料庫斷言。我們將在下面討論這些斷言。
+
 
 <a name="assert-database-count"></a>
 #### assertDatabaseCount
 
-Assert that a table in the database contains the given number of records:
+驗證資料庫中的表格包含給定數量的記錄：
 
     $this->assertDatabaseCount('users', 5);
 
+<a name="assert-database-empty"></a>
+#### assertDatabaseEmpty
+
+驗證資料庫中的表格不包含任何記錄：
+
+    $this->assertDatabaseEmpty('users');
+    
 <a name="assert-database-has"></a>
 #### assertDatabaseHas
 
-Assert that a table in the database contains records matching the given key / value query constraints:
+驗證資料庫中的表格包含符合給定鍵/值查詢條件的記錄：
 
     $this->assertDatabaseHas('users', [
         'email' => 'sally@example.com',
@@ -208,7 +216,7 @@ Assert that a table in the database contains records matching the given key / va
 <a name="assert-database-missing"></a>
 #### assertDatabaseMissing
 
-Assert that a table in the database does not contain records matching the given key / value query constraints:
+驗證資料庫中的表格不包含符合給定鍵/值查詢條件的記錄：
 
     $this->assertDatabaseMissing('users', [
         'email' => 'sally@example.com',
@@ -217,21 +225,21 @@ Assert that a table in the database does not contain records matching the given 
 <a name="assert-deleted"></a>
 #### assertSoftDeleted
 
-The `assertSoftDeleted` method may be used to assert a given Eloquent model has been "soft deleted":
+`assertSoftDeleted` 方法可用於斷言給定的 Eloquent 模型已被「軟刪除」：
 
     $this->assertSoftDeleted($user);
-    
+
 <a name="assert-not-deleted"></a>
 #### assertNotSoftDeleted
 
-The `assertNotSoftDeleted` method may be used to assert a given Eloquent model hasn't been "soft deleted":
+`assertNotSoftDeleted` 方法可用於斷言給定的 Eloquent 模型尚未被「軟刪除」：
 
     $this->assertNotSoftDeleted($user);
 
 <a name="assert-model-exists"></a>
 #### assertModelExists
 
-Assert that a given model exists in the database:
+斷言資料庫中存在給定的模型：
 
     use App\Models\User;
 
@@ -242,7 +250,7 @@ Assert that a given model exists in the database:
 <a name="assert-model-missing"></a>
 #### assertModelMissing
 
-Assert that a given model does not exist in the database:
+斷言資料庫中不存在給定的模型：
 
     use App\Models\User;
 
@@ -255,8 +263,10 @@ Assert that a given model does not exist in the database:
 <a name="expects-database-query-count"></a>
 #### expectsDatabaseQueryCount
 
-The `expectsDatabaseQueryCount` method may be invoked at the beginning of your test to specify the total number of database queries that you expect to be run during the test. If the actual number of executed queries does not exactly match this expectation, the test will fail:
+`expectsDatabaseQueryCount` 方法可在測試開始時調用，指定預期在測試期間執行的總資料庫查詢數。如果實際執行的查詢數量與此預期不完全匹配，則測試將失敗：
 
-    $this->expectsDatabaseQueryCount(5);
+```php
+$this->expectsDatabaseQueryCount(5);
 
-    // Test...
+// 測試...
+```

@@ -1,71 +1,70 @@
-# Release Notes
+# 發行說明
 
-- [Versioning Scheme](#versioning-scheme)
-- [Support Policy](#support-policy)
+- [版本控制方案](#versioning-scheme)
+- [支援政策](#support-policy)
 - [Laravel 11](#laravel-11)
 
 <a name="versioning-scheme"></a>
-## Versioning Scheme
+## 版本控制方案
 
-Laravel and its other first-party packages follow [Semantic Versioning](https://semver.org). Major framework releases are released every year (~Q1), while minor and patch releases may be released as often as every week. Minor and patch releases should **never** contain breaking changes.
+Laravel 及其其他第一方套件遵循[語義化版本](https://semver.org)。主要框架版本每年發布一次（約在第一季度），而次要和修補版本可能每週發布一次。次要和修補版本**絕對不應該**包含破壞性更改。
 
-When referencing the Laravel framework or its components from your application or package, you should always use a version constraint such as `^11.0`, since major releases of Laravel do include breaking changes. However, we strive to always ensure you may update to a new major release in one day or less.
+當從您的應用程式或套件中引用 Laravel 框架或其組件時，您應該始終使用版本約束，如 `^11.0`，因為 Laravel 的主要版本發布會包含破壞性更改。但是，我們始終努力確保您可以在一天或更短的時間內更新到新的主要版本。
 
 <a name="named-arguments"></a>
-#### Named Arguments
+#### 命名引數
 
-[Named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) are not covered by Laravel's backwards compatibility guidelines. We may choose to rename function arguments when necessary in order to improve the Laravel codebase. Therefore, using named arguments when calling Laravel methods should be done cautiously and with the understanding that the parameter names may change in the future.
+[Laravel 不涵蓋命名引數](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)在其向後兼容性指南中。我們可能會選擇在必要時重新命名函數引數，以改進 Laravel 代碼庫。因此，在調用 Laravel 方法時使用命名引數應該謹慎進行，並且應理解參數名稱可能會在將來更改。
 
 <a name="support-policy"></a>
-## Support Policy
+## 支援政策
 
-For all Laravel releases, bug fixes are provided for 18 months and security fixes are provided for 2 years. For all additional libraries, including Lumen, only the latest major release receives bug fixes. In addition, please review the database versions [supported by Laravel](/docs/{{version}}/database#introduction).
-
+對於所有 Laravel 發布版本，提供 18 個月的錯誤修復和 2 年的安全修復。對於所有其他附加函式庫，包括 Lumen，僅最新的主要版本接收錯誤修復。此外，請查看 Laravel 支援的[資料庫版本](/docs/{{version}}/database#introduction)。
 
 <div class="overflow-auto">
 
-| Version | PHP (*) | Release | Bug Fixes Until | Security Fixes Until |
+| 版本 | PHP (*) | 發布日期 | 錯誤修復截止日期 | 安全修復截止日期 |
 | --- | --- | --- | --- | --- |
-| 9 | 8.0 - 8.2 | February 8th, 2022 | August 8th, 2023 | February 6th, 2024 |
-| 10 | 8.1 - 8.3 | February 14th, 2023 | August 6th, 2024 | February 4th, 2025 |
-| 11 | 8.2 - 8.3 | March 12th, 2024 | September 3rd, 2025 | March 12th, 2026 |
-| 12 | 8.2 - 8.3 | Q1 2025 | Q3, 2026 | Q1, 2027 |
+| 9 | 8.0 - 8.2 | 2022年2月8日 | 2023年8月8日 | 2024年2月6日 |
+| 10 | 8.1 - 8.3 | 2023年2月14日 | 2024年8月6日 | 2025年2月4日 |
+| 11 | 8.2 - 8.4 | 2024年3月12日 | 2025年9月3日 | 2026年3月12日 |
+| 12 | 8.2 - 8.4 | 2025年2月24日 | 2026年8月13日 | 2027年2月24日 |
 
 </div>
 
 <div class="version-colors">
     <div class="end-of-life">
         <div class="color-box"></div>
-        <div>End of life</div>
+        <div>終止支援</div>
     </div>
     <div class="security-fixes">
         <div class="color-box"></div>
-        <div>Security fixes only</div>
+        <div>僅安全修復</div>
     </div>
 </div>
 
-(*) Supported PHP versions
+(*) 支援的 PHP 版本
 
 <a name="laravel-11"></a>
 ## Laravel 11
 
-Laravel 11 continues the improvements made in Laravel 10.x by introducing a streamlined application structure, per-second rate limiting, health routing, graceful encryption key rotation, queue testing improvements, [Resend](https://resend.com) mail transport, Prompt validator integration, new Artisan commands, and more. In addition, Laravel Reverb, a first-party, scalable WebSocket server has been introduced to provide robust real-time capabilities to your applications.
+Laravel 11 在 Laravel 10.x 所做的改進基礎上，引入了簡化的應用程式結構、每秒速率限制、健康路由、優雅的加密金鑰輪替、佇列測試改進、[Resend](https://resend.com) 郵件傳輸、Prompt 驗證整合、新的 Artisan 指令等。此外，Laravel Reverb 是一個官方的可擴展 WebSocket 伺服器，可為您的應用程式提供強大的即時功能。
 
 <a name="php-8"></a>
 ### PHP 8.2
 
-Laravel 11.x requires a minimum PHP version of 8.2.
+Laravel 11.x 需要最低 PHP 版本為 8.2。
 
 <a name="structure"></a>
-### Streamlined Application Structure
+### 簡化的應用程式結構
 
-_Laravel's streamlined application structure was developed by [Taylor Otwell](https://github.com/taylorotwell) and [Nuno Maduro](https://github.com/nunomaduro)_.
+_Laravel 的簡化應用程式結構由 [Taylor Otwell](https://github.com/taylorotwell) 和 [Nuno Maduro](https://github.com/nunomaduro) 開發_。
 
-Laravel 11 introduces a streamlined application structure for **new** Laravel applications, without requiring any changes to existing applications. The new application structure is intended to provide a leaner, more modern experience, while retaining many of the concepts that Laravel developers are already familiar with. Below we will discuss the highlights of Laravel's new application structure.
+Laravel 11 為**新**的 Laravel 應用程式引入了簡化的應用程式結構，而不需要對現有應用程式進行任何更改。新的應用程式結構旨在提供更精簡、更現代的體驗，同時保留許多 Laravel 開發人員已熟悉的概念。以下將討論 Laravel 新應用程式結構的重點。
 
-#### The Application Bootstrap File
+#### 應用程式啟動檔
 
-The `bootstrap/app.php` file has been revitalized as a code-first application configuration file. From this file, you may now customize your application's routing, middleware, service providers, exception handling, and more. This file unifies a variety of high-level application behavior settings that were previously scattered throughout your application's file structure:
+`bootstrap/app.php` 檔案已被重新設計為以程式碼為先的應用程式配置檔。從這個檔案中，您現在可以自訂應用程式的路由、中介層、服務提供者、例外處理等。這個檔案統一了許多高層應用程式行為設定，這些設定以前散佈在應用程式的檔案結構中：
 
 ```php
 return Application::configure(basePath: dirname(__DIR__))
@@ -83,16 +82,16 @@ return Application::configure(basePath: dirname(__DIR__))
 ```
 
 <a name="service-providers"></a>
-#### Service Providers
+#### 服務提供者
 
-Instead of the default Laravel application structure containing five service providers, Laravel 11 only includes a single `AppServiceProvider`. The functionality of the previous service providers has been incorporated into the `bootstrap/app.php`, is handled automatically by the framework, or may be placed in your application's `AppServiceProvider`.
+在 Laravel 11 中，不再包含五個服務提供者，而是只包含一個 `AppServiceProvider`。先前服務提供者的功能已納入 `bootstrap/app.php` 中，由框架自動處理，或者可以放在您的應用程式的 `AppServiceProvider` 中。
 
-For example, event discovery is now enabled by default, largely eliminating the need for manual registration of events and their listeners. However, if you do need to manually register events, you may simply do so in the `AppServiceProvider`. Similarly, route model bindings or authorization gates you may have previously registered in the `AuthServiceProvider` may also be registered in the `AppServiceProvider`.
+例如，事件發現現在已默認啟用，大大減少了手動註冊事件及其監聽器的需求。但是，如果您確實需要手動註冊事件，您可以在 `AppServiceProvider` 中簡單地這樣做。同樣地，您以前在 `AuthServiceProvider` 中註冊的路由模型綁定或授權閘也可以在 `AppServiceProvider` 中註冊。
 
 <a name="opt-in-routing"></a>
-#### Opt-in API and Broadcast Routing
+#### 啟用 API 和廣播路由
 
-The `api.php` and `channels.php` route files are no longer present by default, as many applications do not require these files. Instead, they may be created using simple Artisan commands:
+默認情況下，`api.php` 和 `channels.php` 路由文件不再存在，因為許多應用程序不需要這些文件。相反，可以使用簡單的 Artisan 命令來創建它們：
 
 ```shell
 php artisan install:api
@@ -101,11 +100,11 @@ php artisan install:broadcasting
 ```
 
 <a name="middleware"></a>
-#### Middleware
+#### 中介層
 
-Previously, new Laravel applications included nine middleware. These middleware performed a variety of tasks such as authenticating requests, trimming input strings, and validating CSRF tokens.
+以前，新的 Laravel 應用程序包括九個中介層。這些中介層執行各種任務，如驗證請求、修剪輸入字符串和驗證 CSRF 標記。
 
-In Laravel 11, these middleware have been moved into the framework itself, so that they do not add bulk to your application's structure. New methods for customizing the behavior of these middleware have been added to the framework and may be invoked from your application's `bootstrap/app.php` file:
+在 Laravel 11 中，這些中介層已移至框架本身，因此它們不會增加應用程序結構的體積。框架中已添加了新的自定義這些中介層行為的方法，可以從應用程序的 `bootstrap/app.php` 文件中調用：
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
@@ -119,12 +118,12 @@ In Laravel 11, these middleware have been moved into the framework itself, so th
 })
 ```
 
-Since all middleware can be easily customized via your application's `bootstrap/app.php`, the need for a separate HTTP "kernel" class has been eliminated.
+由於所有中介層都可以通過應用程序的 `bootstrap/app.php` 輕鬆自定義，因此不再需要單獨的 HTTP "kernel" 類。
 
 <a name="scheduling"></a>
-#### Scheduling
+#### 排程
 
-Using a new `Schedule` facade, scheduled tasks may now be defined directly in your application's `routes/console.php` file, eliminating the need for a separate console "kernel" class:
+使用新的 `Schedule` 門面，可以直接在應用程序的 `routes/console.php` 文件中定義排程任務，無需單獨的控制台 "kernel" 類：
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -133,9 +132,9 @@ Schedule::command('emails:send')->daily();
 ```
 
 <a name="exception-handling"></a>
-#### Exception Handling
+#### 例外處理
 
-Like routing and middleware, exception handling can now be customized from your application's `bootstrap/app.php` file instead of a separate exception handler class, reducing the overall number of files included in a new Laravel application:
+與路由和中介層一樣，現在可以從應用程序的 `bootstrap/app.php` 文件中自定義例外處理，而不是從單獨的例外處理程序類中進行，從而減少了新的 Laravel 應用程序中包含的文件總數：
 
 ```php
 ->withExceptions(function (Exceptions $exceptions) {
@@ -148,9 +147,9 @@ Like routing and middleware, exception handling can now be customized from your 
 ```
 
 <a name="base-controller-class"></a>
-#### Base `Controller` Class
+#### 基礎 `Controller` 類別
 
-The base controller included in new Laravel applications has been simplified. It no longer extends Laravel's internal `Controller` class, and the `AuthorizesRequests` and `ValidatesRequests` traits have been removed, as they may be included in your application's individual controllers if desired:
+新的 Laravel 應用程式中包含的基礎控制器已經簡化。它不再擴展 Laravel 內部的 `Controller` 類別，並且已經移除了 `AuthorizesRequests` 和 `ValidatesRequests` traits，因為如果需要的話，這些 traits 可以包含在應用程式的個別控制器中：
 
     <?php
 
@@ -162,33 +161,33 @@ The base controller included in new Laravel applications has been simplified. It
     }
 
 <a name="application-defaults"></a>
-#### Application Defaults
+#### 應用程式預設值
 
-By default, new Laravel applications use SQLite for database storage, as well as the `database` driver for Laravel's session, cache, and queue. This allows you to begin building your application immediately after creating a new Laravel application, without being required to install additional software or create additional database migrations.
+預設情況下，新的 Laravel 應用程式使用 SQLite 作為資料庫儲存，以及 Laravel 的 `database` 驅動程式用於會話、快取和佇列。這讓您可以在建立新的 Laravel 應用程式後立即開始構建應用程式，而無需安裝額外的軟體或建立額外的資料庫遷移。
 
-In addition, over time, the `database` drivers for these Laravel services have become robust enough for production usage in many application contexts; therefore, they provide a sensible, unified choice for both local and production applications.
+此外，隨著時間的推移，這些 Laravel 服務的 `database` 驅動程式已經變得足夠強大，可以在許多應用程式情境中用於正式環境；因此，它們為本地和正式應用程式提供了明智的、統一的選擇。
 
 <a name="reverb"></a>
 ### Laravel Reverb
 
-_Laravel Reverb was developed by [Joe Dixon](https://github.com/joedixon)_.
+_Laravel Reverb 是由 [Joe Dixon](https://github.com/joedixon) 開發的_。
 
-[Laravel Reverb](https://reverb.laravel.com) brings blazing-fast and scalable real-time WebSocket communication directly to your Laravel application, and provides seamless integration with Laravel’s existing suite of event broadcasting tools, such as Laravel Echo.
+[Laravel Reverb](https://reverb.laravel.com) 將極快速且可擴展的即時 WebSocket 通訊直接帶入您的 Laravel 應用程式，並與 Laravel 現有的事件廣播工具套件（如 Laravel Echo）無縫整合。
 
 ```shell
 php artisan reverb:start
 ```
 
-In addition, Reverb supports horizontal scaling via Redis's publish / subscribe capabilities, allowing you to distribute your WebSocket traffic across multiple backend Reverb servers all supporting a single, high-demand application.
+此外，Reverb 通過 Redis 的發布/訂閱功能支援水平擴展，讓您可以將 WebSocket 流量分佈到多個後端 Reverb 伺服器，所有這些伺服器都支援單一、高需求的應用程式。
 
-For more information on Laravel Reverb, please consult the complete [Reverb documentation](/docs/{{version}}/reverb).
+有關 Laravel Reverb 的更多資訊，請參考完整的 [Reverb 文件](/docs/{{version}}/reverb)。
 
 <a name="rate-limiting"></a>
-### Per-Second Rate Limiting
+### 每秒速率限制
 
-_Per-second rate limiting was contributed by [Tim MacDonald](https://github.com/timacdonald)_.
+_每秒速率限制由 [Tim MacDonald](https://github.com/timacdonald)_ 貢獻。
 
-Laravel now supports "per-second" rate limiting for all rate limiters, including those for HTTP requests and queued jobs. Previously, Laravel's rate limiters were limited to "per-minute" granularity:
+Laravel 現在支援所有速率限制器的「每秒」速率限制，包括用於 HTTP 請求和排程工作的速率限制器。之前，Laravel 的速率限制器僅限於「每分鐘」的粒度：
 
 ```php
 RateLimiter::for('invoices', function (Request $request) {
@@ -196,14 +195,14 @@ RateLimiter::for('invoices', function (Request $request) {
 });
 ```
 
-For more information on rate limiting in Laravel, check out the [rate limiting documentation](/docs/{{version}}/routing#rate-limiting).
+有關 Laravel 中速率限制的更多信息，請查看[速率限制文件](/docs/{{version}}/routing#rate-limiting)。
 
 <a name="health"></a>
-### Health Routing
+### 健康路由
 
-_Health routing was contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_健康路由由[Taylor Otwell](https://github.com/taylorotwell)貢獻_。
 
-New Laravel 11 applications include a `health` routing directive, which instructs Laravel to define a simple health-check endpoint that may be invoked by third-party application health monitoring services or orchestration systems like Kubernetes. By default, this route is served at `/up`:
+新的 Laravel 11 應用程序包括一個 `health` 路由指示詞，該指示 Laravel 定義一個簡單的健康檢查端點，可以由第三方應用程序健康監控服務或類似 Kubernetes 的編排系統調用。默認情況下，此路由位於 `/up`：
 
 ```php
 ->withRouting(
@@ -213,40 +212,40 @@ New Laravel 11 applications include a `health` routing directive, which instruct
 )
 ```
 
-When HTTP requests are made to this route, Laravel will also dispatch a `DiagnosingHealth` event, allowing you to perform additional health checks that are relevant to your application.
+當對此路由進行 HTTP 請求時，Laravel 還將發送一個 `DiagnosingHealth` 事件，讓您執行與應用程序相關的其他健康檢查。
 
 <a name="encryption"></a>
-### Graceful Encryption Key Rotation
+### 優雅的加密金鑰輪換
 
-_Graceful encryption key rotation was contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_優雅的加密金鑰輪換由[Taylor Otwell](https://github.com/taylorotwell)貢獻_。
 
-Since Laravel encrypts all cookies, including your application's session cookie, essentially every request to a Laravel application relies on encryption. However, because of this, rotating your application's encryption key would log all users out of your application. In addition, decrypting data that was encrypted by the previous encryption key becomes impossible.
+由於 Laravel 加密所有 Cookie，包括應用程序的會話 Cookie，在本質上，對 Laravel 應用程序的每個請求都依賴於加密。但是，由於這個原因，輪換應用程序的加密金鑰將登出應用程序的所有用戶。此外，解密由先前加密金鑰加密的數據將變得不可能。
 
-Laravel 11 allows you to define your application's previous encryption keys as a comma-delimited list via the `APP_PREVIOUS_KEYS` environment variable.
+Laravel 11 允許您通過 `APP_PREVIOUS_KEYS` 環境變量將應用程序的先前加密金鑰定義為逗號分隔的列表。
 
-When encrypting values, Laravel will always use the "current" encryption key, which is within the `APP_KEY` environment variable. When decrypting values, Laravel will first try the current key. If decryption fails using the current key, Laravel will try all previous keys until one of the keys is able to decrypt the value.
+在加密值時，Laravel 將始終使用「當前」加密金鑰，該金鑰位於 `APP_KEY` 環境變量中。在解密值時，Laravel 將首先嘗試使用當前金鑰。如果使用當前金鑰解密失敗，Laravel 將嘗試所有先前金鑰，直到其中一個金鑰能夠解密該值。
 
-This approach to graceful decryption allows users to keep using your application uninterrupted even if your encryption key is rotated.
+這種優雅的解密方法允許用戶在加密金鑰輪換時仍然可以無間斷地使用您的應用程式。
 
-For more information on encryption in Laravel, check out the [encryption documentation](/docs/{{version}}/encryption).
+有關 Laravel 加密的更多資訊，請查看[加密文件](/docs/{{version}}/encryption)。
 
 <a name="automatic-password-rehashing"></a>
-### Automatic Password Rehashing
+### 自動密碼重新雜湊
 
-_Automatic password rehashing was contributed by [Stephen Rees-Carter](https://github.com/valorin)_.
+_自動密碼重新雜湊由[Stephen Rees-Carter](https://github.com/valorin)貢獻_。
 
-Laravel's default password hashing algorithm is bcrypt. The "work factor" for bcrypt hashes can be adjusted via the `config/hashing.php` configuration file or the `BCRYPT_ROUNDS` environment variable.
+Laravel 的預設密碼雜湊演算法是 bcrypt。可以通過 `config/hashing.php` 配置文件或 `BCRYPT_ROUNDS` 環境變數來調整 bcrypt 雜湊的「工作因子」。
 
-Typically, the bcrypt work factor should be increased over time as CPU / GPU processing power increases. If you increase the bcrypt work factor for your application, Laravel will now gracefully and automatically rehash user passwords as users authenticate with your application.
+通常情況下，隨著 CPU / GPU 處理能力的增加，應該逐漸提高 bcrypt 的工作因子。如果您為應用程式增加了 bcrypt 的工作因子，Laravel 現在將優雅且自動地重新雜湊用戶密碼，當用戶在應用程式中進行身份驗證時。
 
 <a name="prompt-validation"></a>
-### Prompt Validation
+### 提示驗證
 
-_Prompt validator integration was contributed by [Andrea Marco Sartori](https://github.com/cerbero90)_.
+_提示驗證整合由[Andrea Marco Sartori](https://github.com/cerbero90)貢獻_。
 
-[Laravel Prompts](/docs/{{version}}/prompts) is a PHP package for adding beautiful and user-friendly forms to your command-line applications, with browser-like features including placeholder text and validation.
+[Laravel Prompts](/docs/{{version}}/prompts) 是一個用於為您的命令列應用程式添加美觀且用戶友好的表單的 PHP 套件，具有包括佔位文字和驗證等瀏覽器般的功能。
 
-Laravel Prompts supports input validation via closures:
+Laravel Prompts 支援通過閉包進行輸入驗證：
 
 ```php
 $name = text(
@@ -259,20 +258,20 @@ $name = text(
 );
 ```
 
-However, this can become cumbersome when dealing with many inputs or complicated validation scenarios. Therefore, in Laravel 11, you may utilize the full power of Laravel's [validator](/docs/{{version}}/validation) when validating prompt inputs:
+然而，當處理許多輸入或複雜的驗證情況時，這可能變得繁瑣。因此，在 Laravel 11 中，您可以利用 Laravel 的[驗證器](/docs/{{version}}/validation)的全部功能來驗證提示輸入：
 
 ```php
-$name = text('What is your name?', validate: [
+$name = text('您的名字是什麼？', validate: [
     'name' => 'required|min:3|max:255',
 ]);
 ```
 
 <a name="queue-interaction-testing"></a>
-### Queue Interaction Testing
+### 佇列互動測試
 
-_Queue interaction testing was contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_佇列互動測試由[Taylor Otwell](https://github.com/taylorotwell)貢獻_。
 
-Previously, attempting to test that a queued job was released, deleted, or manually failed was cumbersome and required the definition of custom queue fakes and stubs. However, in Laravel 11, you may easily test for these queue interactions using the `withFakeQueueInteractions` method:
+以前，嘗試測試佇列作業是否已釋放、刪除或手動失敗是繁瑣的，需要定義自定義佇列假和存根。但是，在 Laravel 11 中，您可以使用 `withFakeQueueInteractions` 方法輕鬆地測試這些佇列互動。
 
 ```php
 use App\Jobs\ProcessPodcast;
@@ -284,14 +283,14 @@ $job->handle();
 $job->assertReleased(delay: 30);
 ```
 
-For more information on testing queued jobs, check out the [queue documentation](/docs/{{version}}/queues#testing).
+欲瞭解有關測試排隊工作的更多資訊，請查看[排隊文件](/docs/{{version}}/queues#testing)。
 
 <a name="new-artisan-commands"></a>
-### New Artisan Commands
+### 新 Artisan 指令
 
-_Class creation Artisan commands were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_由[Taylor Otwell](https://github.com/taylorotwell)貢獻的類別創建 Artisan 指令_。
 
-New Artisan commands have been added to allow the quick creation of classes, enums, interfaces, and traits:
+新增了新的 Artisan 指令，可快速創建類別、列舉、介面和特性：
 
 ```shell
 php artisan make:class
@@ -301,14 +300,14 @@ php artisan make:trait
 ```
 
 <a name="model-cast-improvements"></a>
-### Model Casts Improvements
+### 模型轉換改進
 
-_Model casts improvements were contributed by [Nuno Maduro](https://github.com/nunomaduro)_.
+_由[Nuno Maduro](https://github.com/nunomaduro)貢獻的模型轉換改進_。
 
-Laravel 11 supports defining your model's casts using a method instead of a property. This allows for streamlined, fluent cast definitions, especially when using casts with arguments:
+Laravel 11 支援使用方法而非屬性來定義模型的轉換。這使得轉換定義更為流暢，特別是在使用帶有引數的轉換時：
 
     /**
-     * Get the attributes that should be cast.
+     * 取得應該轉換的屬性。
      *
      * @return array<string, string>
      */
@@ -322,14 +321,14 @@ Laravel 11 supports defining your model's casts using a method instead of a prop
         ];
     }
 
-For more information on attribute casting, review the [Eloquent documentation](/docs/{{version}}/eloquent-mutators#attribute-casting).
+欲瞭解屬性轉換的更多資訊，請參閱[Eloquent 文件](/docs/{{version}}/eloquent-mutators#attribute-casting)。
 
 <a name="the-once-function"></a>
-### The `once` Function
+### `once` 函式
 
-_The `once` helper was contributed by [Taylor Otwell](https://github.com/taylorotwell)_ and _[Nuno Maduro](https://github.com/nunomaduro)_.
+_由[Taylor Otwell](https://github.com/taylorotwell)_ 和 _[Nuno Maduro](https://github.com/nunomaduro)_ 貢獻的 `once` 輔助函式。
 
-The `once` helper function executes the given callback and caches the result in memory for the duration of the request. Any subsequent calls to the `once` function with the same callback will return the previously cached result:
+`once` 輔助函式執行給定的回呼並在記憶體中快取結果以供請求期間使用。對於具有相同回呼的後續 `once` 函式呼叫將返回先前快取的結果：
 
     function random(): int
     {
@@ -339,33 +338,33 @@ The `once` helper function executes the given callback and caches the result in 
     }
 
     random(); // 123
-    random(); // 123 (cached result)
-    random(); // 123 (cached result)
+    random(); // 123 (快取的結果)
+    random(); // 123 (快取的結果)
 
-For more information on the `once` helper, check out the [helpers documentation](/docs/{{version}}/helpers#method-once).
+有關 `once` 助手的更多資訊，請查看 [助手文件](/docs/{{version}}/helpers#method-once)。
 
 <a name="database-performance"></a>
-### Improved Performance When Testing With In-Memory Databases
+### 使用內存資料庫進行測試時的性能改進
 
-_Improved in-memory database testing performance was contributed by [Anders Jenbo](https://github.com/AJenbo)_
+_由 [Anders Jenbo](https://github.com/AJenbo) 貢獻了內存資料庫測試性能的改進_
 
-Laravel 11 offers a significant speed boost when using the `:memory:` SQLite database during testing. To accomplish this, Laravel now maintains a reference to PHP's PDO object and reuses it across connections, often cutting total test run time in half.
+Laravel 11 在使用 `:memory:` SQLite 資料庫進行測試時提供了顯著的速度提升。為了實現這一點，Laravel 現在保留對 PHP 的 PDO 物件的引用，並在連接之間重複使用它，通常可以將總測試運行時間減半。
 
 <a name="mariadb"></a>
-### Improved Support for MariaDB
+### 對 MariaDB 的支援改進
 
-_Improved support for MariaDB was contributed by [Jonas Staudenmeir](https://github.com/staudenmeir) and [Julius Kiekbusch](https://github.com/Jubeki)_
+_由 [Jonas Staudenmeir](https://github.com/staudenmeir) 和 [Julius Kiekbusch](https://github.com/Jubeki) 貢獻了對 MariaDB 的支援改進_
 
-Laravel 11 includes improved support for MariaDB. In previous Laravel releases, you could use MariaDB via Laravel's MySQL driver. However, Laravel 11 now includes a dedicated MariaDB driver which provides better defaults for this database system.
+Laravel 11 包括對 MariaDB 的改進支援。在之前的 Laravel 版本中，您可以通過 Laravel 的 MySQL 驅動程序使用 MariaDB。但是，Laravel 11 現在包括了一個專用的 MariaDB 驅動程序，為這個資料庫系統提供了更好的默認值。
 
-For more information on Laravel's database drivers, check out the [database documentation](/docs/{{version}}/database).
+有關 Laravel 的資料庫驅動程序的更多信息，請查看 [資料庫文件](/docs/{{version}}/database)。
 
 <a name="inspecting-database"></a>
-### Inspecting Databases and Improved Schema Operations
+### 檢查資料庫和改進的結構操作
 
-_Improved schema operations and database inspection was contributed by [Hafez Divandari](https://github.com/hafezdivandari)_
+_由 [Hafez Divandari](https://github.com/hafezdivandari) 貢獻了改進的結構操作和資料庫檢查_
 
-Laravel 11 provides additional database schema operation and inspection methods, including the native modifying, renaming, and dropping of columns. Furthermore, advanced spatial types, non-default schema names, and native schema methods for manipulating tables, views, columns, indexes, and foreign keys are provided:
+Laravel 11 提供了額外的資料庫結構操作和檢查方法，包括原生的修改、重命名和刪除列。此外，還提供了高級空間類型、非默認結構名稱以及用於操作表、視圖、列、索引和外鍵的原生結構方法：
 
     use Illuminate\Support\Facades\Schema;
 

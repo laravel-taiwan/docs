@@ -64,7 +64,7 @@ To get started, you should install [Google Chrome](https://www.google.com/chrome
 composer require laravel/dusk --dev
 ```
 
-> [!WARNING]
+> [!WARNING]  
 > If you are manually registering Dusk's service provider, you should **never** register it in your production environment, as doing so could lead to arbitrary users being able to authenticate with your application.
 
 After installing the Dusk package, execute the `dusk:install` Artisan command. The `dusk:install` command will create a `tests/Browser` directory, an example Dusk test, and install the Chrome Driver binary for your operating system:
@@ -75,7 +75,7 @@ php artisan dusk:install
 
 Next, set the `APP_URL` environment variable in your application's `.env` file. This value should match the URL you use to access your application in a browser.
 
-> [!NOTE]
+> [!NOTE]  
 > If you are using [Laravel Sail](/docs/{{version}}/sail) to manage your local development environment, please also consult the Sail documentation on [configuring and running Dusk tests](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="managing-chromedriver-installations"></a>
@@ -97,7 +97,7 @@ php artisan dusk:chrome-driver --all
 php artisan dusk:chrome-driver --detect
 ```
 
-> [!WARNING]
+> [!WARNING]  
 > Dusk requires the `chromedriver` binaries to be executable. If you're having problems running Dusk, you should ensure the binaries are executable using the following command: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
 <a name="using-other-browsers"></a>
@@ -181,7 +181,7 @@ class ExampleTest extends DuskTestCase
 }
 ```
 
-> [!WARNING]
+> [!WARNING]  
 > SQLite in-memory databases may not be used when executing Dusk tests. Since the browser executes within its own process, it will not be able to access the in-memory databases of other processes.
 
 <a name="reset-truncation"></a>
@@ -220,7 +220,7 @@ class ExampleTest extends DuskTestCase
 
 By default, this trait will truncate all tables except the `migrations` table. If you would like to customize the tables that should be truncated, you may define a `$tablesToTruncate` property on your test class:
 
-> [!NOTE]
+> [!NOTE]  
 > If you are using Pest, you should define properties or methods on the base `DuskTestCase` class or on any class your test file extends.
 
     /**
@@ -287,7 +287,7 @@ The `dusk` command accepts any argument that is normally accepted by the Pest / 
 php artisan dusk --group=foo
 ```
 
-> [!NOTE]
+> [!NOTE]  
 > If you are using [Laravel Sail](/docs/{{version}}/sail) to manage your local development environment, please consult the Sail documentation on [configuring and running Dusk tests](/docs/{{version}}/sail#laravel-dusk).
 
 <a name="manually-starting-chromedriver"></a>
@@ -350,10 +350,10 @@ test('basic example', function () {
 
     $this->browse(function (Browser $browser) use ($user) {
         $browser->visit('/login')
-                ->type('email', $user->email)
-                ->type('password', 'password')
-                ->press('Login')
-                ->assertPathIs('/home');
+            ->type('email', $user->email)
+            ->type('password', 'password')
+            ->press('Login')
+            ->assertPathIs('/home');
     });
 });
 ```
@@ -383,10 +383,10 @@ class ExampleTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user) {
             $browser->visit('/login')
-                    ->type('email', $user->email)
-                    ->type('password', 'password')
-                    ->press('Login')
-                    ->assertPathIs('/home');
+                ->type('email', $user->email)
+                ->type('password', 'password')
+                ->press('Login')
+                ->assertPathIs('/home');
         });
     }
 }
@@ -401,17 +401,17 @@ Sometimes you may need multiple browsers in order to properly carry out a test. 
 
     $this->browse(function (Browser $first, Browser $second) {
         $first->loginAs(User::find(1))
-              ->visit('/home')
-              ->waitForText('Message');
+            ->visit('/home')
+            ->waitForText('Message');
 
         $second->loginAs(User::find(2))
-               ->visit('/home')
-               ->waitForText('Message')
-               ->type('message', 'Hey Taylor')
-               ->press('Send');
+            ->visit('/home')
+            ->waitForText('Message')
+            ->type('message', 'Hey Taylor')
+            ->press('Send');
 
         $first->waitForText('Hey Taylor')
-              ->assertSee('Jeffrey Way');
+            ->assertSee('Jeffrey Way');
     });
 
 <a name="navigation"></a>
@@ -423,7 +423,7 @@ The `visit` method may be used to navigate to a given URI within your applicatio
 
 You may use the `visitRoute` method to navigate to a [named route](/docs/{{version}}/routing#named-routes):
 
-    $browser->visitRoute('login');
+    $browser->visitRoute($routeName, $parameters);
 
 You may navigate "back" and "forward" using the `back` and `forward` methods:
 
@@ -489,8 +489,8 @@ The `macro` function accepts a name as its first argument, and a closure as its 
 
     $this->browse(function (Browser $browser) use ($user) {
         $browser->visit('/pay')
-                ->scrollToElement('#credit-card-details')
-                ->assertSee('Enter Credit Card Details');
+            ->scrollToElement('#credit-card-details')
+            ->assertSee('Enter Credit Card Details');
     });
 
 <a name="authentication"></a>
@@ -503,10 +503,10 @@ Often, you will be testing pages that require authentication. You can use Dusk's
 
     $this->browse(function (Browser $browser) {
         $browser->loginAs(User::find(1))
-              ->visit('/home');
+            ->visit('/home');
     });
 
-> [!WARNING]
+> [!WARNING]  
 > After using the `loginAs` method, the user session will be maintained for all tests within the file.
 
 <a name="cookies"></a>
@@ -650,7 +650,7 @@ Note that, although the method accepts one if necessary, we are not required to 
 To append text to a field without clearing its content, you may use the `append` method:
 
     $browser->type('tags', 'foo')
-            ->append('tags', ', bar, baz');
+        ->append('tags', ', bar, baz');
 
 You may clear the value of an input using the `clear` method:
 
@@ -665,7 +665,7 @@ You can instruct Dusk to type slowly using the `typeSlowly` method. By default, 
 You may use the `appendSlowly` method to append text slowly:
 
     $browser->type('tags', 'foo')
-            ->appendSlowly('tags', ', bar, baz');
+        ->appendSlowly('tags', ', bar, baz');
 
 <a name="dropdowns"></a>
 #### Dropdowns
@@ -707,7 +707,7 @@ The `attach` method may be used to attach a file to a `file` input element. Like
 
     $browser->attach('photo', __DIR__.'/photos/mountains.png');
 
-> [!WARNING]
+> [!WARNING]  
 > The attach function requires the `Zip` PHP extension to be installed and enabled on your server.
 
 <a name="pressing-buttons"></a>
@@ -738,7 +738,7 @@ You may use the `seeLink` method to determine if a link with the given display t
         // ...
     }
 
-> [!WARNING]
+> [!WARNING]  
 > These methods interact with jQuery. If jQuery is not available on the page, Dusk will automatically inject it into the page so it is available for the test's duration.
 
 <a name="using-the-keyboard"></a>
@@ -752,7 +752,7 @@ Another valuable use case for the `keys` method is sending a "keyboard shortcut"
 
     $browser->keys('.app', ['{command}', 'j']);
 
-> [!NOTE]
+> [!NOTE]  
 > All modifier keys such as `{command}` are wrapped in `{}` characters, and match the constants defined in the `Facebook\WebDriver\WebDriverKeys` class, which can be [found on GitHub](https://github.com/php-webdriver/php-webdriver/blob/master/lib/WebDriverKeys.php).
 
 <a name="fluent-keyboard-interactions"></a>
@@ -850,8 +850,8 @@ The `clickAndHold` method may be used to simulate a mouse button being clicked a
     $browser->clickAndHold('.selector');
 
     $browser->clickAndHold()
-            ->pause(1000)
-            ->releaseMouse();
+        ->pause(1000)
+        ->releaseMouse();
 
 The `controlClick` method may be used to simulate the `ctrl+click` event within the browser:
 
@@ -926,7 +926,7 @@ Sometimes you may wish to perform several operations while scoping all of the op
 
     $browser->with('.table', function (Browser $table) {
         $table->assertSee('Hello World')
-              ->clickLink('Delete');
+            ->clickLink('Delete');
     });
 
 You may occasionally need to execute assertions outside of the current scope. You may use the `elsewhere` and `elsewhereWhenAvailable` methods to accomplish this:
@@ -1013,7 +1013,7 @@ Occasionally, you may wish to wait for an element to appear that matches a given
 
     $browser->whenAvailable('.modal', function (Browser $modal) {
         $modal->assertSee('Hello World')
-              ->press('OK');
+            ->press('OK');
     });
 
 <a name="waiting-for-text"></a>
@@ -1087,7 +1087,7 @@ If you need to wait for a page to reload after performing an action, use the `wa
 Since the need to wait for the page to reload typically occurs after clicking a button, you may use the `clickAndWaitForReload` method for convenience:
 
     $browser->clickAndWaitForReload('.selector')
-            ->assertSee('something');
+        ->assertSee('something');
 
 <a name="waiting-on-javascript-expressions"></a>
 #### Waiting on JavaScript Expressions
@@ -1152,7 +1152,7 @@ Many of the "wait" methods in Dusk rely on the underlying `waitUsing` method. Yo
 Sometimes you may not be able to click on an element because it is outside of the viewable area of the browser. The `scrollIntoView` method will scroll the browser window until the element at the given selector is within the view:
 
     $browser->scrollIntoView('.selector')
-            ->click('.selector');
+        ->click('.selector');
 
 <a name="available-assertions"></a>
 ## Available Assertions
@@ -1227,6 +1227,7 @@ Dusk provides a variety of assertions that you may make against your application
 [assertValue](#assert-value)
 [assertValueIsNot](#assert-value-is-not)
 [assertAttribute](#assert-attribute)
+[assertAttributeMissing](#assert-attribute-missing)
 [assertAttributeContains](#assert-attribute-contains)
 [assertAttributeDoesntContain](#assert-attribute-doesnt-contain)
 [assertAriaAttribute](#assert-aria-attribute)
@@ -1630,6 +1631,14 @@ Assert that the element matching the given selector has the given value in the p
 
     $browser->assertAttribute($selector, $attribute, $value);
 
+<a name="assert-attribute-missing"></a>
+#### assertAttributeMissing
+
+Assert that the element matching the given selector is missing the provided attribute:
+
+    $browser->assertAttributeMissing($selector, $attribute);
+
+
 <a name="assert-attribute-contains"></a>
 #### assertAttributeContains
 
@@ -1807,7 +1816,7 @@ You may assert on the state of the Vue component like so:
 test('vue', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-                ->assertVue('user.name', 'Taylor', '@profile-component');
+            ->assertVue('user.name', 'Taylor', '@profile-component');
     });
 });
 ```
@@ -1820,7 +1829,7 @@ public function test_vue(): void
 {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-                ->assertVue('user.name', 'Taylor', '@profile-component');
+            ->assertVue('user.name', 'Taylor', '@profile-component');
     });
 }
 ```
@@ -1967,8 +1976,8 @@ In addition to the default methods defined on pages, you may define additional m
         public function createPlaylist(Browser $browser, string $name): void
         {
             $browser->type('name', $name)
-                    ->check('share')
-                    ->press('Create Playlist');
+                ->check('share')
+                ->press('Create Playlist');
         }
     }
 
@@ -2040,15 +2049,15 @@ As shown above, a "date picker" is an example of a component that might exist th
         public function selectDate(Browser $browser, int $year, int $month, int $day): void
         {
             $browser->click('@date-field')
-                    ->within('@year-list', function (Browser $browser) use ($year) {
-                        $browser->click($year);
-                    })
-                    ->within('@month-list', function (Browser $browser) use ($month) {
-                        $browser->click($month);
-                    })
-                    ->within('@day-list', function (Browser $browser) use ($day) {
-                        $browser->click($day);
-                    });
+                ->within('@year-list', function (Browser $browser) use ($year) {
+                    $browser->click($year);
+                })
+                ->within('@month-list', function (Browser $browser) use ($month) {
+                    $browser->click($month);
+                })
+                ->within('@day-list', function (Browser $browser) use ($day) {
+                    $browser->click($day);
+                });
         }
     }
 
@@ -2069,10 +2078,10 @@ uses(DatabaseMigrations::class);
 test('basic example', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-                ->within(new DatePicker, function (Browser $browser) {
-                    $browser->selectDate(2019, 1, 30);
-                })
-                ->assertSee('January');
+            ->within(new DatePicker, function (Browser $browser) {
+                $browser->selectDate(2019, 1, 30);
+            })
+            ->assertSee('January');
     });
 });
 ```
@@ -2096,10 +2105,10 @@ class ExampleTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                    ->within(new DatePicker, function (Browser $browser) {
-                        $browser->selectDate(2019, 1, 30);
-                    })
-                    ->assertSee('January');
+                ->within(new DatePicker, function (Browser $browser) {
+                    $browser->selectDate(2019, 1, 30);
+                })
+                ->assertSee('January');
         });
     }
 }
@@ -2108,7 +2117,7 @@ class ExampleTest extends DuskTestCase
 <a name="continuous-integration"></a>
 ## Continuous Integration
 
-> [!WARNING]
+> [!WARNING]  
 > Most Dusk continuous integration configurations expect your Laravel application to be served using the built-in PHP development server on port 8000. Therefore, before continuing, you should ensure that your continuous integration environment has an `APP_URL` environment variable value of `http://127.0.0.1:8000`.
 
 <a name="running-tests-on-heroku-ci"></a>
@@ -2121,11 +2130,11 @@ To run Dusk tests on [Heroku CI](https://www.heroku.com/continuous-integration),
         "test": {
           "buildpacks": [
             { "url": "heroku/php" },
-            { "url": "https://github.com/heroku/heroku-buildpack-google-chrome" }
+            { "url": "https://github.com/heroku/heroku-buildpack-chrome-for-testing" }
           ],
           "scripts": {
             "test-setup": "cp .env.testing .env",
-            "test": "nohup bash -c './vendor/laravel/dusk/bin/chromedriver-linux > /dev/null 2>&1 &' && nohup bash -c 'php artisan serve --no-reload > /dev/null 2>&1 &' && php artisan dusk"
+            "test": "nohup bash -c './vendor/laravel/dusk/bin/chromedriver-linux --port=9515 > /dev/null 2>&1 &' && nohup bash -c 'php artisan serve --no-reload > /dev/null 2>&1 &' && php artisan dusk"
           }
         }
       }
@@ -2140,7 +2149,7 @@ To run your Dusk tests on [Travis CI](https://travis-ci.org), use the following 
 language: php
 
 php:
-  - 7.3
+  - 8.2
 
 addons:
   chrome: stable
@@ -2191,20 +2200,20 @@ jobs:
       - name: Upgrade Chrome Driver
         run: php artisan dusk:chrome-driver --detect
       - name: Start Chrome Driver
-        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux --port=9515 &
       - name: Run Laravel Server
         run: php artisan serve --no-reload &
       - name: Run Dusk Tests
         run: php artisan dusk
       - name: Upload Screenshots
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: screenshots
           path: tests/Browser/screenshots
       - name: Upload Console Logs
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: console
           path: tests/Browser/console
