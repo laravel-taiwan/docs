@@ -33,7 +33,7 @@ Laravel 致力於提供令人驚嘆的開發者體驗，同時提供強大的功
 
 #### 一個進步的框架
 
-我們喜歡稱 Laravel 為一個「進步」的框架。這意味著 Laravel 會隨著您的成長而成長。如果您剛踏入 Web 開發的領域，Laravel 齊全的文件庫、指南和[視頻教程](https://laracasts.com)將幫助您學習基礎知識，而不會讓您感到不知所措。
+我們喜歡稱 Laravel 為一個「進步」的框架。這意味著 Laravel 會隨著您的成長而成長。如果您剛踏入 Web 開發的領域，Laravel 齊全的文件庫、指南和[影片教學](https://laracasts.com)將幫助您學習基礎知識，而不會讓您感到不知所措。
 
 如果您是一位資深開發人員，Laravel 為您提供了強大的工具，用於[依賴注入](/docs/{{version}}/container)、[單元測試](/docs/{{version}}/testing)、[佇列](/docs/{{version}}/queues)、[即時事件](/docs/{{version}}/broadcasting)等等。Laravel 經過精心調校，適用於構建專業的 Web 應用程式，並且能夠處理企業級工作負載。
 
