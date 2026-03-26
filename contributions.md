@@ -1,10 +1,11 @@
 # 貢獻指南
 
-- [錯誤報告](#bug-reports)
+- [Bug 回報](#bug-reports)
 - [支援問題](#support-questions)
 - [核心開發討論](#core-development-discussion)
-- [使用哪個分支？](#which-branch)
-- [編譯資源檔](#compiled-assets)
+- [要發送到哪個分支？](#which-branch)
+- [編譯過的資源](#compiled-assets)
+- [AI 生成的貢獻](#ai-generated-contributions)
 - [安全性漏洞](#security-vulnerabilities)
 - [程式碼風格](#coding-style)
     - [PHPDoc](#phpdoc)
@@ -12,58 +13,57 @@
 - [行為準則](#code-of-conduct)
 
 <a name="bug-reports"></a>
-## 錯誤報告
+## Bug 回報
 
-為了鼓勵積極的協作，Laravel 強烈建議使用拉取請求，而不僅僅是錯誤報告。拉取請求只有在標記為「準備好審查」（不是「草稿」狀態）且所有新功能的測試都通過時才會進行審查。留在「草稿」狀態的未活動拉取請求將在幾天後關閉。
+為了鼓勵活躍的協作，Laravel 強烈建議提交 pull request，而不僅僅是 bug 回報。只有當 pull request 被標記為「準備好進行審查 (ready for review)」（而非「草稿 (draft)」狀態），且新功能的所有測試都通過時，才會被審查。停留在「草稿」狀態且不活躍的 pull request 將會在幾天後關閉。
 
-然而，如果您提交了錯誤報告，您的問題應包含標題和清晰的問題描述。您還應該包含盡可能多的相關信息和展示問題的程式碼示例。錯誤報告的目標是使自己和其他人能夠複製該錯誤並開發修復方案。
+然而，如果您提交了 bug 回報，您的 issue 應包含標題以及對問題的清楚描述。您也應包含盡可能多的相關資訊，以及能展示該問題的程式碼範例。bug 回報的目標是讓您自己——以及其他人——能輕鬆重現 bug 並開發修復程式。
 
-請記住，錯誤報告是希望其他遇到相同問題的人能夠與您合作解決。不要期望錯誤報告會自動得到任何活動，或者其他人會立即修復它。創建錯誤報告有助於您和其他人開始解決問題的道路。如果您想參與，您可以通過修復[我們問題跟蹤器中列出的任何錯誤](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel)來幫忙。您必須使用 GitHub 認證才能查看 Laravel 的所有問題。
+請記住，建立 bug 回報的希望是讓遇到相同問題的其他人能與您合作解決它。不要期望 bug 回報會自動出現任何活動，或者其他人會立刻跳出來修復它。建立 bug 回報的目的是幫助自己和他人開始解決問題的過程。如果您想幫忙，可以透過修復[列在我們 issue 追蹤器上的任何 bug](https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3Abug+user%3Alaravel) 來提供協助。您必須使用 GitHub 進行身分驗證才能檢視 Laravel 的所有 issue。
 
-如果您在使用 Laravel 時注意到不當的 DocBlock、PHPStan 或 IDE 警告，請不要建立 GitHub 問題。請提交拉取請求來修復問題。
+如果您在使用 Laravel 時注意到不正確的 DocBlock、PHPStan 或 IDE 警告，請不要建立 GitHub issue。取而代之的是，請提交 pull request 來修復問題。
 
-Laravel 的原始碼在 GitHub 上管理，每個 Laravel 專案都有對應的存儲庫：
+Laravel 原始碼由 GitHub 管理，而且每個 Laravel 專案都有各自的儲存庫 (repository)：
 
 <div class="content-list" markdown="1">
 
-- [Laravel 應用程式](https://github.com/laravel/laravel)
+- [Laravel Application](https://github.com/laravel/laravel)
 - [Laravel Art](https://github.com/laravel/art)
-- [Laravel 文件](https://github.com/laravel/docs)
+- [Laravel Boost](https://github.com/laravel/boost)
+- [Laravel Documentation](https://github.com/laravel/docs)
 - [Laravel Dusk](https://github.com/laravel/dusk)
 - [Laravel Cashier Stripe](https://github.com/laravel/cashier)
 - [Laravel Cashier Paddle](https://github.com/laravel/cashier-paddle)
 - [Laravel Echo](https://github.com/laravel/echo)
 - [Laravel Envoy](https://github.com/laravel/envoy)
 - [Laravel Folio](https://github.com/laravel/folio)
-- [Laravel 框架](https://github.com/laravel/framework)
-- [Laravel Homestead](https://github.com/laravel/homestead)（[建置腳本](https://github.com/laravel/settler)）
+- [Laravel Framework](https://github.com/laravel/framework)
 - [Laravel Horizon](https://github.com/laravel/horizon)
-- [Laravel Livewire Starter Kit](https://github.com/laravel/livewire-starter-kit)
 - [Laravel Passport](https://github.com/laravel/passport)
 - [Laravel Pennant](https://github.com/laravel/pennant)
 - [Laravel Pint](https://github.com/laravel/pint)
 - [Laravel Prompts](https://github.com/laravel/prompts)
-- [Laravel React Starter Kit](https://github.com/laravel/react-starter-kit)
 - [Laravel Reverb](https://github.com/laravel/reverb)
 - [Laravel Sail](https://github.com/laravel/sail)
 - [Laravel Sanctum](https://github.com/laravel/sanctum)
 - [Laravel Scout](https://github.com/laravel/scout)
 - [Laravel Socialite](https://github.com/laravel/socialite)
 - [Laravel Telescope](https://github.com/laravel/telescope)
+- [Laravel Livewire Starter Kit](https://github.com/laravel/livewire-starter-kit)
+- [Laravel React Starter Kit](https://github.com/laravel/react-starter-kit)
+- [Laravel Svelte Starter Kit](https://github.com/laravel/svelte-starter-kit)
 - [Laravel Vue Starter Kit](https://github.com/laravel/vue-starter-kit)
-- [Laravel 網站](https://github.com/laravel/laravel.com)
-
 
 </div>
 
 <a name="support-questions"></a>
 ## 支援問題
 
-Laravel 的 GitHub 問題追蹤器並不用於提供 Laravel 的幫助或支援。請改用以下其中一個管道：
+Laravel 的 GitHub issue 追蹤器不打算用來提供 Laravel 的幫助或支援。取而代之的是，請使用以下管道之一：
 
 <div class="content-list" markdown="1">
 
-- [GitHub 討論區](https://github.com/laravel/framework/discussions)
+- [GitHub 討論區 (Discussions)](https://github.com/laravel/framework/discussions)
 - [Laracasts 論壇](https://laracasts.com/discuss)
 - [Laravel.io 論壇](https://laravel.io/forum)
 - [StackOverflow](https://stackoverflow.com/questions/tagged/laravel)
@@ -76,35 +76,49 @@ Laravel 的 GitHub 問題追蹤器並不用於提供 Laravel 的幫助或支援�
 <a name="core-development-discussion"></a>
 ## 核心開發討論
 
-您可以在 Laravel 框架存儲庫的 [GitHub 討論區](https://github.com/laravel/framework/discussions) 中提出新功能或改進現有 Laravel 行為的建議。如果您提出了新功能，請願意實現至少一些完成該功能所需的程式碼。
+您可以在 Laravel 框架儲存庫的 [GitHub 討論板](https://github.com/laravel/framework/discussions) 中提議新功能，或改進現有的 Laravel 行為。如果您提議一項新功能，請準備好實作至少一部分完成該功能所需的程式碼。
 
-有關錯誤、新功能以及現有功能的實作的非正式討論發生在 [Laravel Discord 伺服器](https://discord.gg/laravel) 的 `#internals` 頻道中。Laravel 的維護者 Taylor Otwell 通常在該頻道中出現於 UTC-06:00 或 America/Chicago 的工作日上午 8 點至下午 5 點，並偶爾在其他時間出現。
+有關 bug、新功能以及現有功能實作的非正式討論，會在 [Laravel Discord 伺服器](https://discord.gg/laravel) 的 `#internals` 頻道進行。Laravel 的維護者 Taylor Otwell 通常會在平日早上 8 點至下午 5 點（UTC-06:00 或美國中部時間）出現在該頻道，並偶爾在其他時間出現。
 
 <a name="which-branch"></a>
-## 使用哪個分支？
+## 要發送到哪個分支？
 
-**所有** 錯誤修復應發送到支援錯誤修復的最新版本（目前為 `12.x`）。錯誤修復**永遠**不應發送到 `master` 分支，除非它們修復的功能僅存在於即將發布的版本中。
+**所有** bug 修復都應發送到支援 bug 修復的最新版本（目前為 `12.x`）。bug 修復**絕對不應**發送到 `master` 分支，除非它們修復的是僅存在於即將發布版本中的功能。
 
-**次要** 功能，與當前版本完全向後兼容的功能，可以發送到最新的穩定分支（目前為 `12.x`）。
+與當前發布版本**完全向後相容**的**次要**功能，可以發送到最新的穩定分支（目前為 `12.x`）。
 
-**主要** 新功能或具有破壞性更改的功能應始終發送到 `master` 分支，其中包含即將發布的版本。
+**主要**的新功能，或是包含破壞性變更 (breaking changes) 的功能，應始終發送到包含即將發布版本的 `master` 分支。
 
 <a name="compiled-assets"></a>
-## 編譯資源檔
+## 編譯過的資源
 
-如果您提交的更改會影響編譯文件，例如 `laravel/laravel` 存儲庫中 `resources/css` 或 `resources/js` 中的大多數文件，請不要提交已編譯的文件。由於它們的大小較大，審查者實際上無法審查它們。這可能被利用為將惡意代碼注入 Laravel 的一種方式。為了防禦性地防止這種情況，所有編譯文件將由 Laravel 維護者生成並提交。
+如果您提交的變更會影響編譯過的檔案，例如 `laravel/laravel` 儲存庫的 `resources/css` 或 `resources/js` 中的大部分檔案，請不要 commit 那些編譯過的檔案。由於它們的檔案過大，維護者實際上無法審查它們。這可能會被利用來作為將惡意程式碼注入 Laravel 的一種方式。為了防範這種情況，所有編譯過的檔案都將由 Laravel 維護者生成並 commit。
 
-## 安全漏洞
+<a name="ai-generated-contributions"></a>
+## AI 生成的貢獻
 
-如果您在 Laravel 中發現安全漏洞，請發送郵件給 Taylor Otwell，郵箱為 [taylor@laravel.com](mailto:taylor@laravel.com)。所有安全漏洞將被及時處理。
+我們感謝每一個提交到 Laravel 的 pull request。然而，如果不經過人類仔細審查和思考，主要由 AI 生成的貢獻是不被接受的。
 
-## 編碼風格
+如果您選擇使用 AI 工具來協助您的貢獻，生成的程式碼**必須**在提交之前經過您的徹底審查、測試並理解。
 
-Laravel 遵循 [PSR-2](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md) 編碼標準和 [PSR-4](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md) 自動加載標準。
+**絕不容忍大量開啟完全由 AI 生成的 issue 或 pull request。** 這類 pull request 將會在不經審查的情況下被關閉，並且提供貢獻的使用者可能會被儲存庫封鎖。
 
+我們鼓勵貢獻者熟悉現有的程式碼庫，參與社群，並提交反映他們自身理解以及對其所解決的問題經過深思熟慮的 pull request。
+
+<a name="security-vulnerabilities"></a>
+## 安全性漏洞
+
+如果您發現 Laravel 中存在安全性漏洞，請發送電子郵件給 Taylor Otwell：<a href="mailto:taylor@laravel.com">taylor@laravel.com</a>。所有的安全性漏洞都將會被及時處理。
+
+<a name="coding-style"></a>
+## 程式碼風格
+
+Laravel 遵循 [PSR-2](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md) 程式碼標準以及 [PSR-4](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md) 自動載入標準。
+
+<a name="phpdoc"></a>
 ### PHPDoc
 
-以下是一個有效的 Laravel 文件塊示例。請注意，`@param` 屬性後面跟著兩個空格，引數類型，再加兩個空格，最後是變量名：
+以下是一個有效的 Laravel 文件區塊 (documentation block) 範例。請注意，`@param` 屬性後接著兩個空格、參數類型、再兩個空格，最後是變數名稱：
 
 ```php
 /**
@@ -123,7 +137,7 @@ public function bind($abstract, $concrete = null, $shared = false)
 }
 ```
 
-當由於使用原生類型而使 `@param` 或 `@return` 屬性多餘時，可以將其刪除：
+當 `@param` 或 `@return` 屬性因為使用了原生類型而顯得多餘時，可以將其移除：
 
 ```php
 /**
@@ -131,11 +145,11 @@ public function bind($abstract, $concrete = null, $shared = false)
  */
 public function handle(AudioProcessor $processor): void
 {
-    //
+    // ...
 }
 ```
 
-但是，當原生類型是通用的時，請通過使用 `@param` 或 `@return` 屬性來指定通用類型：
+然而，當原生類型是泛型時，請透過使用 `@param` 或 `@return` 屬性來指定泛型類型：
 
 ```php
 /**
@@ -151,19 +165,21 @@ public function attachments(): array
 }
 ```
 
+<a name="styleci"></a>
 ### StyleCI
 
-如果您的代碼風格不完美，不用擔心！[StyleCI](https://styleci.io/) 將自動將任何風格修復合併到 Laravel 存儲庫中，以便在合併拉取請求後。這使我們可以專注於貢獻的內容，而不是代碼風格。
+如果您的程式碼風格不完美，請別擔心！在 pull request 合併後，[StyleCI](https://styleci.io/) 將會自動將任何風格修復合併到 Laravel 儲存庫中。這使我們能專注於貢獻的內容，而不是程式碼風格。
 
+<a name="code-of-conduct"></a>
 ## 行為準則
 
-Laravel 的行為準則源自 Ruby 的行為準則。任何違反行為準則的行為都可以向 Taylor Otwell（taylor@laravel.com）舉報：
+Laravel 行為準則源自 Ruby 行為準則。任何違反行為準則的行為，均可回報給 Taylor Otwell (taylor@laravel.com)：
 
 <div class="content-list" markdown="1">
 
-- 參與者將容忍相反的觀點。
-- 參與者必須確保其語言和行為不含人身攻擊和貶低個人的言論。
-- 在解釋他人的言行時，參與者應始終假設良好意圖。
-- 任何可以合理被視為騷擾的行為將不被容忍。
+- 參與者需包容不同的觀點。
+- 參與者必須確保他們的言辭和行為沒有人身攻擊或貶低個人的言論。
+- 在解讀他人的言行時，參與者應始終假定其出於善意。
+- 合理被認為是騷擾的行為將不被容忍。
 
 </div>

@@ -1,42 +1,42 @@
-# 合約
+# 契約 (Contracts)
 
 - [簡介](#introduction)
-    - [合約 vs. Facades](#contracts-vs-facades)
-- [何時使用合約](#when-to-use-contracts)
-- [如何使用合約](#how-to-use-contracts)
-- [合約參考](#contract-reference)
+    - [契約 vs. Facade](#contracts-vs-facades)
+- [何時使用契約](#when-to-use-contracts)
+- [如何使用契約](#how-to-use-contracts)
+- [契約參考](#contract-reference)
 
 <a name="introduction"></a>
 ## 簡介
 
-Laravel的「合約」是一組介面，定義了框架提供的核心服務。例如，`Illuminate\Contracts\Queue\Queue`合約定義了排程工作所需的方法，而`Illuminate\Contracts\Mail\Mailer`合約定義了發送電子郵件所需的方法。
+Laravel 的「契約 (Contracts)」是一組定義框架所提供核心服務的介面。舉例來說，`Illuminate\Contracts\Queue\Queue` 契約定義了將任務加入佇列所需的方法，而 `Illuminate\Contracts\Mail\Mailer` 契約則定義了寄送電子郵件所需的方法。
 
-每個合約都有框架提供的相應實現。例如，Laravel提供了具有各種驅動程式的排程實現，以及由[Symfony Mailer](https://symfony.com/doc/7.0/mailer.html)提供動力的郵件實現。
+每個契約在框架中都有對應的實作。例如，Laravel 提供了一個具有多種驅動程式的佇列實作，以及一個由 [Symfony Mailer](https://symfony.com/doc/current/mailer.html) 支援的 Mailer 實作。
 
-所有Laravel合約都存放在[它們自己的 GitHub 存儲庫](https://github.com/illuminate/contracts)中。這提供了所有可用合約的快速參考點，以及一個可以在與 Laravel 服務互動的套件構建時使用的單一、解耦的套件。
+所有的 Laravel 契約都存放在 [它們自己的 GitHub 存放庫](https://github.com/illuminate/contracts)。這為所有可用的契約提供了一個快速參考點，同時也是一個單一的、低耦合的套件，可在建置與 Laravel 服務互動的套件時使用。
 
 <a name="contracts-vs-facades"></a>
-### 合約 vs. Facades
+### 契約 vs. Facade
 
-Laravel的[facades](/docs/{{version}}/facades)和輔助函式提供了一種簡單的方式來使用 Laravel 的服務，而無需對服務容器進行型別提示和解析合約。在大多數情況下，每個 facade 都有一個對應的合約。
+Laravel 的 [Facade](/docs/{{version}}/facades) 和輔助函式提供了一種簡單的方法來使用 Laravel 服務，而不需要從服務容器 (Service Container) 中對契約進行型別提示 (Type-hint) 和解析。在大多數情況下，每個 Facade 都有一個等效的契約。
 
-與不需要在類別的建構子中引入它們不同，合約允許您為類別定義明確的依賴關係。一些開發人員喜歡以這種方式明確定義他們的依賴關係，因此更喜歡使用合約，而其他開發人員則喜歡使用 facades 的便利性。**一般來說，在開發過程中，大多數應用程式可以無問題地使用 facades。**
+與 Facade 不同（不需要你在類別的建構子中依賴它們），契約允許你為類別定義明確的依賴。有些開發者偏好以此方式明確定義依賴，因此偏好使用契約，而另一些開發者則喜歡 Facade 的便利性。**一般來說，大多數應用程式在開發過程中都能毫無問題地使用 Facade。**
 
 <a name="when-to-use-contracts"></a>
-## 何時使用合約
+## 何時使用契約
 
-使用合約或 facades 的決定將取決於個人口味和您的開發團隊的口味。合約和 facades 都可以用於創建堅固、經過良好測試的 Laravel 應用程式。合約和 facades 不是互斥的。應用程式的某些部分可能使用 facades，而其他部分依賴於合約。只要保持類別的責任專注，您將會注意到在使用合約和 facades 之間幾乎沒有實際差異。
+決定要使用契約還是 Facade 將取決於個人品味以及開發團隊的偏好。契約和 Facade 皆可用來建立穩健、經過充分測試的 Laravel 應用程式。契約和 Facade 並非互斥的。應用程式的某些部分可能使用 Facade，而其他部分則依賴契約。只要你保持類別職責單一，你就會發現使用契約和 Facade 之間在實際差異非常小。
 
-一般來說，大多數應用程式在開發過程中可以毫無問題地使用 Facedes。如果您正在建立一個與多個 PHP 框架集成的套件，您可能希望使用 `illuminate/contracts` 套件來定義與 Laravel 服務的集成，而無需在您的套件的 `composer.json` 檔案中需要 Laravel 的具體實現。
+一般來說，大多數應用程式在開發過程中都能毫無問題地使用 Facade。如果你正在建立一個與多個 PHP 框架整合的套件，你可能會想要使用 `illuminate/contracts` 套件來定義與 Laravel 服務的整合，而無需在你的套件 `composer.json` 檔案中引入 Laravel 的具體實作。
 
 <a name="how-to-use-contracts"></a>
-## 如何使用 Contracts
+## 如何使用契約
 
-那麼，如何獲取合約的實現？其實非常簡單。
+那麼，如何取得契約的實作呢？其實非常簡單。
 
-在 Laravel 中，許多類型的類別都是通過 [服務容器](/docs/{{version}}/container) 來解析的，包括控制器、事件監聽器、中介層、佇列作業，甚至路由閉包。因此，要獲取合約的實現，您只需在被解析的類別的建構子中「型別提示」介面即可。
+Laravel 中的許多類別類型都是透過 [服務容器](/docs/{{version}}/container) 解析的，包含控制器、事件監聽器、中介層、佇列任務，甚至是路由閉包。因此，要取得契約的實作，你只要在被解析的類別建構子中對介面進行「型別提示」即可。
 
-例如，看一下這個事件監聽器：
+例如，看看這個事件監聽器：
 
 ```php
 <?php
@@ -50,14 +50,14 @@ use Illuminate\Contracts\Redis\Factory;
 class CacheOrderInformation
 {
     /**
-     * Create a new event handler instance.
+     * 建立事件監聽器。
      */
     public function __construct(
         protected Factory $redis,
     ) {}
 
     /**
-     * Handle the event.
+     * 處理事件。
      */
     public function handle(OrderWasPlaced $event): void
     {
@@ -66,16 +66,16 @@ class CacheOrderInformation
 }
 ```
 
-當事件監聽器被解析時，服務容器將讀取類別建構子上的型別提示，並注入適當的值。要了解更多有關在服務容器中註冊事物的資訊，請查看 [其文件](/docs/{{version}}/container)。
+當解析事件監聽器時，服務容器將會讀取類別建構子上的型別提示，並注入適當的值。若要深入了解如何在服務容器中註冊事物，請查閱[其說明文件](/docs/{{version}}/container)。
 
 <a name="contract-reference"></a>
-## 合約參考
+## 契約參考
 
-此表提供了所有 Laravel 合約及其對應 Facedes 的快速參考：
+下表提供了所有 Laravel 契約及其等效 Facade 的快速參考：
 
 <div class="overflow-auto">
 
-| 合約 | 參考 Facedes |
+| 契約 | 對應 Facade |
 | --- | --- |
 | [Illuminate\Contracts\Auth\Access\Authorizable](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Authorizable.php) | &nbsp; |
 | [Illuminate\Contracts\Auth\Access\Gate](https://github.com/illuminate/contracts/blob/{{version}}/Auth/Access/Gate.php) | `Gate` |

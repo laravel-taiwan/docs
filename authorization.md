@@ -1,49 +1,50 @@
 # 授權
 
 - [簡介](#introduction)
-- [權限](#gates)
-    - [撰寫權限](#writing-gates)
-    - [透過權限授權操作](#authorizing-actions-via-gates)
-    - [權限回應](#gate-responses)
-    - [攔截權限檢查](#intercepting-gate-checks)
-    - [內嵌授權](#inline-authorization)
-- [建立原則](#creating-policies)
-    - [產生原則](#generating-policies)
-    - [註冊原則](#registering-policies)
-- [撰寫原則](#writing-policies)
-    - [原則方法](#policy-methods)
-    - [原則回應](#policy-responses)
-    - [沒有模型的方法](#methods-without-models)
+- [Gate](#gates)
+    - [撰寫 Gate](#writing-gates)
+    - [授權動作](#authorizing-actions-via-gates)
+    - [Gate 回應](#gate-responses)
+    - [攔截 Gate 檢查](#intercepting-gate-checks)
+    - [內聯授權](#inline-authorization)
+- [建立策略](#creating-policies)
+    - [產生策略](#generating-policies)
+    - [註冊策略](#registering-policies)
+- [撰寫策略](#writing-policies)
+    - [策略方法](#policy-methods)
+    - [策略回應](#policy-responses)
+    - [無模型的方法](#methods-without-models)
     - [訪客使用者](#guest-users)
-    - [原則篩選器](#policy-filters)
-- [使用原則授權操作](#authorizing-actions-using-policies)
-    - [透過使用者模型](#via-the-user-model)
-    - [透過權限外觀](#via-the-gate-facade)
-    - [透過中介層](#via-middleware)
-    - [透過 Blade 模板](#via-blade-templates)
-    - [提供額外內容](#supplying-additional-context)
-- [授權與慣性](#authorization-and-inertia)
+    - [策略過濾器](#policy-filters)
+- [使用策略授權動作](#authorizing-actions-using-policies)
+    - [經由 User 模型](#via-the-user-model)
+    - [經由 Gate Facade](#via-the-gate-facade)
+    - [經由中介軟體](#via-middleware)
+    - [經由 Blade 樣板](#via-blade-templates)
+    - [提供額外上下文](#supplying-additional-context)
+- [授權與 Inertia](#authorization-and-inertia)
 
 <a name="introduction"></a>
 ## 簡介
 
-除了提供內建的[認證](/docs/{{version}}/authentication)服務外，Laravel 還提供了一種簡單的方式來授權用戶對特定資源的操作。例如，即使用戶已經通過驗證，他們可能沒有權限來更新或刪除應用程序管理的某些 Eloquent 模型或資料庫記錄。Laravel 的授權功能提供了一種簡單、有組織的方式來管理這些類型的授權檢查。
+除了提供內建的[身份驗證](/docs/{{version}}/authentication)服務外，Laravel 還提供了一種簡單的方法來針對給定資源授權使用者動作。例如，即使使用者已通過身份驗證，他們也可能未被授權更新或刪除由應用程式管理的某些 Eloquent 模型或資料庫記錄。Laravel 的授權功能提供了一種簡單、有組織的方法來管理這些類型的授權檢查。
 
-Laravel 提供了兩種主要的授權操作方式：[權限](#gates)和[原則](#creating-policies)。將權限和原則視為路由和控制器。權限提供了一種簡單的基於閉包的授權方法，而原則則像控制器一樣，將邏輯團結在特定模型或資源周圍。在本文檔中，我們將首先探討權限，然後再檢查原則。
+Laravel 提供了兩種主要的授權動作方式：[Gate](#gates) 和[策略](#creating-policies)。可以把 Gate 和策略想像成路由和控制器。Gate 提供了一種簡單的、基於閉包的授權方法，而策略就像控制器一樣，圍繞特定的模型或資源對邏輯進行分組。在本文檔中，我們將先探討 Gate，然後再研究策略。
 
-在構建應用程序時，您無需在使用權限或原則之間做出選擇。大多數應用程序很可能包含權限和原則的混合使用，這是完全可以的！權限最適用於與任何模型或資源無關的操作，例如查看管理員儀表板。相反，當您希望為特定模型或資源授權操作時，應使用原則。
+在建構應用程式時，你不需要在僅使用 Gate 或僅使用策略之間做出選擇。大多數應用程式很可能包含 Gate 和策略的混合，這完全沒問題！Gate 最適用於與任何模型或資源無關的動作，例如查看管理員儀表板。相比之下，當你希望為特定模型或資源授權動作時，應使用策略。
 
+<a name="gates"></a>
+## Gate
 
-## 權限
+<a name="writing-gates"></a>
+### 撰寫 Gate
 
-### 撰寫權限
+> [!WARNING]
+> Gate 是學習 Laravel 授權功能基礎知識的好方法；但在構建健壯的 Laravel 應用程式時，你應該考慮使用[策略](#creating-policies)來組織你的授權規則。
 
-> [!WARNING]  
-> 權限是學習 Laravel 授權功能基礎的好方法；然而，在建立強大的 Laravel 應用程式時，您應該考慮使用 [原則](#creating-policies) 來組織您的授權規則。
+Gate 只是決定使用者是否被授權執行給定動作的閉包。通常，Gate 使用 `Gate` Facade 在 `App\Providers\AppServiceProvider` 類別的 `boot` 方法中定義。Gate 總是接收一個使用者實例作為其第一個參數，並可以選擇性地接收額外參數，例如相關的 Eloquent 模型。
 
-權限只是確定使用者是否被授權執行特定操作的閉包。通常，權限是在 `App\Providers\AppServiceProvider` 類別的 `boot` 方法中使用 `Gate` 門面定義的。權限始終接收使用者實例作為其第一個引數，並可以選擇性地接收其他引數，例如相關的 Eloquent 模型。
-
-在此示例中，我們將定義一個權限，以確定使用者是否可以更新給定的 `App\Models\Post` 模型。該權限將通過比較使用者的 `id` 與建立該文章的使用者的 `user_id` 來實現：
+在此範例中，我們將定義一個 Gate 來判斷使用者是否可以更新給定的 `App\Models\Post` 模型。該 Gate 將通過將使用者的 `id` 與建立文章的使用者的 `user_id` 進行比較來實現此目的：
 
 ```php
 use App\Models\Post;
@@ -61,7 +62,7 @@ public function boot(): void
 }
 ```
 
-與控制器一樣，權限也可以使用類別回呼陣列來定義：
+與控制器類似，Gate 也可以使用類別回調陣列來定義：
 
 ```php
 use App\Policies\PostPolicy;
@@ -76,16 +77,16 @@ public function boot(): void
 }
 ```
 
-### 透過權限授權操作
+<a name="authorizing-actions-via-gates"></a>
+### 授權動作
 
-要使用權限授權操作，您應該使用 `Gate` 門面提供的 `allows` 或 `denies` 方法。請注意，您不需要將目前驗證的使用者傳遞給這些方法。Laravel 將自動處理將使用者傳遞到權限閉包中。在執行需要授權的操作之前，在應用程式的控制器中呼叫權限授權方法是很典型的：
+要使用 Gate 授權動作，你應該使用 `Gate` Facade 提供的 `allows` 或 `denies` 方法。請注意，你不需要將當前通過身份驗證的使用者傳遞給這些方法。Laravel 會自動負責將使用者傳遞到 Gate 閉包中。通常在執行需要授權的動作之前，在應用程式的控制器中呼叫 Gate 授權方法：
 
 ```php
 <?php
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ use Illuminate\Support\Facades\Gate;
 class PostController extends Controller
 {
     /**
-     * Update the given post.
+     * 更新給定的文章。
      */
     public function update(Request $request, Post $post): RedirectResponse
     {
@@ -102,51 +103,52 @@ class PostController extends Controller
             abort(403);
         }
 
-        // Update the post...
+        // 更新文章...
 
         return redirect('/posts');
     }
 }
 ```
 
-如果您想確定除了目前驗證的使用者之外的其他使用者是否被授權執行操作，您可以在 `Gate` 門面上使用 `forUser` 方法：
+如果你想判斷當前通過身份驗證的使用者以外的使用者是否被授權執行動作，你可以使用 `Gate` Facade 上的 `forUser` 方法：
 
 ```php
 if (Gate::forUser($user)->allows('update-post', $post)) {
-    // The user can update the post...
+    // 該使用者可以更新文章...
 }
 
 if (Gate::forUser($user)->denies('update-post', $post)) {
-    // The user can't update the post...
+    // 該使用者不能更新文章...
 }
 ```
 
-您可以使用 `any` 或 `none` 方法一次授權多個操作：
+你可以使用 `any` 或 `none` 方法一次授權多個動作：
 
 ```php
 if (Gate::any(['update-post', 'delete-post'], $post)) {
-    // The user can update or delete the post...
+    // 使用者可以更新或刪除文章...
 }
 
 if (Gate::none(['update-post', 'delete-post'], $post)) {
-    // The user can't update or delete the post...
+    // 使用者不能更新或刪除文章...
 }
 ```
 
-#### 授權或拋出例外
+<a name="authorizing-or-throwing-exceptions"></a>
+#### 授權或拋出異常
 
-如果您想嘗試授權操作並在不允許使用者執行給定操作時自動拋出 `Illuminate\Auth\Access\AuthorizationException`，您可以使用 `Gate` 門面的 `authorize` 方法。`AuthorizationException` 的實例會被 Laravel 自動轉換為 403 HTTP 回應：
+如果你想嘗試授權一個動作，並在使用者不被允許執行給定動作時自動拋出 `Illuminate\Auth\Access\AuthorizationException`，你可以使用 `Gate` Facade 的 `authorize` 方法。`AuthorizationException` 的實例會被 Laravel 自動轉換為 403 HTTP 回應：
 
 ```php
 Gate::authorize('update-post', $post);
 
-// 權限已授權...
+// 動作已獲得授權...
 ```
 
 <a name="gates-supplying-additional-context"></a>
 #### 提供額外上下文
 
-用於授權權限的門方法（`allows`、`denies`、`check`、`any`、`none`、`authorize`、`can`、`cannot`）和授權[Blade指示詞](#via-blade-templates)（`@can`、`@cannot`、`@canany`）可以接受陣列作為它們的第二個引數。這些陣列元素將作為參數傳遞給門閂閉包，並可用於在做出授權決策時提供額外上下文：
+用於授權能力的 Gate 方法（`allows`、`denies`、`check`、`any`、`none`、`authorize`、`can`、`cannot`）以及授權 [Blade 指令](#via-blade-templates)（`@can`、`@cannot`、`@canany`）可以接收一個陣列作為其第二個參數。這些陣列元素作為參數傳遞給 Gate 閉包，並可用於在做出授權決策時提供額外的上下文：
 
 ```php
 use App\Models\Category;
@@ -164,14 +166,14 @@ Gate::define('create-post', function (User $user, Category $category, bool $pinn
 });
 
 if (Gate::check('create-post', [$category, $pinned])) {
-    // The user can create the post...
+    // 使用者可以建立文章...
 }
 ```
 
 <a name="gate-responses"></a>
-### 門回應
+### Gate 回應
 
-到目前為止，我們只檢查了返回簡單布林值的門。但有時您可能希望返回更詳細的回應，包括錯誤訊息。為此，您可以從門中返回一個 `Illuminate\Auth\Access\Response`：
+到目前為止，我們只研究了回傳簡單布林值的 Gate。然而，有時你可能希望回傳更詳細的回應，包括錯誤訊息。為此，你可以從 Gate 回傳一個 `Illuminate\Auth\Access\Response`：
 
 ```php
 use App\Models\User;
@@ -181,34 +183,34 @@ use Illuminate\Support\Facades\Gate;
 Gate::define('edit-settings', function (User $user) {
     return $user->isAdmin
         ? Response::allow()
-        : Response::deny('You must be an administrator.');
+        : Response::deny('你必須是管理員。');
 });
 ```
 
-即使您從門中返回授權回應，`Gate::allows` 方法仍將返回簡單布林值；但是，您可以使用 `Gate::inspect` 方法來獲取門返回的完整授權回應：
+即使你從 Gate 回傳授權回應，`Gate::allows` 方法仍將回傳一個簡單的布林值；但是，你可以使用 `Gate::inspect` 方法來獲取 Gate 回傳的完整授權回應：
 
 ```php
 $response = Gate::inspect('edit-settings');
 
 if ($response->allowed()) {
-    // The action is authorized...
+    // 動作已獲得授權...
 } else {
     echo $response->message();
 }
 ```
 
-當使用 `Gate::authorize` 方法時，如果未授權操作，將拋出 `AuthorizationException`，授權回應提供的錯誤訊息將傳播到HTTP回應：
+當使用 `Gate::authorize` 方法（如果動作未獲授權則拋出 `AuthorizationException`）時，授權回應提供的錯誤訊息將傳遞到 HTTP 回應：
 
 ```php
 Gate::authorize('edit-settings');
 
-// 權限已授權...
+// 動作已獲得授權...
 ```
 
 <a name="customizing-gate-response-status"></a>
-#### 自訂HTTP回應狀態
+#### 自訂 HTTP 回應狀態
 
-當通過門拒絕操作時，將返回 `403` HTTP回應；但有時將返回替代HTTP狀態碼可能很有用。您可以使用 `Illuminate\Auth\Access\Response` 類的 `denyWithStatus` 靜態構造函數來自訂未通過授權檢查時返回的HTTP狀態碼：
+當動作通過 Gate 被拒絕時，會回傳 `403` HTTP 回應；但是，有時回傳替代的 HTTP 狀態碼會很有用。你可以使用 `Illuminate\Auth\Access\Response` 類別上的 `denyWithStatus` 靜態建構函式來自訂為失敗的授權檢查回傳的 HTTP 狀態碼：
 
 ```php
 use App\Models\User;
@@ -222,7 +224,7 @@ Gate::define('edit-settings', function (User $user) {
 });
 ```
 
-因為通過 `404` 回應隱藏資源對於Web應用程序是一種常見模式，所以提供了 `denyAsNotFound` 方法以方便使用：
+由於通過 `404` 回應隱藏資源是 Web 應用程式的一種常見模式，因此為了方便起見提供了 `denyAsNotFound` 方法：
 
 ```php
 use App\Models\User;
@@ -237,9 +239,9 @@ Gate::define('edit-settings', function (User $user) {
 ```
 
 <a name="intercepting-gate-checks"></a>
-### 截取權限檢查
+### 攔截 Gate 檢查
 
-有時候，您可能希望將所有權限授予特定使用者。您可以使用 `before` 方法來定義在所有其他授權檢查之前運行的閉包：
+有時，你可能希望向特定使用者授予所有能力。你可以使用 `before` 方法定義一個在所有其他授權檢查之前執行的閉包：
 
 ```php
 use App\Models\User;
@@ -252,9 +254,9 @@ Gate::before(function (User $user, string $ability) {
 });
 ```
 
-如果 `before` 閉包返回非空結果，該結果將被視為授權檢查的結果。
+如果 `before` 閉包回傳一個非空結果，該結果將被視為授權檢查的結果。
 
-您可以使用 `after` 方法來定義在所有其他授權檢查之後執行的閉包：
+你可以使用 `after` 方法定義一個在所有其他授權檢查之後執行的閉包：
 
 ```php
 use App\Models\User;
@@ -266,12 +268,12 @@ Gate::after(function (User $user, string $ability, bool|null $result, mixed $arg
 });
 ```
 
-`after` 閉包返回的值不會覆蓋授權檢查的結果，除非 gate 或 policy 返回 `null`。
+`after` 閉包回傳的值不會覆蓋授權檢查的結果，除非 Gate 或策略回傳了 `null`。
 
 <a name="inline-authorization"></a>
-### 內嵌授權
+### 內聯授權
 
-偶爾，您可能希望確定當前已驗證的使用者是否有權執行特定操作，而無需編寫與該操作對應的專用 gate。Laravel 允許您通過 `Gate::allowIf` 和 `Gate::denyIf` 方法執行這些類型的「內嵌」授權檢查。內嵌授權不會執行任何定義的 ["before" 或 "after" 授權鉤子](#intercepting-gate-checks)：
+有時，你可能希望判斷當前通過身份驗證的使用者是否被授權執行給定動作，而無需編寫與該動作對應的專用 Gate。Laravel 允許你通過 `Gate::allowIf` 和 `Gate::denyIf` 方法執行這些類型的「內聯」授權檢查。內聯授權不會執行任何定義的[「之前」或「之後」授權鉤子](#intercepting-gate-checks)：
 
 ```php
 use App\Models\User;
@@ -282,50 +284,50 @@ Gate::allowIf(fn (User $user) => $user->isAdministrator());
 Gate::denyIf(fn (User $user) => $user->banned());
 ```
 
-如果操作未經授權或當前未驗證任何使用者，Laravel 將自動拋出 `Illuminate\Auth\Access\AuthorizationException` 例外。`AuthorizationException` 的實例將被 Laravel 的例外處理程序自動轉換為 403 HTTP 回應。
+如果動作未獲授權或當前沒有使用者通過身份驗證，Laravel 將自動拋出 `Illuminate\Auth\Access\AuthorizationException` 異常。`AuthorizationException` 的實例由 Laravel 的異常處理程式自動轉換為 403 HTTP 回應。
 
 <a name="creating-policies"></a>
-## 建立原則
+## 建立策略
 
 <a name="generating-policies"></a>
-### 生成原則
+### 產生策略
 
-原則是組織特定模型或資源周圍的授權邏輯的類別。例如，如果您的應用程式是一個部落格，您可能會有一個 `App\Models\Post` 模型和相應的 `App\Policies\PostPolicy` 來授權使用者執行動作，如創建或更新文章。
+策略是圍繞特定模型或資源組織授權邏輯的類別。例如，如果你的應用程式是一個部落格，你可能有一個 `App\Models\Post` 模型和一個相應的 `App\Policies\PostPolicy` 來授權建立或更新文章等使用者動作。
 
-您可以使用 `make:policy` Artisan 命令生成一個原則。生成的原則將放置在 `app/Policies` 目錄中。如果您的應用程式中不存在此目錄，Laravel 將為您創建它：
+你可以使用 `make:policy` Artisan 指令產生策略。產生的策略將放在 `app/Policies` 目錄中。如果你的應用程式中不存在此目錄，Laravel 將為你建立它：
 
 ```shell
 php artisan make:policy PostPolicy
 ```
 
-`make:policy` 命令將生成一個空的原則類別。如果您想生成一個包含與查看、創建、更新和刪除資源相關的示例原則方法的類別，您可以在執行命令時提供 `--model` 選項：
+`make:policy` 指令將產生一個空的策略類別。如果你想產生一個包含與查看、建立、更新和刪除資源相關的範例策略方法的類別，你可以在執行指令時提供一個 `--model` 選項：
 
 ```shell
 php artisan make:policy PostPolicy --model=Post
 ```
 
 <a name="registering-policies"></a>
-### 註冊原則
+### 註冊策略
 
 <a name="policy-discovery"></a>
-#### 原則發現
+#### 策略自動發現
 
-預設情況下，只要模型和原則遵循標準的 Laravel 命名慣例，Laravel 將自動發現原則。具體來說，原則必須位於包含您的模型的目錄或其上方的 `Policies` 目錄中。例如，模型可以放在 `app/Models` 目錄中，而原則可以放在 `app/Policies` 目錄中。在這種情況下，Laravel 將在 `app/Models/Policies` 然後是 `app/Policies` 中檢查原則。此外，原則名稱必須與模型名稱匹配並以 `Policy` 結尾。因此，`User` 模型將對應於 `UserPolicy` 原則類。
+預設情況下，只要模型和策略遵循標準的 Laravel 命名慣例，Laravel 就會自動發現策略。具體來說，策略必須位於包含模型的目錄之上或之內的 `Policies` 目錄中。因此，例如，模型可以放在 `app/Models` 目錄中，而策略可以放在 `app/Policies` 目錄中。在這種情況下，Laravel 將檢查 `app/Models/Policies` 然後是 `app/Policies`。此外，策略名稱必須與模型名稱匹配並具有 `Policy` 後綴。因此，`User` 模型將對應於 `UserPolicy` 策略類別。
 
-如果您想定義自己的原則發現邏輯，您可以使用 `Gate::guessPolicyNamesUsing` 方法註冊自定義的原則發現回調。通常，應該從應用程式的 `AppServiceProvider` 的 `boot` 方法中調用此方法：
+如果你想定義自己的策略發現邏輯，可以使用 `Gate::guessPolicyNamesUsing` 方法註冊一個自訂的策略發現回調。通常，此方法應從應用程式 `AppServiceProvider` 的 `boot` 方法中呼叫：
 
 ```php
 use Illuminate\Support\Facades\Gate;
 
 Gate::guessPolicyNamesUsing(function (string $modelClass) {
-    // Return the name of the policy class for the given model...
+    // 回傳給定模型的策略類別名稱...
 });
 ```
 
 <a name="manually-registering-policies"></a>
-#### 手動註冊原則
+#### 手動註冊策略
 
-使用 `Gate` 門面，您可以在應用程式的 `AppServiceProvider` 的 `boot` 方法中手動註冊原則及其對應的模型：
+使用 `Gate` Facade，你可以在應用程式 `AppServiceProvider` 的 `boot` 方法中手動註冊策略及其對應的模型：
 
 ```php
 use App\Models\Order;
@@ -341,15 +343,33 @@ public function boot(): void
 }
 ```
 
+或者，你可以在模型類別上放置 `UsePolicy` 屬性，以通知 Laravel 該模型對應的策略：
+
+```php
+<?php
+
+namespace App\Models;
+
+use App\Policies\OrderPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Model;
+
+#[UsePolicy(OrderPolicy::class)]
+class Order extends Model
+{
+    //
+}
+```
+
 <a name="writing-policies"></a>
-## 撰寫原則
+## 撰寫策略
 
 <a name="policy-methods"></a>
-### 原則方法
+### 策略方法
 
-一旦原則類別被註冊，您可以為其授權的每個操作添加方法。例如，讓我們在我們的 `PostPolicy` 上定義一個 `update` 方法，該方法確定給定的 `App\Models\User` 是否可以更新給定的 `App\Models\Post` 實例。
+註冊策略類別後，你可以為其授權的每個動作添加方法。例如，讓我們在 `PostPolicy` 上定義一個 `update` 方法，該方法判斷給定的 `App\Models\User` 是否可以更新給定的 `App\Models\Post` 實例。
 
-`update` 方法將接收 `User` 和 `Post` 實例作為其引數，並應返回 `true` 或 `false`，指示用戶是否有權限更新給定的 `Post`。因此，在此示例中，我們將驗證用戶的 `id` 是否與帖子上的 `user_id` 匹配：
+`update` 方法將接收一個 `User` 和一個 `Post` 實例作為其參數，並應回傳 `true` 或 `false`，指示使用者是否被授權更新給定的 `Post`。因此，在此範例中，我們將驗證使用者的 `id` 是否與文章上的 `user_id` 匹配：
 
 ```php
 <?php
@@ -362,7 +382,7 @@ use App\Models\User;
 class PostPolicy
 {
     /**
-     * Determine if the given post can be updated by the user.
+     * 判斷使用者是否可以更新給定的文章。
      */
     public function update(User $user, Post $post): bool
     {
@@ -371,17 +391,17 @@ class PostPolicy
 }
 ```
 
-您可以根據需要在策略上繼續定義其他方法，以授權各種操作。例如，您可以定義 `view` 或 `delete` 方法來授權各種與 `Post` 相關的操作，但請記住，您可以自由地為策略方法取任何您喜歡的名稱。
+你可以根據需要繼續在策略上定義其他方法，用於它授權的各種動作。例如，你可以定義 `view` 或 `delete` 方法來授權各種與 `Post` 相關的動作，但請記住你可以隨意命名策略方法。
 
-如果您在通過 Artisan 控制台生成策略時使用了 `--model` 選項，它將已包含用於 `viewAny`、`view`、`create`、`update`、`delete`、`restore` 和 `forceDelete` 操作的方法。
+如果你在透過 Artisan 主控台產生策略時使用了 `--model` 選項，它將已經包含用於 `viewAny`、`view`、`create`、`update`、`delete`、`restore` 和 `forceDelete` 動作的方法。
 
-> [!NOTE]  
-> 所有策略都通過 Laravel [service container](/docs/{{version}}/container) 解析，這使您可以在策略的建構子中對所需的依賴進行型別提示，以便自動注入它們。
+> [!NOTE]
+> 所有策略都通過 Laravel [服務容器](/docs/{{version}}/container)解析，這允許你在策略的建構函式中對任何需要的依賴項進行型別提示，以便自動注入它們。
 
 <a name="policy-responses"></a>
 ### 策略回應
 
-到目前為止，我們僅檢查了返回簡單布林值的策略方法。但有時您可能希望返回更詳細的回應，包括錯誤消息。為此，您可以從策略方法返回一個 `Illuminate\Auth\Access\Response` 實例：
+到目前為止，我們只研究了回傳簡單布林值的策略方法。然而，有時你可能希望回傳更詳細的回應，包括錯誤訊息。為此，你可以從策略方法回傳一個 `Illuminate\Auth\Access\Response` 實例：
 
 ```php
 use App\Models\Post;
@@ -389,17 +409,17 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 /**
- * Determine if the given post can be updated by the user.
+ * 判斷使用者是否可以更新給定的文章。
  */
 public function update(User $user, Post $post): Response
 {
     return $user->id === $post->user_id
         ? Response::allow()
-        : Response::deny('You do not own this post.');
+        : Response::deny('你不擁有這篇文章。');
 }
 ```
 
-從策略返回授權回應時，`Gate::allows` 方法仍將返回簡單布林值；但您可以使用 `Gate::inspect` 方法來獲取閘返回的完整授權回應：
+從策略回傳授權回應時，`Gate::allows` 方法仍將回傳一個簡單的布林值；但是，你可以使用 `Gate::inspect` 方法來獲取 Gate 回傳的完整授權回應：
 
 ```php
 use Illuminate\Support\Facades\Gate;
@@ -407,24 +427,24 @@ use Illuminate\Support\Facades\Gate;
 $response = Gate::inspect('update', $post);
 
 if ($response->allowed()) {
-    // The action is authorized...
+    // 動作已獲得授權...
 } else {
     echo $response->message();
 }
 ```
 
-當使用 `Gate::authorize` 方法時，如果未授權操作，將拋出 `AuthorizationException`，授權回應提供的錯誤消息將傳播到 HTTP 回應：
+當使用 `Gate::authorize` 方法（如果動作未獲授權則拋出 `AuthorizationException`）時，授權回應提供的錯誤訊息將傳遞到 HTTP 回應：
 
 ```php
 Gate::authorize('update', $post);
 
-// 操作已授權...
+// 動作已獲得授權...
 ```
 
 <a name="customizing-policy-response-status"></a>
-#### 自定義 HTTP 回應狀態
+#### 自訂 HTTP 回應狀態
 
-當通過權限方法拒絕操作時，將返回 `403` HTTP 回應；然而，有時將返回替代的 HTTP 狀態碼可能會很有用。您可以使用 `Illuminate\Auth\Access\Response` 類的 `denyWithStatus` 靜態建構器自訂失敗授權檢查返回的 HTTP 狀態碼：
+當動作透過策略方法被拒絕時，會回傳 `403` HTTP 回應；但是，有時回傳替代的 HTTP 狀態碼會很有用。你可以使用 `Illuminate\Auth\Access\Response` 類別上的 `denyWithStatus` 靜態建構函式來自訂為失敗的授權檢查回傳的 HTTP 狀態碼：
 
 ```php
 use App\Models\Post;
@@ -432,7 +452,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 /**
- * Determine if the given post can be updated by the user.
+ * 判斷使用者是否可以更新給定的文章。
  */
 public function update(User $user, Post $post): Response
 {
@@ -442,7 +462,7 @@ public function update(User $user, Post $post): Response
 }
 ```
 
-因為通過 `404` 回應隱藏資源對於 Web 應用程式來說是一種常見的模式，所以提供了 `denyAsNotFound` 方法以方便使用：
+由於透過 `404` 回應隱藏資源是 Web 應用程式的一種常見模式，因此為了方便起見提供了 `denyAsNotFound` 方法：
 
 ```php
 use App\Models\Post;
@@ -450,7 +470,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 /**
- * Determine if the given post can be updated by the user.
+ * 判斷使用者是否可以更新給定的文章。
  */
 public function update(User $user, Post $post): Response
 {
@@ -461,13 +481,13 @@ public function update(User $user, Post $post): Response
 ```
 
 <a name="methods-without-models"></a>
-### 沒有模型的方法
+### 無模型的方法
 
-某些權限方法僅接收目前已驗證使用者的實例。這種情況在授權 `create` 操作時最常見。例如，如果您正在建立一個部落格，您可能希望確定使用者是否有權建立任何文章。在這些情況下，您的權限方法應僅期望接收使用者實例：
+某些策略方法僅接收當前通過身份驗證的使用者的實例。這種情況在授權 `create` 動作時最為常見。例如，如果你正在建立一個部落格，你可能希望判斷使用者是否被授權建立任何文章。在這些情況下，你的策略方法應該只預期接收一個使用者實例：
 
 ```php
 /**
- * Determine if the given user can create posts.
+ * 判斷給定使用者是否可以建立文章。
  */
 public function create(User $user): bool
 {
@@ -478,7 +498,7 @@ public function create(User $user): bool
 <a name="guest-users"></a>
 ### 訪客使用者
 
-預設情況下，如果傳入的 HTTP 請求不是由已驗證使用者發起，則所有閘道和權限都會自動返回 `false`。但是，您可以通過聲明 "optional" 型提示或為使用者參數定義提供 `null` 默認值，使這些授權檢查通過到您的閘道和權限：
+預設情況下，如果傳入的 HTTP 請求不是由通過身份驗證的使用者發起的，則所有 Gate 和策略都會自動回傳 `false`。然而，你可以通過宣告「可選」的型別提示或為使用者參數定義提供 `null` 預設值，來允許這些授權檢查通過 Gate 和策略：
 
 ```php
 <?php
@@ -491,7 +511,7 @@ use App\Models\User;
 class PostPolicy
 {
     /**
-     * Determine if the given post can be updated by the user.
+     * 判斷使用者是否可以更新給定的文章。
      */
     public function update(?User $user, Post $post): bool
     {
@@ -501,15 +521,15 @@ class PostPolicy
 ```
 
 <a name="policy-filters"></a>
-### 權限過濾器
+### 策略過濾器
 
-對於某些使用者，您可能希望授權給特定權限中的所有操作。為了實現這一點，在權限中定義一個 `before` 方法。`before` 方法將在權限的其他方法之前執行，讓您有機會在實際調用預期的權限方法之前授權該操作。這個功能最常用於授權應用程式管理員執行任何操作：
+對於某些使用者，你可能希望授權給定策略內的所有動作。為此，請在策略上定義一個 `before` 方法。`before` 方法將在策略上的任何其他方法之前執行，使你有機會在呼叫預期的策略方法之前授權動作。此功能最常用於授權應用程式管理員執行任何動作：
 
 ```php
 use App\Models\User;
 
 /**
- * Perform pre-authorization checks.
+ * 執行預授權檢查。
  */
 public function before(User $user, string $ability): bool|null
 {
@@ -521,25 +541,24 @@ public function before(User $user, string $ability): bool|null
 }
 ```
 
-如果您希望拒絕特定類型使用者的所有授權檢查，則可以從 `before` 方法返回 `false`。如果返回 `null`，則授權檢查將通過到權限方法。
+如果你想拒絕特定類型使用者的所有授權檢查，則可以從 `before` 方法回傳 `false`。如果回傳 `null`，授權檢查將落入策略方法。
 
-> [!WARNING]  
-> 如果類別中不包含與正在檢查的權限名稱相符的方法，則不會呼叫權限類別的 `before` 方法。
+> [!WARNING]
+> 如果策略類別不包含名稱與被檢查能力名稱匹配的方法，則不會呼叫該策略類別的 `before` 方法。
 
 <a name="authorizing-actions-using-policies"></a>
-## 使用權限授權操作
+## 使用策略授權動作
 
 <a name="via-the-user-model"></a>
-### 透過使用者模型
+### 經由 User 模型
 
-您的 Laravel 應用程式中包含的 `App\Models\User` 模型提供了兩個有用的方法來授權操作：`can` 和 `cannot`。`can` 和 `cannot` 方法接收您希望授權的操作名稱以及相關的模型。例如，讓我們來確定使用者是否有權限更新特定的 `App\Models\Post` 模型。通常，這將在控制器方法中完成：
+Laravel 應用程式中包含的 `App\Models\User` 模型包含兩個用於授權動作的有用的方法：`can` 和 `cannot`。`can` 和 `cannot` 方法接收你希望授權的動作名稱和相關模型。例如，讓我們判斷使用者是否被授權更新給定的 `App\Models\Post` 模型。通常，這將在控制器方法中完成：
 
 ```php
 <?php
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -547,7 +566,7 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     /**
-     * Update the given post.
+     * 更新給定的文章。
      */
     public function update(Request $request, Post $post): RedirectResponse
     {
@@ -555,26 +574,25 @@ class PostController extends Controller
             abort(403);
         }
 
-        // Update the post...
+        // 更新文章...
 
         return redirect('/posts');
     }
 }
 ```
 
-如果為給定模型[註冊了權限](#registering-policies)，`can` 方法將自動呼叫適當的權限並返回布林結果。如果未為模型註冊權限，`can` 方法將嘗試呼叫基於閉包的 Gate，以符合給定操作名稱。
+如果為給定模型[註冊了策略](#registering-policies)，`can` 方法將自動呼叫相應的策略並回傳布林值結果。如果沒有為模型註冊策略，`can` 方法將嘗試呼叫與給定動作名稱匹配的基於閉包的 Gate。
 
 <a name="user-model-actions-that-dont-require-models"></a>
-#### 不需要模型的操作
+#### 不需要模型的動作
 
-請記住，某些操作可能對應到不需要模型實例的權限方法，例如 `create`。在這些情況下，您可以將類別名稱傳遞給 `can` 方法。類別名稱將用於確定在授權操作時要使用哪個權限：
+請記住，某些動作可能對應於不需要模型實例的策略方法，例如 `create`。在這些情況下，你可以將類別名稱傳遞給 `can` 方法。類別名稱將用於在授權動作時判斷使用哪個策略：
 
 ```php
 <?php
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -582,7 +600,7 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     /**
-     * Create a post.
+     * 建立文章。
      */
     public function store(Request $request): RedirectResponse
     {
@@ -590,7 +608,7 @@ class PostController extends Controller
             abort(403);
         }
 
-        // Create the post...
+        // 建立文章...
 
         return redirect('/posts');
     }
@@ -598,18 +616,17 @@ class PostController extends Controller
 ```
 
 <a name="via-the-gate-facade"></a>
-### 透過 `Gate` Facade
+### 經由 `Gate` Facade
 
-除了提供給 `App\Models\User` 模型的有用方法之外，您始終可以透過 `Gate` Facade 的 `authorize` 方法來授權操作。
+除了為 `App\Models\User` 模型提供的有用方法外，你始終可以通過 `Gate` Facade 的 `authorize` 方法授權動作。
 
-與 `can` 方法類似，此方法接受您希望授權的操作名稱以及相關的模型。如果未獲授權，`authorize` 方法將拋出一個 `Illuminate\Auth\Access\AuthorizationException` 例外，Laravel 例外處理程序將自動將其轉換為帶有 403 狀態碼的 HTTP 回應：
+與 `can` 方法一樣，此方法接受你希望授權的動作名稱和相關模型。如果動作未獲授權，`authorize` 方法將拋出 `Illuminate\Auth\Access\AuthorizationException` 異常，Laravel 異常處理程序將自動將其轉換為具有 403 狀態碼的 HTTP 回應：
 
 ```php
 <?php
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -618,7 +635,7 @@ use Illuminate\Support\Facades\Gate;
 class PostController extends Controller
 {
     /**
-     * Update the given blog post.
+     * 更新給定的部落格文章。
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
@@ -626,16 +643,17 @@ class PostController extends Controller
     {
         Gate::authorize('update', $post);
 
-        // The current user can update the blog post...
+        // 當前使用者可以更新部落格文章...
 
         return redirect('/posts');
     }
 }
 ```
 
-#### 不需要模型的操作
+<a name="controller-actions-that-dont-require-models"></a>
+#### 不需要模型的動作
 
-如前所述，一些像 `create` 的權限方法並不需要模型實例。在這些情況下，您應該將類名傳遞給 `authorize` 方法。類名將用於確定在授權操作時要使用哪個權限策略：
+如前所述，某些策略方法（如 `create`）不需要模型實例。在這些情況下，你應該將類別名稱傳遞給 `authorize` 方法。類別名稱將用於在授權動作時判斷使用哪個策略：
 
 ```php
 use App\Models\Post;
@@ -644,7 +662,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Create a new blog post.
+ * 建立新的部落格文章。
  *
  * @throws \Illuminate\Auth\Access\AuthorizationException
  */
@@ -652,122 +670,136 @@ public function create(Request $request): RedirectResponse
 {
     Gate::authorize('create', Post::class);
 
-    // The current user can create blog posts...
+    // 當前使用者可以建立部落格文章...
 
     return redirect('/posts');
 }
 ```
 
-#### 通過中介層
+<a name="via-middleware"></a>
+### 經由中介軟體
 
-Laravel 包含一個中介層，可以在傳入請求到達路由或控制器之前授權操作。默認情況下，`Illuminate\Auth\Middleware\Authorize` 中介層可以使用 `can` [中介層別名](/docs/{{version}}/middleware#middleware-aliases) 附加到路由上，該別名由 Laravel 自動註冊。讓我們探索一個使用 `can` 中介層來授權用戶是否可以更新帖子的示例：
+Laravel 包含一個中介軟體，可以在傳入請求到達路由或控制器之前對動作進行授權。預設情況下，可以使用 `can` [中介軟體別名](/docs/{{version}}/middleware#middleware-aliases)將 `Illuminate\Auth\Middleware\Authorize` 中介軟體附加到路由，該別名由 Laravel 自動註冊。讓我們探討一個使用 `can` 中介軟體來授權使用者可以更新文章的範例：
 
 ```php
 use App\Models\Post;
 
 Route::put('/post/{post}', function (Post $post) {
-    // The current user may update the post...
+    // 當前使用者可以更新文章...
 })->middleware('can:update,post');
 ```
 
-在這個示例中，我們將 `can` 中介層傳遞了兩個參數。第一個是我們希望授權的操作名稱，第二個是我們希望傳遞給權限方法的路由參數。在這種情況下，由於我們使用了[隱式模型繫結](/docs/{{version}}/routing#implicit-binding)，一個 `App\Models\Post` 模型將被傳遞給權限方法。如果用戶未獲得執行給定操作的授權，中介層將返回帶有 403 狀態碼的 HTTP 回應。
+在此範例中，我們向 `can` 中介軟體傳遞了兩個參數。第一個是我們希望授權的動作名稱，第二個是我們希望傳遞給策略方法的路由參數。在這種情況下，由於我們使用的是[隱式模型綁定](/docs/{{version}}/routing#implicit-binding)，因此一個 `App\Models\Post` 模型將傳遞給策略方法。如果使用者未被授權執行給定動作，中介軟體將回傳具有 403 狀態碼的 HTTP 回應。
 
-為了方便起見，您也可以使用 `can` 方法將 `can` 中介層附加到路由上：
+為了方便起見，你也可以使用 `can` 方法將 `can` 中介軟體附加到路由：
 
 ```php
 use App\Models\Post;
 
 Route::put('/post/{post}', function (Post $post) {
-    // The current user may update the post...
+    // 當前使用者可以更新文章...
 })->can('update', 'post');
 ```
 
-#### 不需要模型的操作
+如果你正在使用[控制器中介軟體屬性](/docs/{{version}}/controllers#middleware-attributes)，則可以通過 `Authorize` 屬性套用 `can` 中介軟體：
 
-同樣，一些像 `create` 的權限方法並不需要模型實例。在這些情況下，您可以將類名傳遞給中介層。類名將用於確定在授權操作時要使用哪個權限策略：
+```php
+use Illuminate\Routing\Attributes\Controllers\Authorize;
+
+#[Authorize('update', 'post')]
+public function update(Post $post)
+{
+    // 當前使用者可以更新文章...
+}
+```
+
+<a name="middleware-actions-that-dont-require-models"></a>
+#### 不需要模型的動作
+
+同樣，某些策略方法（如 `create`）不需要模型實例。在這些情況下，你可以將類別名稱傳遞給中介軟體。類別名稱將用於在授權動作時判斷使用哪個策略：
 
 ```php
 Route::post('/post', function () {
-    // 當前用戶可以創建帖子...
+    // 當前使用者可以建立文章...
 })->middleware('can:create,App\Models\Post');
 ```
 
-在字符串中介定義中指定完整的類名可能變得繁瑣。因此，您可以選擇使用 `can` 方法將 `can` 中介層附加到路由上。
+在字串中介軟體定義中指定整個類別名稱可能會變得繁瑣。因此，你可以選擇使用 `can` 方法將 `can` 中介軟體附加到路由：
 
 ```php
 use App\Models\Post;
 
 Route::post('/post', function () {
-    // The current user may create posts...
+    // 當前使用者可以建立文章...
 })->can('create', Post::class);
 ```
 
 <a name="via-blade-templates"></a>
-### 透過 Blade 模板
+### 經由 Blade 樣板
 
-在撰寫 Blade 模板時，您可能希望僅在使用者被授權執行特定操作時顯示頁面的某部分。例如，您可能希望僅在使用者實際上可以更新文章時顯示一個更新表單。在這種情況下，您可以使用 `@can` 和 `@cannot` 指示詞：
+編寫 Blade 樣板時，你可能希望僅在使用者被授權執行給定動作時才顯示頁面的某一部分。例如，你可能希望僅在使用者確實可以更新部落格文章時才顯示更新表單。在這種情況下，你可以使用 `@can` 和 `@cannot` 指令：
 
 ```blade
 @can('update', $post)
-    <!-- The current user can update the post... -->
+    <!-- 當前使用者可以更新文章... -->
 @elsecan('create', App\Models\Post::class)
-    <!-- The current user can create new posts... -->
+    <!-- 當前使用者可以建立新文章... -->
 @else
     <!-- ... -->
 @endcan
 
 @cannot('update', $post)
-    <!-- The current user cannot update the post... -->
+    <!-- 當前使用者不能更新文章... -->
 @elsecannot('create', App\Models\Post::class)
-    <!-- The current user cannot create new posts... -->
+    <!-- 當前使用者不能建立新文章... -->
 @endcannot
 ```
 
-這些指示詞是撰寫 `@if` 和 `@unless` 陳述的便捷快捷方式。上述的 `@can` 和 `@cannot` 陳述等同於以下陳述：
+這些指令是編寫 `@if` 和 `@unless` 語句的便捷捷徑。上面的 `@can` 和 `@cannot` 語句相當於以下語句：
 
 ```blade
 @if (Auth::user()->can('update', $post))
-    <!-- The current user can update the post... -->
+    <!-- 當前使用者可以更新文章... -->
 @endif
 
 @unless (Auth::user()->can('update', $post))
-    <!-- The current user cannot update the post... -->
+    <!-- 當前使用者不能更新文章... -->
 @endunless
 ```
 
-您也可以確定使用者是否被授權執行給定動作陣列中的任何操作。為此，請使用 `@canany` 指示詞：
+你還可以判斷使用者是否被授權執行給定動作陣列中的任何動作。為此，請使用 `@canany` 指令：
 
 ```blade
 @canany(['update', 'view', 'delete'], $post)
-    <!-- The current user can update, view, or delete the post... -->
+    <!-- 當前使用者可以更新、查看或刪除文章... -->
 @elsecanany(['create'], \App\Models\Post::class)
-    <!-- The current user can create a post... -->
+    <!-- 當前使用者可以建立文章... -->
 @endcanany
 ```
 
 <a name="blade-actions-that-dont-require-models"></a>
-#### 不需要模型的操作
+#### 不需要模型的動作
 
-與其他大多數授權方法一樣，如果動作不需要模型實例，您可以將類別名稱傳遞給 `@can` 和 `@cannot` 指示詞：
+與大多數其他授權方法一樣，如果動作不需要模型實例，你可以將類別名稱傳遞給 `@can` 和 `@cannot` 指令：
 
 ```blade
 @can('create', App\Models\Post::class)
-    <!-- The current user can create posts... -->
+    <!-- 當前使用者可以建立文章... -->
 @endcan
 
 @cannot('create', App\Models\Post::class)
-    <!-- The current user can't create posts... -->
+    <!-- 當前使用者不能建立文章... -->
 @endcannot
 ```
 
 <a name="supplying-additional-context"></a>
 ### 提供額外上下文
 
-在使用策略授權操作時，您可以將陣列作為各種授權函數和輔助函式的第二個參數傳遞。陣列中的第一個元素將用於確定應該調用哪個策略，而陣列的其餘元素將作為參數傳遞給策略方法，並可用於在做出授權決策時提供額外上下文。例如，考慮以下 `PostPolicy` 方法定義，其中包含額外的 `$category` 參數：
+使用策略授權動作時，你可以將一個陣列作為第二個參數傳遞給各種授權函數和輔助程序。陣列中的第一個元素將用於判斷應呼叫哪個策略，而其餘的陣列元素作為參數傳遞給策略方法，並可用於在做出授權決策時提供額外的上下文。例如，考慮以下包含額外 `$category` 參數的 `PostPolicy` 方法定義：
 
 ```php
 /**
- * Determine if the given post can be updated by the user.
+ * 判斷使用者是否可以更新給定的文章。
  */
 public function update(User $user, Post $post, int $category): bool
 {
@@ -776,11 +808,11 @@ public function update(User $user, Post $post, int $category): bool
 }
 ```
 
-當嘗試確定驗證使用者是否可以更新給定的文章時，我們可以這樣調用此策略方法：
+當嘗試判斷經過身份驗證的使用者是否可以更新給定的文章時，我們可以像這樣呼叫此策略方法：
 
 ```php
 /**
- * Update the given blog post.
+ * 更新給定的部落格文章。
  *
  * @throws \Illuminate\Auth\Access\AuthorizationException
  */
@@ -788,7 +820,7 @@ public function update(Request $request, Post $post): RedirectResponse
 {
     Gate::authorize('update', [$post, $request->category]);
 
-    // The current user can update the blog post...
+    // 當前使用者可以更新部落格文章...
 
     return redirect('/posts');
 }
@@ -797,9 +829,9 @@ public function update(Request $request, Post $post): RedirectResponse
 <a name="authorization-and-inertia"></a>
 ## 授權與 Inertia
 
-儘管授權必須始終在伺服器上處理，但通常可以方便地向前端應用程式提供授權資料，以便正確呈現應用程式的使用者介面。Laravel 並未為將授權資訊暴露給 Inertia 驅動的前端應用程式定義所需的慣例。
+雖然授權始終必須在伺服器端處理，但為前端應用程式提供授權資料以正確渲染應用程式的使用者介面通常會很方便。Laravel 沒有為由 Inertia 驅動的前端公開授權資訊定義必要的約定。
 
-然而，如果您正在使用 Laravel 基於 Inertia 的 [入門套件](/docs/{{version}}/starter-kits) 之一，您的應用程式已經包含一個 `HandleInertiaRequests` 中介層。在這個中介層的 `share` 方法中，您可以返回共享資料，這些資料將提供給應用程式中所有 Inertia 頁面。這些共享資料可以作為定義使用者授權資訊的便利位置：
+但是，如果你使用的是 Laravel 的基於 Inertia 的[入門套件](/docs/{{version}}/starter-kits)之一，則你的應用程式已經包含一個 `HandleInertiaRequests` 中介軟體。在此中介軟體的 `share` 方法中，你可以回傳將提供給應用程式中所有 Inertia 頁面的共享資料。此共享資料可以作為為使用者定義授權資訊的便利位置：
 
 ```php
 <?php
@@ -815,7 +847,7 @@ class HandleInertiaRequests extends Middleware
     // ...
 
     /**
-     * Define the props that are shared by default.
+     * 定義預設共享的屬性。
      *
      * @return array<string, mixed>
      */

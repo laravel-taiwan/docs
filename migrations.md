@@ -1,7 +1,7 @@
 # 資料庫：遷移
 
 - [簡介](#introduction)
-- [生成遷移](#generating-migrations)
+- [產生遷移](#generating-migrations)
     - [壓縮遷移](#squashing-migrations)
 - [遷移結構](#migration-structure)
 - [執行遷移](#running-migrations)
@@ -9,11 +9,11 @@
 - [資料表](#tables)
     - [建立資料表](#creating-tables)
     - [更新資料表](#updating-tables)
-    - [重新命名/刪除資料表](#renaming-and-dropping-tables)
+    - [重新命名 / 刪除資料表](#renaming-and-dropping-tables)
 - [欄位](#columns)
     - [建立欄位](#creating-columns)
-    - [可用的欄位類型](#available-column-types)
-    - [欄位修飾符](#column-modifiers)
+    - [可用的欄位型別](#available-column-types)
+    - [欄位修飾子](#column-modifiers)
     - [修改欄位](#modifying-columns)
     - [重新命名欄位](#renaming-columns)
     - [刪除欄位](#dropping-columns)
@@ -21,64 +21,64 @@
     - [建立索引](#creating-indexes)
     - [重新命名索引](#renaming-indexes)
     - [刪除索引](#dropping-indexes)
-    - [外鍵約束](#foreign-key-constraints)
+    - [外部鍵約束](#foreign-key-constraints)
 - [事件](#events)
 
 <a name="introduction"></a>
 ## 簡介
 
-遷移就像是資料庫的版本控制，讓您的團隊能夠定義和共享應用程式的資料庫架構定義。如果您曾經不得不告訴隊友從源代碼控制中拉取您的更改後，手動將一個欄位添加到他們的本地資料庫架構中，那麼您已經遇到了遷移解決的問題。
+遷移就像是資料庫的版本控制，讓你的團隊能夠定義和分享應用程式的資料庫結構定義。如果你曾經不得不告訴隊友，在從原始碼控制拉取你的變更後，手動在他們的本地資料庫結構中新增一個欄位，那麼你就遇到了資料庫遷移所解決的問題。
 
-Laravel `Schema` [Facades](/docs/{{version}}/facades) 提供了跨所有 Laravel 支持的資料庫系統創建和操作表的支持。通常，遷移將使用這個 Facade 來創建和修改資料庫表和欄位。
+Laravel `Schema` [Facade](/docs/{{version}}/facades) 提供與資料庫無關的支援，用於在所有 Laravel 支援的資料庫系統中建立和操作資料表。通常，遷移會使用這個 Facade 來建立和修改資料庫資料表和欄位。
 
 <a name="generating-migrations"></a>
-## 生成遷移
+## 產生遷移
 
-您可以使用 `make:migration` [Artisan 指令](/docs/{{version}}/artisan) 來生成一個資料庫遷移。新的遷移將放置在您的 `database/migrations` 目錄中。每個遷移文件名都包含一個時間戳，這使 Laravel 能夠確定遷移的順序：
+你可以使用 `make:migration` [Artisan 指令](/docs/{{version}}/artisan) 來產生資料庫遷移。新的遷移將放置在你的 `database/migrations` 目錄中。每個遷移檔案名稱都包含一個時間戳記，這讓 Laravel 能夠確定遷移的順序：
 
 ```shell
 php artisan make:migration create_flights_table
 ```
 
-Laravel 將使用遷移的名稱來嘗試猜測表的名稱以及遷移是否將建立新表。如果 Laravel 能夠從遷移名稱中確定表名，Laravel 將使用指定的表預先填充生成的遷移文件。否則，您可以在遷移文件中手動指定表。
+Laravel 將使用遷移的名稱來嘗試猜測資料表的名稱，以及遷移是否將建立新的資料表。如果 Laravel 能夠從遷移名稱中確定資料表名稱，Laravel 將以指定的資料表預先填寫產生的遷移檔案。否則，你可以簡單地在遷移檔案中手動指定資料表。
 
-如果您想為生成的遷移指定自定義路徑，您可以在執行 `make:migration` 命令時使用 `--path` 選項。給定的路徑應該相對於您應用程序的基本路徑。
+如果你想為產生的遷移指定自訂路徑，可以在執行 `make:migration` 指令時使用 `--path` 選項。給定的路徑應該相對於應用程式的基底路徑。
 
-> [!NOTE]  
-> 遷移樣板可以使用 [樣板發布](/docs/{{version}}/artisan#stub-customization) 進行自定義。
+> [!NOTE]
+> 遷移存根可以使用 [存根發佈](/docs/{{version}}/artisan#stub-customization) 進行自訂。
 
 <a name="squashing-migrations"></a>
-### 合併遷移
+### 壓縮遷移
 
-隨著應用程序的構建，您可能會隨著時間累積越來越多的遷移。這可能導致您的 `database/migrations` 目錄中積累了數百個遷移。如果您希望，您可以將您的遷移“合併”為單個 SQL 文件。要開始，執行 `schema:dump` 命令：
+隨著你建立應用程式，你可能會隨著時間累積越來越多的遷移。這可能會導致你的 `database/migrations` 目錄因為可能包含數百個遷移而變得臃腫。如果你願意，你可以將你的遷移「壓縮」成單一的 SQL 檔案。要開始，請執行 `schema:dump` 指令：
 
 ```shell
 php artisan schema:dump
 
-# Dump the current database schema and prune all existing migrations...
+# 傾印目前的資料庫結構並刪除所有現有的遷移...
 php artisan schema:dump --prune
 ```
 
-當您執行此命令時，Laravel 將在您應用程序的 `database/schema` 目錄中寫入一個“schema”文件。模式文件的名稱將對應到數據庫連接。現在，當您嘗試遷移數據庫且沒有執行其他遷移時，Laravel 將首先執行數據庫連接的模式文件中的 SQL 語句。執行模式文件的 SQL 語句後，Laravel 將執行未包含在模式轉儲中的任何剩餘遷移。
+當你執行這個指令時，Laravel 會將「結構」檔案寫入應用程式的 `database/schema` 目錄中。結構檔案的名稱將對應於資料庫連線。現在，當你嘗試遷移你的資料庫，並且沒有執行其他遷移時，Laravel 將首先執行你正在使用的資料庫連線的結構檔案中的 SQL 語句。在執行結構檔案的 SQL 語句之後，Laravel 將執行任何未包含在結構傾印中的剩餘遷移。
 
-如果您的應用程序測試使用與您在本地開發期間通常使用的不同數據庫連接，您應確保已使用該數據庫連接轉儲了模式文件，以便您的測試能夠構建您的數據庫。您可能希望在轉儲通常在本地開發期間使用的數據庫連接後執行此操作：
+如果你的應用程式的測試使用的資料庫連線不同於你在本地開發期間通常使用的資料庫連線，你應該確保你已經使用該資料庫連線傾印了結構檔案，以便你的測試能夠建構你的資料庫。你可能會希望在傾印你在本地開發期間通常使用的資料庫連線之後這樣做：
 
 ```shell
 php artisan schema:dump
 php artisan schema:dump --database=testing --prune
 ```
 
-你應該將你的資料庫結構檔案提交到源代碼控制，這樣你團隊中的新開發人員可以快速建立應用程式的初始資料庫結構。
+你應該將資料庫結構檔案提交到原始碼控制，以便團隊中的其他新開發人員可以快速建立應用程式的初始資料庫結構。
 
-> [!WARNING]  
-> 遷移壓縮僅適用於 MariaDB、MySQL、PostgreSQL 和 SQLite 資料庫，並使用資料庫的命令列客戶端。
+> [!WARNING]
+> 遷移壓縮僅適用於 MariaDB、MySQL、PostgreSQL 和 SQLite 資料庫，並利用資料庫的命令列用戶端。
 
 <a name="migration-structure"></a>
 ## 遷移結構
 
-一個遷移類別包含兩個方法：`up` 和 `down`。`up` 方法用於向資料庫新增新的表格、欄位或索引，而 `down` 方法應該撤銷 `up` 方法執行的操作。
+一個遷移類別包含兩個方法：`up` 和 `down`。`up` 方法用於將新的資料表、欄位或索引新增至你的資料庫，而 `down` 方法應反轉由 `up` 方法執行的操作。
 
-在這兩個方法中，你可以使用 Laravel 結構建立器來表達性地創建和修改表格。要了解 `Schema` 建立器上所有可用的方法，[請查看其文件](#creating-tables)。例如，以下遷移創建一個 `flights` 表格：
+在這兩個方法中，你可以使用 Laravel Schema 產生器來具表達力地建立和修改資料表。若要了解 `Schema` 產生器上可用的所有方法，請 [查看其文件](#creating-tables)。例如，以下遷移建立了一個 `flights` 資料表：
 
 ```php
 <?php
@@ -90,7 +90,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * 執行遷移。
      */
     public function up(): void
     {
@@ -103,7 +103,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * 反轉遷移。
      */
     public function down(): void
     {
@@ -113,20 +113,20 @@ return new class extends Migration
 ```
 
 <a name="setting-the-migration-connection"></a>
-#### 設置遷移連線
+#### 設定遷移連線
 
-如果你的遷移將與應用程式的預設資料庫連線以外的資料庫連線進行交互，你應該設置遷移的 `$connection` 屬性：
+如果你的遷移將與應用程式預設資料庫連線以外的資料庫連線進行互動，你應該設定遷移的 `$connection` 屬性：
 
 ```php
 /**
- * The database connection that should be used by the migration.
+ * 遷移應使用的資料庫連線。
  *
  * @var string
  */
 protected $connection = 'pgsql';
 
 /**
- * Run the migrations.
+ * 執行遷移。
  */
 public function up(): void
 {
@@ -134,77 +134,102 @@ public function up(): void
 }
 ```
 
+<a name="skipping-migrations"></a>
+#### 略過遷移
+
+有時候，遷移可能是為了支援一個尚未啟用的功能，而你不希望它現在執行。在這種情況下，你可以於遷移中定義一個 `shouldRun` 方法。如果 `shouldRun` 方法回傳 `false`，則該遷移將被略過：
+
+```php
+use App\Models\Flight;
+use Laravel\Pennant\Feature;
+
+/**
+ * 決定是否應執行此遷移。
+ */
+public function shouldRun(): bool
+{
+    return Feature::active(Flight::class);
+}
+```
+
 <a name="running-migrations"></a>
 ## 執行遷移
 
-要執行所有未完成的遷移，執行 `migrate` Artisan 指令：
+要執行所有未完成的遷移，請執行 `migrate` Artisan 指令：
 
 ```shell
 php artisan migrate
 ```
 
-如果你想查看到目前為止已執行的遷移，你可以使用 `migrate:status` Artisan 指令：
+如果你想查看哪些遷移已經執行，哪些仍在等待中，你可以使用 `migrate:status` Artisan 指令：
 
 ```shell
 php artisan migrate:status
 ```
 
-如果你想查看將由遷移執行的 SQL 陳述，而不實際執行它們，你可以為 `migrate` 指令提供 `--pretend` 標誌：
+如果你提供 `--step` 選項給 `migrate` 指令，指令將以其自己的批次執行每個遷移，讓你在之後使用 `migrate:rollback` 指令還原個別的遷移：
+
+```shell
+php artisan migrate --step
+```
+
+如果你想查看遷移將執行的 SQL 語句，而無需實際執行它們，你可以提供 `--pretend` 旗標給 `migrate` 指令：
 
 ```shell
 php artisan migrate --pretend
 ```
 
+<a name="isolating-migration-execution"></a>
 #### 隔離遷移執行
 
-如果你正在跨多個伺服器部署應用程式並將遷移作為部署流程的一部分，你可能不希望兩個伺服器同時嘗試遷移資料庫。為了避免這種情況，當調用 `migrate` 指令時，你可以使用 `isolated` 選項。
+如果你正在多個伺服器上部署你的應用程式，並將遷移作為部署過程的一部分執行，你可能不希望兩個伺服器同時嘗試遷移資料庫。為避免這種情況，你可以在呼叫 `migrate` 指令時使用 `isolated` 選項。
 
-當提供 `isolated` 選項時，Laravel 將在嘗試運行遷移之前使用應用程式的快取驅動程式獲取原子鎖定。在持有該鎖定時，所有其他嘗試運行 `migrate` 命令的操作將不會執行；但是，該命令仍將以成功的退出狀態碼退出：
+當提供 `isolated` 選項時，Laravel 在嘗試執行遷移之前，將使用應用程式的快取驅動程式取得原子鎖定。在持有該鎖定的同時，所有其他執行 `migrate` 指令的嘗試都不會執行；然而，指令仍會以成功的結束狀態碼退出：
 
 ```shell
 php artisan migrate --isolated
 ```
 
-> [!WARNING]  
-> 為了使用此功能，您的應用程式必須使用 `memcached`、`redis`、`dynamodb`、`database`、`file` 或 `array` 快取驅動程式作為應用程式的默認快取驅動程式。此外，所有伺服器必須與同一中央快取伺服器通訊。
+> [!WARNING]
+> 若要利用這項功能，你的應用程式必須使用 `memcached`、`redis`、`dynamodb`、`database`、`file` 或 `array` 快取驅動程式作為應用程式的預設快取驅動程式。此外，所有的伺服器必須與同一個中央快取伺服器進行通訊。
 
 <a name="forcing-migrations-to-run-in-production"></a>
-#### 強制在正式環境中運行遷移
+#### 強制在正式環境中執行遷移
 
-某些遷移操作是具有破壞性的，這意味著可能會導致數據丟失。為了防止您對正式資料庫運行這些命令，將在執行命令之前提示您進行確認。要強制運行命令而不提示，請使用 `--force` 標誌：
+某些遷移操作具破壞性，這意味著它們可能會導致你丟失資料。為了保護你避免對正式資料庫執行這些指令，在執行指令之前將會提示你進行確認。若要在沒有提示的情況下強制執行指令，請使用 `--force` 旗標：
 
 ```shell
 php artisan migrate --force
 ```
 
 <a name="rolling-back-migrations"></a>
-### 回滾遷移
+### 還原遷移
 
-要回滾最新的遷移操作，您可以使用 `rollback` Artisan 命令。此命令將回滾最後一個 "批次" 的遷移，這可能包括多個遷移文件：
+若要還原最新的遷移操作，你可以使用 `rollback` Artisan 指令。此指令會還原最後一個「批次」的遷移，其中可能包含多個遷移檔案：
 
 ```shell
 php artisan migrate:rollback
 ```
 
-您可以通過為 `rollback` 命令提供 `step` 選項來回滾有限數量的遷移。例如，以下命令將回滾最後五個遷移：
+你可以透過將 `step` 選項提供給 `rollback` 指令來還原有限數量的遷移。例如，下列指令將還原最後五個遷移：
 
 ```shell
 php artisan migrate:rollback --step=5
 ```
 
-您可以通過為 `rollback` 命令提供 `batch` 選項來回滾特定的 "批次" 遷移，其中 `batch` 選項對應於應用程式的 `migrations` 資料庫表中的批次值。例如，以下命令將回滾第三批次中的所有遷移：
+你可以透過提供 `batch` 選項給 `rollback` 指令來還原特定「批次」的遷移，其中 `batch` 選項對應到應用程式 `migrations` 資料表中的批次值。例如，下列指令將還原第三批次的所有遷移：
 
 ```shell
 php artisan migrate:rollback --batch=3
 ```
 
-如果您想查看將由遷移執行的 SQL 語句，而不實際運行它們，您可以為 `migrate:rollback` 命令提供 `--pretend` 標誌：
+如果你想查看遷移將執行的 SQL 語句而無需實際執行它們，你可以提供 `--pretend` 旗標給 `migrate:rollback` 指令：
 
 ```shell
 php artisan migrate:rollback --pretend
 ```
 
-`migrate:reset` 指令將會還原應用程式的所有遷移：
+`migrate:reset` 指令將還原應用程式所有的遷移：
 
 ```shell
 php artisan migrate:reset
@@ -213,16 +238,16 @@ php artisan migrate:reset
 <a name="roll-back-migrate-using-a-single-command"></a>
 #### 使用單一指令還原和遷移
 
-`migrate:refresh` 指令將會還原所有遷移，然後執行 `migrate` 指令。這個指令有效地重新建立整個資料庫：
+`migrate:refresh` 指令將還原你所有的遷移，然後執行 `migrate` 指令。這個指令有效地重建了你的整個資料庫：
 
 ```shell
 php artisan migrate:refresh
 
-# Refresh the database and run all database seeds...
+# 刷新資料庫並執行所有資料庫播種...
 php artisan migrate:refresh --seed
 ```
 
-您可以透過為 `refresh` 指令提供 `step` 選項，來還原和重新遷移有限數量的遷移。例如，以下指令將會還原和重新遷移最後五個遷移：
+你可以透過將 `step` 選項提供給 `refresh` 指令來還原並重新遷移有限數量的遷移。例如，下列指令將還原並重新遷移最後五個遷移：
 
 ```shell
 php artisan migrate:refresh --step=5
@@ -231,7 +256,7 @@ php artisan migrate:refresh --step=5
 <a name="drop-all-tables-migrate"></a>
 #### 刪除所有資料表並遷移
 
-`migrate:fresh` 指令將會刪除資料庫中的所有資料表，然後執行 `migrate` 指令：
+`migrate:fresh` 指令會從資料庫中刪除所有資料表，然後執行 `migrate` 指令：
 
 ```shell
 php artisan migrate:fresh
@@ -239,14 +264,14 @@ php artisan migrate:fresh
 php artisan migrate:fresh --seed
 ```
 
-預設情況下，`migrate:fresh` 指令僅會從預設資料庫連線中刪除資料表。但是，您可以使用 `--database` 選項來指定應該遷移的資料庫連線。資料庫連線名稱應該對應到應用程式的 `database` [組態檔案](/docs/{{version}}/configuration) 中定義的連線：
+預設情況下，`migrate:fresh` 指令只會刪除預設資料庫連線中的資料表。但是，您可以使用 `--database` 選項來指定要遷移的資料庫連線。資料庫連線名稱應與應用程式的 `database` [設定檔](/docs/{{version}}/configuration)中定義的連線一致：
 
 ```shell
 php artisan migrate:fresh --database=admin
 ```
 
-> [!WARNING]  
-> `migrate:fresh` 指令將會刪除所有資料庫資料表，不論其前綴為何。在與其他應用程式共享的資料庫上開發時，應謹慎使用此指令。
+> [!WARNING]
+> `migrate:fresh` 指令將會刪除所有資料庫資料表，不論其前綴為何。當在與其他應用程式共用的資料庫上進行開發時，應謹慎使用此指令。
 
 <a name="tables"></a>
 ## 資料表
@@ -254,7 +279,7 @@ php artisan migrate:fresh --database=admin
 <a name="creating-tables"></a>
 ### 建立資料表
 
-要建立新的資料庫資料表，請在 `Schema` Facade 上使用 `create` 方法。`create` 方法接受兩個引數：第一個是資料表的名稱，第二個是一個接收 `Blueprint` 物件的閉包，可用於定義新資料表：
+若要建立新的資料庫資料表，請使用 `Schema` Facade 上的 `create` 方法。`create` 方法接受兩個引數：第一個是資料表的名稱，第二個是接收 `Blueprint` 物件的閉包，可用於定義新資料表：
 
 ```php
 use Illuminate\Database\Schema\Blueprint;
@@ -268,29 +293,31 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-在建立資料表時，您可以使用 schema builder 的任何 [column methods](#creating-columns) 來定義資料表的欄位。
+建立資料表時，你可以使用任何 Schema 產生器的 [欄位方法](#creating-columns) 來定義資料表的欄位。
 
-#### 確定表格/欄位存在性
+<a name="determining-table-column-existence"></a>
+#### 判斷資料表 / 欄位是否存在
 
-您可以使用 `hasTable`、`hasColumn` 和 `hasIndex` 方法來確定表格、欄位或索引是否存在：
+你可以使用 `hasTable`、`hasColumn` 和 `hasIndex` 方法來判斷資料表、欄位或索引是否存在：
 
 ```php
 if (Schema::hasTable('users')) {
-    // The "users" table exists...
+    // "users" 資料表存在...
 }
 
 if (Schema::hasColumn('users', 'email')) {
-    // The "users" table exists and has an "email" column...
+    // "users" 資料表存在且擁有 "email" 欄位...
 }
 
 if (Schema::hasIndex('users', ['email'], 'unique')) {
-    // The "users" table exists and has a unique index on the "email" column...
+    // "users" 資料表存在且在 "email" 欄位上擁有唯一索引...
 }
 ```
 
-#### 資料庫連線和表格選項
+<a name="database-connection-table-options"></a>
+#### 資料庫連線和資料表選項
 
-如果您想對非應用程式預設連線的資料庫連線執行結構操作，請使用 `connection` 方法：
+如果你想在非應用程式預設連線的資料庫連線上執行 Schema 操作，請使用 `connection` 方法：
 
 ```php
 Schema::connection('sqlite')->create('users', function (Blueprint $table) {
@@ -298,7 +325,7 @@ Schema::connection('sqlite')->create('users', function (Blueprint $table) {
 });
 ```
 
-此外，還可以使用一些其他屬性和方法來定義表格建立的其他方面。當使用 MariaDB 或 MySQL 時，可以使用 `engine` 屬性來指定表格的儲存引擎：
+此外，還有一些其他屬性和方法可以用來定義資料表建立的其他層面。當使用 MariaDB 或 MySQL 時，`engine` 屬性可用於指定資料表的儲存引擎：
 
 ```php
 Schema::create('users', function (Blueprint $table) {
@@ -308,7 +335,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-`charset` 和 `collation` 屬性可用於指定在使用 MariaDB 或 MySQL 時為建立的表格指定字元集和校對：
+當使用 MariaDB 或 MySQL 時，`charset` 和 `collation` 屬性可用於指定建立資料表的字元集和定序：
 
 ```php
 Schema::create('users', function (Blueprint $table) {
@@ -319,7 +346,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-`temporary` 方法可用於指示表格應該是「臨時」的。臨時表格僅對當前連線的資料庫會話可見，並在連線關閉時自動刪除：
+`temporary` 方法可用於指示資料表應該是「暫時的」。暫存資料表僅對當前連線的資料庫工作階段可見，並且在連線關閉時會自動刪除：
 
 ```php
 Schema::create('calculations', function (Blueprint $table) {
@@ -329,7 +356,7 @@ Schema::create('calculations', function (Blueprint $table) {
 });
 ```
 
-如果您想要為資料庫表格添加「註解」，您可以在表格實例上調用 `comment` 方法。目前僅支援 MariaDB、MySQL 和 PostgreSQL 的表格註解：
+如果你想為資料庫資料表新增「註解」，可以在資料表實例上呼叫 `comment` 方法。目前只有 MariaDB、MySQL 和 PostgreSQL 支援資料表註解：
 
 ```php
 Schema::create('calculations', function (Blueprint $table) {
@@ -339,9 +366,10 @@ Schema::create('calculations', function (Blueprint $table) {
 });
 ```
 
-### 更新表格
+<a name="updating-tables"></a>
+### 更新資料表
 
-`Schema` 門面上的 `table` 方法可用於更新現有表格。與 `create` 方法一樣，`table` 方法接受兩個引數：表格名稱和一個接收 `Blueprint` 實例的閉包，您可以使用該實例向表格添加欄位或索引：
+`Schema` Facade 上的 `table` 方法可以用來更新現有的資料表。與 `create` 方法一樣，`table` 方法接受兩個引數：資料表的名稱，以及接收你可以用來新增欄位或索引至資料表的 `Blueprint` 實例的閉包：
 
 ```php
 use Illuminate\Database\Schema\Blueprint;
@@ -352,9 +380,10 @@ Schema::table('users', function (Blueprint $table) {
 });
 ```
 
-### 重新命名/刪除表格
+<a name="renaming-and-dropping-tables"></a>
+### 重新命名 / 刪除資料表
 
-要重新命名現有的資料庫表格，請使用 `rename` 方法：
+要重新命名現有的資料庫資料表，請使用 `rename` 方法：
 
 ```php
 use Illuminate\Support\Facades\Schema;
@@ -362,7 +391,7 @@ use Illuminate\Support\Facades\Schema;
 Schema::rename($from, $to);
 ```
 
-要刪除現有資料表，您可以使用 `drop` 或 `dropIfExists` 方法：
+若要刪除現有的資料表，你可以使用 `drop` 或 `dropIfExists` 方法：
 
 ```php
 Schema::drop('users');
@@ -371,17 +400,17 @@ Schema::dropIfExists('users');
 ```
 
 <a name="renaming-tables-with-foreign-keys"></a>
-#### 使用外鍵重新命名資料表
+#### 重新命名帶有外部鍵的資料表
 
-在重新命名資料表之前，您應該驗證資料表上的任何外鍵約束在您的遷移檔案中是否有明確的名稱，而不是讓 Laravel 分配基於慣例的名稱。否則，外鍵約束名稱將參考舊資料表名稱。
+在重新命名資料表之前，你應當確認資料表上的任何外部鍵約束在遷移檔案中都有一個明確的名稱，而不是讓 Laravel 根據慣例指派名稱。否則，外部鍵約束名稱將會參考舊的資料表名稱。
 
 <a name="columns"></a>
 ## 欄位
 
 <a name="creating-columns"></a>
-### 創建欄位
+### 建立欄位
 
-`Schema` 門面上的 `table` 方法可用於更新現有資料表。與 `create` 方法一樣，`table` 方法接受兩個引數：資料表名稱和一個接收 `Illuminate\Database\Schema\Blueprint` 實例的閉包，您可以使用該實例向資料表添加欄位：
+`Schema` Facade 上的 `table` 方法可以用於更新現有資料表。與 `create` 方法一樣，`table` 方法接受兩個引數：資料表的名稱和接收 `Illuminate\Database\Schema\Blueprint` 實例的閉包，你可以使用它將欄位新增到資料表中：
 
 ```php
 use Illuminate\Database\Schema\Blueprint;
@@ -393,9 +422,9 @@ Schema::table('users', function (Blueprint $table) {
 ```
 
 <a name="available-column-types"></a>
-### 可用的欄位類型
+### 可用的欄位型別
 
-結構生成器藍圖提供了各種方法，對應於您可以添加到資料庫表中的不同類型的欄位。下表列出了每個可用方法：
+Schema 產生器 Blueprint 提供多種方法，對應可以加入至資料庫資料表中的不同欄位型別。所有可用的方法都列於下方表格中：
 
 <style>
     .collection-method-list > p {
@@ -419,7 +448,7 @@ Schema::table('users', function (Blueprint $table) {
 </style>
 
 <a name="booleans-method-list"></a>
-#### 布林類型
+#### 布林值型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -428,7 +457,7 @@ Schema::table('users', function (Blueprint $table) {
 </div>
 
 <a name="strings-and-texts-method-list"></a>
-#### 字串和文字類型
+#### 字串與文字型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -439,7 +468,10 @@ Schema::table('users', function (Blueprint $table) {
 [text](#column-method-text)
 [tinyText](#column-method-tinyText)
 
-#### 數值類型
+</div>
+
+<a name="numbers--method-list"></a>
+#### 數值型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -465,7 +497,8 @@ Schema::table('users', function (Blueprint $table) {
 
 </div>
 
-#### 日期和時間類型
+<a name="dates-and-times-method-list"></a>
+#### 日期與時間型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -483,7 +516,8 @@ Schema::table('users', function (Blueprint $table) {
 
 </div>
 
-#### 二進制類型
+<a name="binaries-method-list"></a>
+#### 二進位型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -491,7 +525,8 @@ Schema::table('users', function (Blueprint $table) {
 
 </div>
 
-#### 物件和 JSON 類型
+<a name="object-and-jsons-method-list"></a>
+#### 物件與 Json 型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -500,7 +535,8 @@ Schema::table('users', function (Blueprint $table) {
 
 </div>
 
-#### UUID 和 ULID 類型
+<a name="uuids-and-ulids-method-list"></a>
+#### UUID 與 ULID 型別
 
 <div class="collection-method-list" markdown="1">
 
@@ -511,66 +547,74 @@ Schema::table('users', function (Blueprint $table) {
 [nullableUlidMorphs](#column-method-nullableUlidMorphs)
 [nullableUuidMorphs](#column-method-nullableUuidMorphs)
 
-#### 空間類型
+</div>
+
+<a name="spatials-method-list"></a>
+#### 空間型別
 
 <div class="collection-method-list" markdown="1">
 
-[地理](#column-method-geography)
-[幾何](#column-method-geometry)
+[geography](#column-method-geography)
+[geometry](#column-method-geometry)
 
 </div>
 
-#### 關係類型
+<a name="relationship-method-list"></a>
+#### 關聯型別
 
 <div class="collection-method-list" markdown="1">
 
-[外鍵ID](#column-method-foreignId)
-[外鍵ID對應](#column-method-foreignIdFor)
-[外鍵ULID](#column-method-foreignUlid)
-[外鍵UUID](#column-method-foreignUuid)
-[多態關聯](#column-method-morphs)
-[可為空的多態關聯](#column-method-nullableMorphs)
+[foreignId](#column-method-foreignId)
+[foreignIdFor](#column-method-foreignIdFor)
+[foreignUlid](#column-method-foreignUlid)
+[foreignUuid](#column-method-foreignUuid)
+[morphs](#column-method-morphs)
+[nullableMorphs](#column-method-nullableMorphs)
 
 </div>
 
-#### 專用類型
+<a name="spacifics-method-list"></a>
+#### 特殊型別
 
 <div class="collection-method-list" markdown="1">
 
-[列舉](#column-method-enum)
-[集合](#column-method-set)
-[MAC位址](#column-method-macAddress)
-[IP位址](#column-method-ipAddress)
-[記住標記](#column-method-rememberToken)
-[向量](#column-method-vector)
+[enum](#column-method-enum)
+[set](#column-method-set)
+[macAddress](#column-method-macAddress)
+[ipAddress](#column-method-ipAddress)
+[rememberToken](#column-method-rememberToken)
+[vector](#column-method-vector)
 
 </div>
 
+<a name="column-method-bigIncrements"></a>
 #### `bigIncrements()` {.collection-method .first-collection-method}
 
-`bigIncrements` 方法創建一個自動遞增的 `UNSIGNED BIGINT`（主鍵）等效列：
+`bigIncrements` 方法建立一個等同於自動遞增 `UNSIGNED BIGINT`（主鍵）的欄位：
 
 ```php
 $table->bigIncrements('id');
 ```
 
+<a name="column-method-bigInteger"></a>
 #### `bigInteger()` {.collection-method}
 
-`bigInteger` 方法創建一個 `BIGINT` 等效列：
+`bigInteger` 方法建立一個等同於 `BIGINT` 的欄位：
 
 ```php
 $table->bigInteger('votes');
 ```
 
+<a name="column-method-binary"></a>
 #### `binary()` {.collection-method}
 
-`binary` 方法創建一個 `BLOB` 等效列：
+`binary` 方法建立一個等同於 `BLOB` 的欄位：
 
 ```php
 $table->binary('photo');
 ```
 
-在使用 MySQL、MariaDB 或 SQL Server 時，您可以傳遞 `length` 和 `fixed` 參數來創建 `VARBINARY` 或 `BINARY` 等效列：
+當使用 MySQL、MariaDB 或 SQL Server 時，你可以傳遞 `length` 和 `fixed` 引數來建立 `VARBINARY` 或 `BINARY` 等效欄位：
 
 ```php
 $table->binary('data', length: 16); // VARBINARY(16)
@@ -578,17 +622,19 @@ $table->binary('data', length: 16); // VARBINARY(16)
 $table->binary('data', length: 16, fixed: true); // BINARY(16)
 ```
 
+<a name="column-method-boolean"></a>
 #### `boolean()` {.collection-method}
 
-`boolean` 方法創建一個 `BOOLEAN` 等效列：
+`boolean` 方法建立一個等同於 `BOOLEAN` 的欄位：
 
 ```php
 $table->boolean('confirmed');
 ```
 
+<a name="column-method-char"></a>
 #### `char()` {.collection-method}
 
-`char` 方法創建一個指定長度的 `CHAR` 等效列：
+`char` 方法建立一個具有指定長度且等同於 `CHAR` 的欄位：
 
 ```php
 $table->char('name', length: 100);
@@ -597,7 +643,7 @@ $table->char('name', length: 100);
 <a name="column-method-dateTimeTz"></a>
 #### `dateTimeTz()` {.collection-method}
 
-`dateTimeTz` 方法創建具有可選小數秒精度的帶時區的 `DATETIME` 等效列：
+`dateTimeTz` 方法建立一個等同於 `DATETIME`（帶有時區）且具有可選小數秒精度的欄位：
 
 ```php
 $table->dateTimeTz('created_at', precision: 0);
@@ -606,7 +652,7 @@ $table->dateTimeTz('created_at', precision: 0);
 <a name="column-method-dateTime"></a>
 #### `dateTime()` {.collection-method}
 
-`dateTime` 方法創建具有可選小數秒精度的 `DATETIME` 等效列：
+`dateTime` 方法建立一個等同於 `DATETIME` 且具有可選小數秒精度的欄位：
 
 ```php
 $table->dateTime('created_at', precision: 0);
@@ -615,7 +661,7 @@ $table->dateTime('created_at', precision: 0);
 <a name="column-method-date"></a>
 #### `date()` {.collection-method}
 
-`date` 方法創建 `DATE` 等效列：
+`date` 方法建立一個等同於 `DATE` 的欄位：
 
 ```php
 $table->date('created_at');
@@ -624,7 +670,7 @@ $table->date('created_at');
 <a name="column-method-decimal"></a>
 #### `decimal()` {.collection-method}
 
-`decimal` 方法創建具有給定精度（總位數）和比例（小數位數）的 `DECIMAL` 等效列：
+`decimal` 方法建立一個等同於 `DECIMAL` 且具有指定精度（總位數）和小數位數的欄位：
 
 ```php
 $table->decimal('amount', total: 8, places: 2);
@@ -633,7 +679,7 @@ $table->decimal('amount', total: 8, places: 2);
 <a name="column-method-double"></a>
 #### `double()` {.collection-method}
 
-`double` 方法創建 `DOUBLE` 等效列：
+`double` 方法建立一個等同於 `DOUBLE` 的欄位：
 
 ```php
 $table->double('amount');
@@ -642,16 +688,24 @@ $table->double('amount');
 <a name="column-method-enum"></a>
 #### `enum()` {.collection-method}
 
-`enum` 方法創建具有給定有效值的 `ENUM` 等效列：
+`enum` 方法使用給定的有效值建立一個等同於 `ENUM` 的欄位：
 
 ```php
 $table->enum('difficulty', ['easy', 'hard']);
 ```
 
+當然，你可以使用 `Enum::cases()` 方法，而不是手動定義允許值的陣列：
+
+```php
+use App\Enums\Difficulty;
+
+$table->enum('difficulty', Difficulty::cases());
+```
+
 <a name="column-method-float"></a>
 #### `float()` {.collection-method}
 
-`float` 方法創建具有給定精度的 `FLOAT` 等效列：
+`float` 方法建立一個等同於 `FLOAT` 且具有指定精度的欄位：
 
 ```php
 $table->float('amount', precision: 53);
@@ -660,7 +714,7 @@ $table->float('amount', precision: 53);
 <a name="column-method-foreignId"></a>
 #### `foreignId()` {.collection-method}
 
-`foreignId` 方法創建一個 `UNSIGNED BIGINT` 等效列：
+`foreignId` 方法建立一個等同於 `UNSIGNED BIGINT` 的欄位：
 
 ```php
 $table->foreignId('user_id');
@@ -669,7 +723,7 @@ $table->foreignId('user_id');
 <a name="column-method-foreignIdFor"></a>
 #### `foreignIdFor()` {.collection-method}
 
-`foreignIdFor` 方法為給定的模型類添加一個 `{column}_id` 等效列。該列類型將是 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`，具體取決於模型鍵類型：
+`foreignIdFor` 方法為給定的模型類別新增一個等同於 `{column}_id` 的欄位。欄位型別將是 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`，這取決於模型的鍵型別：
 
 ```php
 $table->foreignIdFor(User::class);
@@ -678,7 +732,7 @@ $table->foreignIdFor(User::class);
 <a name="column-method-foreignUlid"></a>
 #### `foreignUlid()` {.collection-method}
 
-`foreignUlid` 方法創建一個等效的 `ULID` 欄位：
+`foreignUlid` 方法建立一個等同於 `ULID` 的欄位：
 
 ```php
 $table->foreignUlid('user_id');
@@ -687,7 +741,7 @@ $table->foreignUlid('user_id');
 <a name="column-method-foreignUuid"></a>
 #### `foreignUuid()` {.collection-method}
 
-`foreignUuid` 方法創建一個等效的 `UUID` 欄位：
+`foreignUuid` 方法建立一個等同於 `UUID` 的欄位：
 
 ```php
 $table->foreignUuid('user_id');
@@ -696,31 +750,31 @@ $table->foreignUuid('user_id');
 <a name="column-method-geography"></a>
 #### `geography()` {.collection-method}
 
-`geography` 方法使用給定的空間類型和 SRID（空間參考系統標識符）創建一個等效的 `GEOGRAPHY` 欄位：
+`geography` 方法使用指定的空間型別和 SRID（空間參照系統識別碼）建立一個等同於 `GEOGRAPHY` 的欄位：
 
 ```php
 $table->geography('coordinates', subtype: 'point', srid: 4326);
 ```
 
-> [!NOTE]  
-> 空間類型的支援取決於您的資料庫驅動程式。請參考您資料庫的文件。如果您的應用程式使用 PostgreSQL 資料庫，您必須在使用 `geography` 方法之前安裝 [PostGIS](https://postgis.net) 擴充功能。
+> [!NOTE]
+> 支援的空間型別取決於你的資料庫驅動程式。請參閱你資料庫的文件。如果你的應用程式使用 PostgreSQL 資料庫，你必須安裝 [PostGIS](https://postgis.net) 擴充功能才能使用 `geography` 方法。
 
 <a name="column-method-geometry"></a>
 #### `geometry()` {.collection-method}
 
-`geometry` 方法使用給定的空間類型和 SRID（空間參考系統標識符）創建一個等效的 `GEOMETRY` 欄位：
+`geometry` 方法使用指定的空間型別和 SRID（空間參照系統識別碼）建立一個等同於 `GEOMETRY` 的欄位：
 
 ```php
 $table->geometry('positions', subtype: 'point', srid: 0);
 ```
 
-> [!NOTE]  
-> 空間類型的支援取決於您的資料庫驅動程式。請參考您資料庫的文件。如果您的應用程式使用 PostgreSQL 資料庫，您必須在使用 `geometry` 方法之前安裝 [PostGIS](https://postgis.net) 擴充功能。
+> [!NOTE]
+> 支援的空間型別取決於你的資料庫驅動程式。請參閱你資料庫的文件。如果你的應用程式使用 PostgreSQL 資料庫，你必須安裝 [PostGIS](https://postgis.net) 擴充功能才能使用 `geometry` 方法。
 
 <a name="column-method-id"></a>
 #### `id()` {.collection-method}
 
-`id` 方法是 `bigIncrements` 方法的別名。預設情況下，該方法將創建一個 `id` 欄位；但是，如果您想要為欄位指定不同的名稱，則可以傳遞一個欄位名稱：
+`id` 方法是 `bigIncrements` 方法的別名。預設情況下，該方法將建立一個 `id` 欄位；然而，如果你想為該欄位指派不同的名稱，可以傳遞欄位名稱：
 
 ```php
 $table->id();
@@ -729,7 +783,7 @@ $table->id();
 <a name="column-method-increments"></a>
 #### `increments()` {.collection-method}
 
-`increments` 方法創建一個自動遞增的 `UNSIGNED INTEGER` 等效欄位作為主鍵：
+`increments` 方法建立一個自動遞增且等同於 `UNSIGNED INTEGER` 的欄位作為主鍵：
 
 ```php
 $table->increments('id');
@@ -738,7 +792,7 @@ $table->increments('id');
 <a name="column-method-integer"></a>
 #### `integer()` {.collection-method}
 
-`integer` 方法創建一個 `INTEGER` 等效的欄位：
+`integer` 方法建立一個等同於 `INTEGER` 的欄位：
 
 ```php
 $table->integer('votes');
@@ -747,46 +801,46 @@ $table->integer('votes');
 <a name="column-method-ipAddress"></a>
 #### `ipAddress()` {.collection-method}
 
-`ipAddress` 方法創建一個 `VARCHAR` 等效的欄位：
+`ipAddress` 方法建立一個等同於 `VARCHAR` 的欄位：
 
 ```php
 $table->ipAddress('visitor');
 ```
 
-在使用 PostgreSQL 時，將創建一個 `INET` 欄位。
+當使用 PostgreSQL 時，將會建立一個 `INET` 欄位。
 
 <a name="column-method-json"></a>
 #### `json()` {.collection-method}
 
-`json` 方法創建一個 `JSON` 等效的欄位：
+`json` 方法建立一個等同於 `JSON` 的欄位：
 
 ```php
 $table->json('options');
 ```
 
-在使用 SQLite 時，將創建一個 `TEXT` 欄位。
+當使用 SQLite 時，將會建立一個 `TEXT` 欄位。
 
 <a name="column-method-jsonb"></a>
 #### `jsonb()` {.collection-method}
 
-`jsonb` 方法創建一個 `JSONB` 等效的欄位：
+`jsonb` 方法建立一個等同於 `JSONB` 的欄位：
 
 ```php
 $table->jsonb('options');
 ```
 
-在使用 SQLite 時，將創建一個 `TEXT` 欄位。
+當使用 SQLite 時，將會建立一個 `TEXT` 欄位。
 
 <a name="column-method-longText"></a>
 #### `longText()` {.collection-method}
 
-`longText` 方法創建一個 `LONGTEXT` 等效的欄位：
+`longText` 方法建立一個等同於 `LONGTEXT` 的欄位：
 
 ```php
 $table->longText('description');
 ```
 
-在使用 MySQL 或 MariaDB 時，您可以將 `binary` 字元集應用於欄位，以創建一個 `LONGBLOB` 等效的欄位：
+當利用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用到欄位，以建立等同於 `LONGBLOB` 的欄位：
 
 ```php
 $table->longText('data')->charset('binary'); // LONGBLOB
@@ -795,7 +849,7 @@ $table->longText('data')->charset('binary'); // LONGBLOB
 <a name="column-method-macAddress"></a>
 #### `macAddress()` {.collection-method}
 
-`macAddress` 方法創建一個用於保存 MAC 地址的欄位。某些資料庫系統（如 PostgreSQL）具有專用的欄位類型來保存此類型的資料。其他資料庫系統將使用等效的字串欄位：
+`macAddress` 方法建立一個用來儲存 MAC 位址的欄位。某些資料庫系統（例如 PostgreSQL）為此類型的資料提供了專用的欄位型別。其他的資料庫系統則會使用等同於字串的欄位：
 
 ```php
 $table->macAddress('device');
@@ -804,7 +858,7 @@ $table->macAddress('device');
 <a name="column-method-mediumIncrements"></a>
 #### `mediumIncrements()` {.collection-method}
 
-`mediumIncrements` 方法創建一個自動遞增的 `UNSIGNED MEDIUMINT` 等效的主鍵欄位：
+`mediumIncrements` 方法建立一個自動遞增的 `UNSIGNED MEDIUMINT` 等效欄位做為主鍵：
 
 ```php
 $table->mediumIncrements('id');
@@ -813,7 +867,7 @@ $table->mediumIncrements('id');
 <a name="column-method-mediumInteger"></a>
 #### `mediumInteger()` {.collection-method}
 
-`mediumInteger` 方法創建一個 `MEDIUMINT` 等效的欄位：
+`mediumInteger` 方法建立一個等同於 `MEDIUMINT` 的欄位：
 
 ```php
 $table->mediumInteger('votes');
@@ -822,13 +876,13 @@ $table->mediumInteger('votes');
 <a name="column-method-mediumText"></a>
 #### `mediumText()` {.collection-method}
 
-`mediumText` 方法創建一個 `MEDIUMTEXT` 等效的欄位：
+`mediumText` 方法建立一個等同於 `MEDIUMTEXT` 的欄位：
 
 ```php
 $table->mediumText('description');
 ```
 
-在使用 MySQL 或 MariaDB 時，您可以將二進制字符集應用於欄位，以創建一個 `MEDIUMBLOB` 等效的欄位：
+當利用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用到欄位，以建立等同於 `MEDIUMBLOB` 的欄位：
 
 ```php
 $table->mediumText('data')->charset('binary'); // MEDIUMBLOB
@@ -837,9 +891,9 @@ $table->mediumText('data')->charset('binary'); // MEDIUMBLOB
 <a name="column-method-morphs"></a>
 #### `morphs()` {.collection-method}
 
-`morphs` 方法是一個方便的方法，它添加了一個 `{column}_id` 等效的欄位和一個 `{column}_type` `VARCHAR` 等效的欄位。`{column}_id` 的欄位類型將是 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`，具體取決於模型鍵類型。
+`morphs` 是一種便利的方法，會新增等同於 `{column}_id` 和 `{column}_type` `VARCHAR` 的欄位。`{column}_id` 的欄位型別會根據模型的金鑰型別而為 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`。
 
-當定義多態 [Eloquent 關聯](/docs/{{version}}/eloquent-relationships) 所需的欄位時，可以使用此方法。在下面的示例中，將創建 `taggable_id` 和 `taggable_type` 欄位：
+此方法旨在用於定義多型 [Eloquent 關聯](/docs/{{version}}/eloquent-relationships)所需的欄位時。在下列範例中，將建立 `taggable_id` 和 `taggable_type` 欄位：
 
 ```php
 $table->morphs('taggable');
@@ -848,7 +902,7 @@ $table->morphs('taggable');
 <a name="column-method-nullableMorphs"></a>
 #### `nullableMorphs()` {.collection-method}
 
-此方法類似於 [morphs](#column-method-morphs) 方法；但是，創建的欄位將是“可為空”：
+這個方法類似於 [morphs](#column-method-morphs) 方法；然而，建立出來的欄位將是「可為空」的：
 
 ```php
 $table->nullableMorphs('taggable');
@@ -857,7 +911,7 @@ $table->nullableMorphs('taggable');
 <a name="column-method-nullableUlidMorphs"></a>
 #### `nullableUlidMorphs()` {.collection-method}
 
-此方法類似於 [ulidMorphs](#column-method-ulidMorphs) 方法；但是，創建的欄位將是“可為空”：
+這個方法類似於 [ulidMorphs](#column-method-ulidMorphs) 方法；然而，建立的欄位將會是「可為空的」：
 
 ```php
 $table->nullableUlidMorphs('taggable');
@@ -866,7 +920,7 @@ $table->nullableUlidMorphs('taggable');
 <a name="column-method-nullableUuidMorphs"></a>
 #### `nullableUuidMorphs()` {.collection-method}
 
-此方法類似於 [uuidMorphs](#column-method-uuidMorphs) 方法；但是，創建的欄位將是“可為空”：
+這個方法類似於 [uuidMorphs](#column-method-uuidMorphs) 方法；然而，建立的欄位將是「可為空」的：
 
 ```php
 $table->nullableUuidMorphs('taggable');
@@ -875,8 +929,7 @@ $table->nullableUuidMorphs('taggable');
 <a name="column-method-rememberToken"></a>
 #### `rememberToken()` {.collection-method}
 
-`rememberToken` 方法創建一個可為空的 `VARCHAR(100)` 等效的欄位，用於存儲當前的“記住我” [身份驗證標記](/docs/{{version}}/authentication#remembering-users)：
-```
+`rememberToken` 方法會建立一個可為 null、等同於 `VARCHAR(100)` 的欄位，用來儲存目前的「記住我」[驗證權杖](/docs/{{version}}/authentication#remembering-users)：
 
 ```php
 $table->rememberToken();
@@ -885,7 +938,7 @@ $table->rememberToken();
 <a name="column-method-set"></a>
 #### `set()` {.collection-method}
 
-`set` 方法使用給定的有效值列表創建 `SET` 等效的列：
+`set` 方法建立一個具有給定有效值清單、等同於 `SET` 的欄位：
 
 ```php
 $table->set('flavors', ['strawberry', 'vanilla']);
@@ -894,7 +947,7 @@ $table->set('flavors', ['strawberry', 'vanilla']);
 <a name="column-method-smallIncrements"></a>
 #### `smallIncrements()` {.collection-method}
 
-`smallIncrements` 方法創建一個自動增量的 `UNSIGNED SMALLINT` 等效列作為主鍵：
+`smallIncrements` 方法建立一個等同於自動遞增 `UNSIGNED SMALLINT` 的欄位作為主鍵：
 
 ```php
 $table->smallIncrements('id');
@@ -903,7 +956,7 @@ $table->smallIncrements('id');
 <a name="column-method-smallInteger"></a>
 #### `smallInteger()` {.collection-method}
 
-`smallInteger` 方法創建一個 `SMALLINT` 等效列：
+`smallInteger` 方法建立一個等同於 `SMALLINT` 的欄位：
 
 ```php
 $table->smallInteger('votes');
@@ -912,7 +965,7 @@ $table->smallInteger('votes');
 <a name="column-method-softDeletesTz"></a>
 #### `softDeletesTz()` {.collection-method}
 
-`softDeletesTz` 方法添加一個可為空的帶有時區的 `deleted_at` `TIMESTAMP` 等效列，可選擇性地具有小數秒精度。 這個列旨在存儲 Eloquent 的 "軟刪除" 功能所需的 `deleted_at` 時間戳：
+`softDeletesTz` 方法會加入一個可為 null 的 `deleted_at` 等效 `TIMESTAMP`（含時區）欄位，並且有選用的分數秒精確度。這個欄位旨在儲存 Eloquent「軟刪除」功能所需的 `deleted_at` 時間戳記：
 
 ```php
 $table->softDeletesTz('deleted_at', precision: 0);
@@ -921,7 +974,7 @@ $table->softDeletesTz('deleted_at', precision: 0);
 <a name="column-method-softDeletes"></a>
 #### `softDeletes()` {.collection-method}
 
-`softDeletes` 方法添加一個可為空的 `deleted_at` `TIMESTAMP` 等效列，可選擇性地具有小數秒精度。 這個列旨在存儲 Eloquent 的 "軟刪除" 功能所需的 `deleted_at` 時間戳：
+`softDeletes` 方法會新增一個可為空值的 `deleted_at` `TIMESTAMP` 等效欄位，並帶有選用的分數秒精確度。此欄位預期儲存 Eloquent "軟刪除" 功能所需的 `deleted_at` 時間戳記：
 
 ```php
 $table->softDeletes('deleted_at', precision: 0);
@@ -930,7 +983,7 @@ $table->softDeletes('deleted_at', precision: 0);
 <a name="column-method-string"></a>
 #### `string()` {.collection-method}
 
-`string` 方法創建給定長度的 `VARCHAR` 等效列：
+`string` 方法會建立一個指定長度、等同於 `VARCHAR` 的欄位：
 
 ```php
 $table->string('name', length: 100);
@@ -939,23 +992,22 @@ $table->string('name', length: 100);
 <a name="column-method-text"></a>
 #### `text()` {.collection-method}
 
-`text` 方法創建一個 `TEXT` 等效列：
+`text` 方法建立一個等同於 `TEXT` 的欄位：
 
 ```php
 $table->text('description');
 ```
 
-在使用 MySQL 或 MariaDB 時，您可以將 `binary` 字符集應用於列，以創建一個 `BLOB` 等效列：
+當利用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用到欄位，以建立等同於 `BLOB` 的欄位：
 
 ```php
 $table->text('data')->charset('binary'); // BLOB
 ```
 
-
 <a name="column-method-timeTz"></a>
 #### `timeTz()` {.collection-method}
 
-`timeTz` 方法創建具有可選小數秒精度的帶時區的 `TIME` 等效列：
+`timeTz` 方法建立一個等同於 `TIME`（含時區）的欄位，並帶有選擇性的小數秒精確度：
 
 ```php
 $table->timeTz('sunrise', precision: 0);
@@ -964,7 +1016,7 @@ $table->timeTz('sunrise', precision: 0);
 <a name="column-method-time"></a>
 #### `time()` {.collection-method}
 
-`time` 方法創建具有可選小數秒精度的 `TIME` 等效列：
+`time` 方法會建立一個帶有選擇性小數秒精確度且等同於 `TIME` 的欄位：
 
 ```php
 $table->time('sunrise', precision: 0);
@@ -973,7 +1025,7 @@ $table->time('sunrise', precision: 0);
 <a name="column-method-timestampTz"></a>
 #### `timestampTz()` {.collection-method}
 
-`timestampTz` 方法創建具有可選小數秒精度的帶時區的 `TIMESTAMP` 等效列：
+`timestampTz` 方法會建立一個等同於 `TIMESTAMP`（具備時區）的欄位，並帶有可選的小數秒精確度：
 
 ```php
 $table->timestampTz('added_at', precision: 0);
@@ -982,7 +1034,7 @@ $table->timestampTz('added_at', precision: 0);
 <a name="column-method-timestamp"></a>
 #### `timestamp()` {.collection-method}
 
-`timestamp` 方法創建具有可選小數秒精度的 `TIMESTAMP` 等效列：
+`timestamp` 方法會建立一個等同於 `TIMESTAMP` 且具備可選小數秒精確度的欄位：
 
 ```php
 $table->timestamp('added_at', precision: 0);
@@ -991,7 +1043,7 @@ $table->timestamp('added_at', precision: 0);
 <a name="column-method-timestampsTz"></a>
 #### `timestampsTz()` {.collection-method}
 
-`timestampsTz` 方法創建具有可選小數秒精度的 `created_at` 和 `updated_at` 帶時區的 `TIMESTAMP` 等效列：
+`timestampsTz` 方法建立 `created_at` 和 `updated_at` 等同於 `TIMESTAMP`（帶時區）的欄位，並帶有可選的分數秒精度：
 
 ```php
 $table->timestampsTz(precision: 0);
@@ -1000,7 +1052,7 @@ $table->timestampsTz(precision: 0);
 <a name="column-method-timestamps"></a>
 #### `timestamps()` {.collection-method}
 
-`timestamps` 方法創建具有可選小數秒精度的 `created_at` 和 `updated_at` 的 `TIMESTAMP` 等效列：
+`timestamps` 方法會建立 `created_at` 和 `updated_at` `TIMESTAMP` 等效欄位，並帶有選用的分數秒精確度：
 
 ```php
 $table->timestamps(precision: 0);
@@ -1009,7 +1061,7 @@ $table->timestamps(precision: 0);
 <a name="column-method-tinyIncrements"></a>
 #### `tinyIncrements()` {.collection-method}
 
-`tinyIncrements` 方法創建自動增量的 `UNSIGNED TINYINT` 等效列作為主鍵：
+`tinyIncrements` 方法建立一個自動遞增、等同於 `UNSIGNED TINYINT` 的欄位作為主鍵：
 
 ```php
 $table->tinyIncrements('id');
@@ -1018,7 +1070,7 @@ $table->tinyIncrements('id');
 <a name="column-method-tinyInteger"></a>
 #### `tinyInteger()` {.collection-method}
 
-`tinyInteger` 方法創建 `TINYINT` 等效列：
+`tinyInteger` 方法建立一個等同於 `TINYINT` 的欄位：
 
 ```php
 $table->tinyInteger('votes');
@@ -1027,13 +1079,13 @@ $table->tinyInteger('votes');
 <a name="column-method-tinyText"></a>
 #### `tinyText()` {.collection-method}
 
-`tinyText` 方法創建一個 `TINYTEXT` 等效的欄位：
+`tinyText` 方法建立一個等同於 `TINYTEXT` 的欄位：
 
 ```php
 $table->tinyText('notes');
 ```
 
-在使用 MySQL 或 MariaDB 時，您可以將 `binary` 字元集應用於欄位，以創建一個 `TINYBLOB` 等效的欄位：
+當利用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用到欄位，以建立等同於 `TINYBLOB` 的欄位：
 
 ```php
 $table->tinyText('data')->charset('binary'); // TINYBLOB
@@ -1042,7 +1094,7 @@ $table->tinyText('data')->charset('binary'); // TINYBLOB
 <a name="column-method-unsignedBigInteger"></a>
 #### `unsignedBigInteger()` {.collection-method}
 
-`unsignedBigInteger` 方法創建一個 `UNSIGNED BIGINT` 等效的欄位：
+`unsignedBigInteger` 方法建立一個等同於 `UNSIGNED BIGINT` 的欄位：
 
 ```php
 $table->unsignedBigInteger('votes');
@@ -1051,7 +1103,7 @@ $table->unsignedBigInteger('votes');
 <a name="column-method-unsignedInteger"></a>
 #### `unsignedInteger()` {.collection-method}
 
-`unsignedInteger` 方法創建一個 `UNSIGNED INTEGER` 等效的欄位：
+`unsignedInteger` 方法建立一個等同於 `UNSIGNED INTEGER` 的欄位：
 
 ```php
 $table->unsignedInteger('votes');
@@ -1060,7 +1112,7 @@ $table->unsignedInteger('votes');
 <a name="column-method-unsignedMediumInteger"></a>
 #### `unsignedMediumInteger()` {.collection-method}
 
-`unsignedMediumInteger` 方法創建一個 `UNSIGNED MEDIUMINT` 等效的欄位：
+`unsignedMediumInteger` 方法建立一個等同於 `UNSIGNED MEDIUMINT` 的欄位：
 
 ```php
 $table->unsignedMediumInteger('votes');
@@ -1069,7 +1121,7 @@ $table->unsignedMediumInteger('votes');
 <a name="column-method-unsignedSmallInteger"></a>
 #### `unsignedSmallInteger()` {.collection-method}
 
-`unsignedSmallInteger` 方法創建一個 `UNSIGNED SMALLINT` 等效的欄位：
+`unsignedSmallInteger` 方法建立一個等同於 `UNSIGNED SMALLINT` 的欄位：
 
 ```php
 $table->unsignedSmallInteger('votes');
@@ -1078,7 +1130,7 @@ $table->unsignedSmallInteger('votes');
 <a name="column-method-unsignedTinyInteger"></a>
 #### `unsignedTinyInteger()` {.collection-method}
 
-`unsignedTinyInteger` 方法創建一個 `UNSIGNED TINYINT` 等效的欄位：
+`unsignedTinyInteger` 方法建立一個等同於 `UNSIGNED TINYINT` 的欄位：
 
 ```php
 $table->unsignedTinyInteger('votes');
@@ -1087,9 +1139,9 @@ $table->unsignedTinyInteger('votes');
 <a name="column-method-ulidMorphs"></a>
 #### `ulidMorphs()` {.collection-method}
 
-`ulidMorphs` 方法是一個方便的方法，它添加了一個 `{column}_id` `CHAR(26)` 等效的欄位和一個 `{column}_type` `VARCHAR` 等效的欄位。
+`ulidMorphs` 是一個方便的方法，可以加入等同於 `{column}_id` `CHAR(26)` 的欄位和等同於 `{column}_type` `VARCHAR` 的欄位。
 
-此方法旨在在定義需要使用 ULID 識別符的多態 [Eloquent 關係](/docs/{{version}}/eloquent-relationships) 所需的欄位時使用。在下面的示例中，將創建 `taggable_id` 和 `taggable_type` 欄位：
+此方法旨在當您需要為使用 ULID 識別碼的[多型 Eloquent 關聯](/docs/{{version}}/eloquent-relationships)定義欄位時使用。在下列範例中，將會建立 `taggable_id` 和 `taggable_type` 欄位：
 
 ```php
 $table->ulidMorphs('taggable');
@@ -1098,9 +1150,9 @@ $table->ulidMorphs('taggable');
 <a name="column-method-uuidMorphs"></a>
 #### `uuidMorphs()` {.collection-method}
 
-`uuidMorphs` 方法是一個方便的方法，它會新增一個 `{column}_id` `CHAR(36)` 等效的欄位和一個 `{column}_type` `VARCHAR` 等效的欄位。
+`uuidMorphs` 是一個方便的方法，用來加入一個等同於 `{column}_id` `CHAR(36)` 的欄位和一個等同於 `{column}_type` `VARCHAR` 的欄位。
 
-這個方法旨在在定義需要使用 UUID 識別符的多態 [Eloquent 關聯](/docs/{{version}}/eloquent-relationships) 所需的欄位時使用。在下面的示例中，將創建 `taggable_id` 和 `taggable_type` 欄位：
+此方法意在用來定義使用 UUID 識別碼的 [多型 Eloquent 關聯](/docs/{{version}}/eloquent-relationships#polymorphic-relationships) 所需的欄位。在下列範例中，會建立 `taggable_id` 和 `taggable_type` 欄位：
 
 ```php
 $table->uuidMorphs('taggable');
@@ -1109,7 +1161,7 @@ $table->uuidMorphs('taggable');
 <a name="column-method-ulid"></a>
 #### `ulid()` {.collection-method}
 
-`ulid` 方法創建一個 `ULID` 等效的欄位：
+`ulid` 方法建立一個等同於 `ULID` 的欄位：
 
 ```php
 $table->ulid('id');
@@ -1118,7 +1170,7 @@ $table->ulid('id');
 <a name="column-method-uuid"></a>
 #### `uuid()` {.collection-method}
 
-`uuid` 方法創建一個 `UUID` 等效的欄位：
+`uuid` 方法建立一個等同於 `UUID` 的欄位：
 
 ```php
 $table->uuid('id');
@@ -1127,25 +1179,31 @@ $table->uuid('id');
 <a name="column-method-vector"></a>
 #### `vector()` {.collection-method}
 
-`vector` 方法創建一個 `vector` 等效的欄位：
+`vector` 方法建立一個等同於 `vector` 的欄位：
 
 ```php
 $table->vector('embedding', dimensions: 100);
 ```
 
+當使用 PostgreSQL 時，在建立 `vector` 欄位之前必須載入 `pgvector` 擴充功能：
+
+```php
+Schema::ensureVectorExtensionExists();
+```
+
 <a name="column-method-year"></a>
 #### `year()` {.collection-method}
 
-`year` 方法創建一個 `YEAR` 等效的欄位：
+`year` 方法建立一個等同於 `YEAR` 的欄位：
 
 ```php
 $table->year('birth_year');
 ```
 
 <a name="column-modifiers"></a>
-### 欄位修飾符
+### 欄位修飾子
 
-除了上面列出的欄位類型外，在將欄位添加到資料庫表時，您可以使用幾個欄位“修飾符”。例如，要使欄位“可為空”，您可以使用 `nullable` 方法：
+除了上述的欄位類型外，還有幾個欄位「修飾子」可以讓你在加入欄位到資料庫資料表時使用。舉例來說，為了讓欄位「可為 null」，你可以使用 `nullable` 方法：
 
 ```php
 use Illuminate\Database\Schema\Blueprint;
@@ -1156,334 +1214,1225 @@ Schema::table('users', function (Blueprint $table) {
 });
 ```
 
-以下表格包含所有可用的欄位修飾符。此列表不包括 [索引修飾符](#creating-indexes)：
+下表包含所有可用的欄位修飾子。此清單不包含 [索引修飾子](#creating-indexes)：
 
 <div class="overflow-auto">
 
-| 修飾符                             | 說明                                                                                         |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `->after('column')`                 | 將欄位放在另一個欄位“之後”（MariaDB / MySQL）。                                               |
-| `->autoIncrement()`                 | 將 `INTEGER` 欄位設置為自動增量（主鍵）。                                                     |
-| `->charset('utf8mb4')`              | 為欄位指定字符集（MariaDB / MySQL）。                                                          |
-| `->collation('utf8mb4_unicode_ci')` | 為欄位指定校對順序。                                                                         |
-| `->comment('my comment')`           | 向欄位添加註釋（MariaDB / MySQL / PostgreSQL）。                                               |
-| `->default($value)`                 | 為欄位指定“默認”值。                                                                         |
-| `->first()`                         | 將欄位放在表中的“第一個”位置（MariaDB / MySQL）。                                              |
-| `->from($integer)`                  | 設置自動增量字段的起始值（MariaDB / MySQL / PostgreSQL）。                                      |
-| `->invisible()`                     | 使欄位對 `SELECT *` 查詢“不可見”（MariaDB / MySQL）。                                          |
-| `->nullable($value = true)`         | 允許將 `NULL` 值插入到欄位中。                                                               |
-| `->storedAs($expression)`           | 創建一個存儲生成的欄位（MariaDB / MySQL / PostgreSQL / SQLite）。                               |
-| `->unsigned()`                      | 將 `INTEGER` 欄位設置為 `UNSIGNED`（MariaDB / MySQL）。                                         |
-| `->useCurrent()`                    | 將 `TIMESTAMP` 欄位設置為使用 `CURRENT_TIMESTAMP` 作為默認值。                                |
-| `->useCurrentOnUpdate()`            | 當記錄更新時，將 `TIMESTAMP` 欄位設置為使用 `CURRENT_TIMESTAMP`（MariaDB / MySQL）。           |
-| `->virtualAs($expression)`          | 創建一個虛擬生成的欄位（MariaDB / MySQL / SQLite）。                                           |
-| `->generatedAs($expression)`        | 使用指定的序列選項創建身份列（PostgreSQL）。                                                   |
-| `->always()`                        | 定義身份列的序列值優先於輸入（PostgreSQL）。                                                  |
+| 修飾子                              | 說明                               # 資料庫：遷移 (Migrations)
 
-#### 預設表達式
+- [簡介](#introduction)
+- [產生遷移](#generating-migrations)
+    - [壓縮遷移](#squashing-migrations)
+- [遷移結構](#migration-structure)
+- [執行遷移](#running-migrations)
+    - [還原遷移](#rolling-back-migrations)
+- [資料表](#tables)
+    - [建立資料表](#creating-tables)
+    - [更新資料表](#updating-tables)
+    - [重新命名 / 刪除資料表](#renaming-and-dropping-tables)
+- [欄位](#columns)
+    - [建立欄位](#creating-columns)
+    - [可用的欄位型別](#available-column-types)
+    - [欄位修飾子](#column-modifiers)
+    - [修改欄位](#modifying-columns)
+    - [重新命名欄位](#renaming-columns)
+    - [刪除欄位](#dropping-columns)
+- [索引](#indexes)
+    - [建立索引](#creating-indexes)
+    - [重新命名索引](#renaming-indexes)
+    - [刪除索引](#dropping-indexes)
+    - [外鍵約束](#foreign-key-constraints)
+- [事件](#events)
 
-`default` 修飾符接受一個值或一個 `Illuminate\Database\Query\Expression` 實例。使用 `Expression` 實例將防止 Laravel 將值用引號包裹，並允許您使用特定於資料庫的函數。一個特別有用的情況是當您需要將預設值分配給 JSON 欄位時：
+<a name="introduction"></a>
+## 簡介
+
+遷移就像是資料庫的版本控制，讓你的團隊能夠定義並共享應用程式的資料庫結構定義。如果你曾經告訴隊友在從原始碼控制拉取你的變更後，需要手動新增欄位到他們的本機資料庫結構中，那麼你就遇到過資料庫遷移所要解決的問題。
+
+Laravel 的 `Schema` [facade](/docs/{{version}}/facades) 提供了與資料庫無關的支援，用於在所有 Laravel 支援的資料庫系統中建立和操作資料表。通常，遷移會使用這個 facade 來建立和修改資料庫資料表與欄位。
+
+<a name="generating-migrations"></a>
+## 產生遷移
+
+你可以使用 `make:migration` [Artisan 指令](/docs/{{version}}/artisan) 來產生資料庫遷移。新的遷移將放置在你的 `database/migrations` 目錄中。每個遷移檔名都包含一個時間戳記，這讓 Laravel 能夠決定遷移的順序：
+
+```shell
+php artisan make:migration create_flights_table
+```
+
+Laravel 會使用遷移的名稱來嘗試猜測資料表名稱，以及該遷移是否會建立一個新的資料表。如果 Laravel 能夠從遷移名稱判斷資料表名稱，Laravel 會在產生的遷移檔案中預先填入指定的資料表。否則，你只需在遷移檔案中手動指定資料表即可。
+
+如果你想為產生的遷移指定自訂路徑，你可以在執行 `make:migration` 指令時使用 `--path` 選項。給定的路徑應該是相對於你應用程式的基礎路徑。
+
+> [!NOTE]
+> 可以使用 [stub 發佈](/docs/{{version}}/artisan#stub-customization) 來自訂遷移的 stub。
+
+<a name="squashing-migrations"></a>
+### 壓縮遷移
+
+隨著你建立應用程式，隨著時間的推移，你可能會累積越來越多的遷移。這可能導致你的 `database/migrations` 目錄變得臃腫，包含可能有數百個遷移。如果你願意，你可以將你的遷移「壓縮」成單一個 SQL 檔案。要開始使用，請執行 `schema:dump` 指令：
+
+```shell
+php artisan schema:dump
+
+# 轉儲目前的資料庫結構並清理所有現有的遷移...
+php artisan schema:dump --prune
+```
+
+當你執行此指令時，Laravel 會將一個「schema」檔案寫入應用程式的 `database/schema` 目錄中。schema 檔案的名稱將對應於資料庫連線。現在，當你嘗試遷移你的資料庫並且沒有執行過其他遷移時，Laravel 將首先執行你正在使用的資料庫連線的 schema 檔案中的 SQL 語句。在執行完 schema 檔案的 SQL 語句後，Laravel 將執行任何不屬於 schema 轉儲的剩餘遷移。
+
+如果你應用程式的測試使用與你在本機開發期間通常使用的不同的資料庫連線，你應該確保你已經使用該資料庫連線轉儲了一個 schema 檔案，以便你的測試能夠建立你的資料庫。你可能希望在轉儲你在本機開發期間通常使用的資料庫連線之後執行此操作：
+
+```shell
+php artisan schema:dump
+php artisan schema:dump --database=testing --prune
+```
+
+你應該將你的資料庫 schema 檔案提交到原始碼控制，以便你團隊中新的開發人員可以快速建立應用程式的初始資料庫結構。
+
+> [!WARNING]
+> 遷移壓縮僅適用於 MariaDB、MySQL、PostgreSQL 和 SQLite 資料庫，並使用資料庫的命令列客戶端。
+
+<a name="migration-structure"></a>
+## 遷移結構
+
+遷移類別包含兩個方法：`up` 和 `down`。`up` 方法用於向資料庫新增資料表、欄位或索引，而 `down` 方法應該反轉 `up` 方法所執行的操作。
+
+在這兩個方法中，你可以使用 Laravel 的結構建構器 (schema builder) 以具表現力的方式建立和修改資料表。若要了解 `Schema` 建構器上所有可用的方法，[請查看其文件](#creating-tables)。例如，以下遷移會建立一個 `flights` 資料表：
 
 ```php
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * 執行遷移。
      */
     public function up(): void
     {
         Schema::create('flights', function (Blueprint $table) {
             $table->id();
-            $table->json('movies')->default(new Expression('(JSON_ARRAY())'));
+            $table->string('name');
+            $table->string('airline');
             $table->timestamps();
         });
+    }
+
+    /**
+     * 反轉遷移。
+     */
+    public function down(): void
+    {
+        Schema::drop('flights');
     }
 };
 ```
 
-> [!WARNING]  
-> 預設表達式的支援取決於您的資料庫驅動程式、資料庫版本和欄位類型。請參考您資料庫的文件。
+<a name="setting-the-migration-connection"></a>
+#### 設定遷移連線
 
-#### 欄位順序
-
-在使用 MariaDB 或 MySQL 資料庫時，`after` 方法可用於在架構中現有欄位之後添加欄位：
+如果你的遷移將與應用程式預設資料庫連線以外的資料庫連線互動，你應該設定遷移的 `$connection` 屬性：
 
 ```php
-$table->after('password', function (Blueprint $table) {
-    $table->string('address_line1');
-    $table->string('address_line2');
-    $table->string('city');
+/**
+ * 遷移應該使用的資料庫連線。
+ *
+ * @var string
+ */
+protected $connection = 'pgsql';
+
+/**
+ * 執行遷移。
+ */
+public function up(): void
+{
+    // ...
+}
+```
+
+<a name="skipping-migrations"></a>
+#### 略過遷移
+
+有時，遷移可能是為了支援尚未啟用的一個功能，並且你不希望它現在執行。在這種情況下，你可以在遷移上定義一個 `shouldRun` 方法。如果 `shouldRun` 方法回傳 `false`，則會略過該遷移：
+
+```php
+use App\Models\Flight;
+use Laravel\Pennant\Feature;
+
+/**
+ * 判斷這個遷移是否應該執行。
+ */
+public function shouldRun(): bool
+{
+    return Feature::active(Flight::class);
+}
+```
+
+<a name="running-migrations"></a>
+## 執行遷移
+
+要執行所有未完成的遷移，請執行 `migrate` Artisan 指令：
+
+```shell
+php artisan migrate
+```
+
+如果你想查看哪些遷移已經執行，哪些仍在等待中，你可以使用 `migrate:status` Artisan 指令：
+
+```shell
+php artisan migrate:status
+```
+
+如果你為 `migrate` 指令提供 `--step` 選項，該指令會將每個遷移作為其自己的批次執行，讓你可以稍後使用 `migrate:rollback` 指令還原個別的遷移：
+
+```shell
+php artisan migrate --step
+```
+
+如果你想查看遷移將執行的 SQL 語句而不實際執行它們，你可以為 `migrate` 指令提供 `--pretend` 旗標：
+
+```shell
+php artisan migrate --pretend
+```
+
+<a name="isolating-migration-execution"></a>
+#### 隔離遷移執行
+
+如果你在多部伺服器上部署你的應用程式，並將執行遷移作為部署過程的一部分，你可能不希望兩部伺服器同時嘗試遷移資料庫。為避免這種情況，你可以在呼叫 `migrate` 指令時使用 `isolated` 選項。
+
+當提供 `isolated` 選項時，Laravel 會在嘗試執行你的遷移之前，使用應用程式的快取驅動程式取得一個原子鎖。在持有該鎖期間，所有執行 `migrate` 指令的其他嘗試都不會執行；然而，該指令仍將以成功的退出狀態碼退出：
+
+```shell
+php artisan migrate --isolated
+```
+
+> [!WARNING]
+> 要使用這個功能，你的應用程式必須使用 `memcached`、`redis`、`dynamodb`、`database`、`file` 或 `array` 快取驅動程式作為應用程式的預設快取驅動程式。此外，所有伺服器都必須與同一個中央快取伺服器通訊。
+
+<a name="forcing-migrations-to-run-in-production"></a>
+#### 強制在正式環境中執行遷移
+
+有些遷移操作具破壞性，這意味著它們可能會導致你遺失資料。為了防止你在正式環境的資料庫上執行這些指令，在執行指令之前會提示你確認。若要在沒有提示的情況下強制執行指令，請使用 `--force` 旗標：
+
+```shell
+php artisan migrate --force
+```
+
+<a name="rolling-back-migrations"></a>
+### 還原遷移
+
+若要還原最新的遷移操作，你可以使用 `rollback` Artisan 指令。此指令會還原最後「批次」的遷移，其中可能包含多個遷移檔案：
+
+```shell
+php artisan migrate:rollback
+```
+
+你可以透過提供 `step` 選項給 `rollback` 指令來還原有限數量的遷移。例如，以下指令將還原最後五個遷移：
+
+```shell
+php artisan migrate:rollback --step=5
+```
+
+你可以透過提供 `batch` 選項給 `rollback` 指令來還原特定的遷移「批次」，其中 `batch` 選項對應於應用程式 `migrations` 資料庫資料表中的批次值。例如，以下指令將還原第三批次的所有遷移：
+
+```shell
+php artisan migrate:rollback --batch=3
+```
+
+如果你想查看遷移將執行的 SQL 語句而不實際執行它們，你可以為 `migrate:rollback` 指令提供 `--pretend` 旗標：
+
+```shell
+php artisan migrate:rollback --pretend
+```
+
+`migrate:reset` 指令會還原應用程式的所有遷移：
+
+```shell
+php artisan migrate:reset
+```
+
+<a name="roll-back-migrate-using-a-single-command"></a>
+#### 使用單一指令還原並遷移
+
+`migrate:refresh` 指令將還原你所有的遷移，然後執行 `migrate` 指令。此指令有效地重新建立你整個資料庫：
+
+```shell
+php artisan migrate:refresh
+
+# 重新整理資料庫並執行所有資料庫播種...
+php artisan migrate:refresh --seed
+```
+
+你可以透過提供 `step` 選項給 `refresh` 指令來還原並重新遷移有限數量的遷移。例如，以下指令將還原並重新遷移最後五個遷移：
+
+```shell
+php artisan migrate:refresh --step=5
+```
+
+<a name="drop-all-tables-migrate"></a>
+#### 刪除所有資料表並遷移
+
+`migrate:fresh` 指令會從資料庫中刪除所有資料表，然後執行 `migrate` 指令：
+
+```shell
+php artisan migrate:fresh
+
+php artisan migrate:fresh --seed
+```
+
+預設情況下，`migrate:fresh` 指令只會刪除預設資料庫連線中的資料表。但是，你可以使用 `--database` 選項來指定應該遷移的資料庫連線。資料庫連線名稱應該對應於應用程式的 `database` [設定檔](/docs/{{version}}/configuration)中定義的連線：
+
+```shell
+php artisan migrate:fresh --database=admin
+```
+
+> [!WARNING]
+> `migrate:fresh` 指令將會刪除所有資料庫資料表，不論其前綴為何。在與其他應用程式共用的資料庫上進行開發時，應謹慎使用此指令。
+
+<a name="tables"></a>
+## 資料表
+
+<a name="creating-tables"></a>
+### 建立資料表
+
+若要建立新的資料庫資料表，請使用 `Schema` facade 上的 `create` 方法。`create` 方法接受兩個參數：第一個是資料表的名稱，而第二個是閉包，它接收一個 `Blueprint` 物件，可用於定義新的資料表：
+
+```php
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('email');
+    $table->timestamps();
 });
 ```
 
-### 修改欄位
+建立資料表時，你可以使用結構建構器的任何[欄位方法](#creating-columns)來定義資料表的欄位。
 
-`change` 方法允許您修改現有欄位的類型和屬性。例如，您可能希望增加 `string` 欄位的大小。為了看到 `change` 方法的實際效果，讓我們將 `name` 欄位的大小從 25 增加到 50。為了完成這個任務，我們只需定義欄位的新狀態，然後調用 `change` 方法：
+<a name="determining-table-column-existence"></a>
+#### 判斷資料表 / 欄位是否存在
+
+你可以使用 `hasTable`、`hasColumn` 和 `hasIndex` 方法來判斷資料表、欄位或索引是否存在：
 
 ```php
-Schema::table('users', function (Blueprint $table) {
-    $table->string('name', 50)->change();
+if (Schema::hasTable('users')) {
+    // "users" 資料表存在...
+}
+
+if (Schema::hasColumn('users', 'email')) {
+    // "users" 資料表存在且具有 "email" 欄位...
+}
+
+if (Schema::hasIndex('users', ['email'], 'unique')) {
+    // "users" 資料表存在且在 "email" 欄位上有唯一索引...
+}
+```
+
+<a name="database-connection-table-options"></a>
+#### 資料庫連線和資料表選項
+
+如果你想在非應用程式預設連線的資料庫連線上執行結構操作，請使用 `connection` 方法：
+
+```php
+Schema::connection('sqlite')->create('users', function (Blueprint $table) {
+    $table->id();
 });
 ```
 
-在修改欄位時，您必須明確包含您希望保留在欄位定義中的所有修飾符 - 任何遺漏的屬性將被刪除。例如，要保留 `unsigned`、`default` 和 `comment` 屬性，您必須在更改欄位時明確調用每個修飾符：
+此外，還有一些其他屬性和方法可用於定義資料表建立的其他方面。使用 MariaDB 或 MySQL 時，`engine` 屬性可用於指定資料表的儲存引擎：
 
 ```php
-Schema::table('users', function (Blueprint $table) {
-    $table->integer('votes')->unsigned()->default(1)->comment('my comment')->change();
+Schema::create('users', function (Blueprint $table) {
+    $table->engine('InnoDB');
+
+    // ...
 });
 ```
 
-`change` 方法不會更改欄位的索引。因此，在修改欄位時，您可以使用索引修飾符來明確添加或刪除索引：
+使用 MariaDB 或 MySQL 時，`charset` 和 `collation` 屬性可用於指定建立的資料表的字元集和定序：
 
 ```php
-// Add an index...
-$table->bigIncrements('id')->primary()->change();
+Schema::create('users', function (Blueprint $table) {
+    $table->charset('utf8mb4');
+    $table->collation('utf8mb4_unicode_ci');
 
-// Drop an index...
-$table->char('postal_code', 10)->unique(false)->change();
-```
-
-#### 重新命名欄位
-
-要重新命名列，您可以使用模式生成器提供的 `renameColumn` 方法：
-
-```php
-Schema::table('users', function (Blueprint $table) {
-    $table->renameColumn('from', 'to');
+    // ...
 });
 ```
 
-<a name="dropping-columns"></a>
-### 刪除列
-
-要刪除列，您可以在模式生成器上使用 `dropColumn` 方法：
+`temporary` 方法可用於指示資料表應該是「暫時的」。暫存資料表只對目前連線的資料庫工作階段可見，並在連線關閉時自動刪除：
 
 ```php
-Schema::table('users', function (Blueprint $table) {
-    $table->dropColumn('votes');
+Schema::create('calculations', function (Blueprint $table) {
+    $table->temporary();
+
+    // ...
 });
 ```
 
-您可以通過將列名陣列傳遞給 `dropColumn` 方法，從表中刪除多個列：
+如果你想為資料庫資料表新增「註解」，可以在資料表實例上呼叫 `comment` 方法。資料表註解目前僅由 MariaDB、MySQL 和 PostgreSQL 支援：
 
 ```php
-Schema::table('users', function (Blueprint $table) {
-    $table->dropColumn(['votes', 'avatar', 'location']);
+Schema::create('calculations', function (Blueprint $table) {
+    $table->comment('Business calculations');
+
+    // ...
 });
 ```
 
-<a name="available-command-aliases"></a>
-#### 可用的命令別名
+<a name="updating-tables"></a>
+### 更新資料表
 
-Laravel 提供了幾個方便的方法來刪除常見類型的列。以下是每個方法在下表中的描述：
-
-<div class="overflow-auto">
-
-| Command                             | Description                                           |
-| ----------------------------------- | ----------------------------------------------------- |
-| `$table->dropMorphs('morphable');`  | 刪除 `morphable_id` 和 `morphable_type` 列。          |
-| `$table->dropRememberToken();`      | 刪除 `remember_token` 列。                           |
-| `$table->dropSoftDeletes();`        | 刪除 `deleted_at` 列。                               |
-| `$table->dropSoftDeletesTz();`      | `dropSoftDeletes()` 方法的別名。                     |
-| `$table->dropTimestamps();`         | 刪除 `created_at` 和 `updated_at` 列。               |
-| `$table->dropTimestampsTz();`       | `dropTimestamps()` 方法的別名。                     |
-
-</div>
-
-<a name="indexes"></a>
-## 索引
-
-<a name="creating-indexes"></a>
-### 創建索引
-
-Laravel 模式生成器支持幾種類型的索引。以下示例創建一個新的 `email` 列並指定其值應該是唯一的。要創建索引，我們可以將 `unique` 方法連接到列定義上：
+`Schema` facade 上的 `table` 方法可以用來更新現有的資料表。與 `create` 方法一樣，`table` 方法接受兩個參數：資料表的名稱和一個閉包，該閉包接收一個 `Blueprint` 實例，你可以使用它來向資料表新增欄位或索引：
 
 ```php
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 Schema::table('users', function (Blueprint $table) {
-    $table->string('email')->unique();
+    $table->integer('votes');
 });
 ```
 
-或者，您可以在定義列之後創建索引。要這樣做，您應該在模式生成器藍圖上調用 `unique` 方法。此方法接受應該接收唯一索引的列名：
+<a name="renaming-and-dropping-tables"></a>
+### 重新命名 / 刪除資料表
+
+若要重新命名現有的資料庫資料表，請使用 `rename` 方法：
 
 ```php
-$table->unique('email');
+use Illuminate\Support\Facades\Schema;
+
+Schema::rename($from, $to);
 ```
 
-您甚至可以將列的數組傳遞給索引方法，以創建複合索引：
+若要刪除現有的資料表，你可以使用 `drop` 或 `dropIfExists` 方法：
 
 ```php
-$table->index(['account_id', 'created_at']);
+Schema::drop('users');
+
+Schema::dropIfExists('users');
 ```
 
-在創建索引時，Laravel 將根據表格、列名和索引類型自動生成索引名稱，但您可以通過向方法傳遞第二個參數來指定索引名稱：
+<a name="renaming-tables-with-foreign-keys"></a>
+#### 重新命名帶有外鍵的資料表
+
+在重新命名資料表之前，你應該確認資料表上的任何外鍵約束在遷移檔案中都有一個明確的名稱，而不是讓 Laravel 根據慣例指派名稱。否則，外鍵約束名稱將會參照舊的資料表名稱。
+
+<a name="columns"></a>
+## 欄位
+
+<a name="creating-columns"></a>
+### 建立欄位
+
+`Schema` facade 上的 `table` 方法可以用來更新現有的資料表。與 `create` 方法一樣，`table` 方法接受兩個參數：資料表的名稱和一個閉包，該閉包接收一個 `Illuminate\Database\Schema\Blueprint` 實例，你可以使用它來向資料表新增欄位：
 
 ```php
-$table->unique('email', 'unique_email');
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+Schema::table('users', function (Blueprint $table) {
+    $table->integer('votes');
+});
 ```
 
-<a name="available-index-types"></a>
-#### 可用的索引類型
+<a name="available-column-types"></a>
+### 可用的欄位型別
 
-Laravel 的模式生成器藍圖類提供了用於創建 Laravel 支持的每種索引類型的方法。每個索引方法都接受一個可選的第二個參數，用於指定索引的名稱。如果省略，則名稱將從用於索引的表格和列名以及索引類型的名稱派生。下表描述了每個可用索引方法：
+結構建構器 Blueprint 提供了多種方法，對應於你可以新增至資料庫資料表的不同欄位型別。每個可用方法都列在下表中：
 
-<div class="overflow-auto">
+<style>
+    .collection-method-list > p {
+        columns: 10.8em 3; -moz-columns: 10.8em 3; -webkit-columns: 10.8em 3;
+    }
 
-| Command                                          | Description                                                    |
-| ------------------------------------------------ | -------------------------------------------------------------- |
-| `$table->primary('id');`                         | 添加主鍵。                                                     |
-| `$table->primary(['id', 'parent_id']);`          | 添加複合主鍵。                                                 |
-| `$table->unique('email');`                       | 添加唯一索引。                                                 |
-| `$table->index('state');`                        | 添加索引。                                                     |
-| `$table->fullText('body');`                      | 添加全文索引（MariaDB / MySQL / PostgreSQL）。                |
-| `$table->fullText('body')->language('english');` | 添加指定語言的全文索引（PostgreSQL）。                         |
-| `$table->spatialIndex('location');`              | 添加空間索引（SQLite 除外）。                                 |
+    .collection-method-list a {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
+    .collection-method code {
+        font-size: 14px;
+    }
 
-### 重新命名索引
+    .collection-method:not(.first-collection-method) {
+        margin-top: 50px;
+    }
+</style>
 
-要重新命名索引，您可以使用模式生成器藍圖提供的 `renameIndex` 方法。此方法接受當前索引名稱作為第一個引數，所需名稱作為第二個引數：
+<a name="booleans-method-list"></a>
+#### 布林值型別
 
-```php
-$table->renameIndex('from', 'to')
-```
+<div class="collection-method-list" markdown="1">
 
-### 刪除索引
-
-要刪除索引，您必須指定索引的名稱。預設情況下，Laravel根據表名、索引列的名稱和索引類型自動分配索引名稱。以下是一些示例：
-
-<div class="overflow-auto">
-
-| 指令                                                     | 說明                                                         |
-| -------------------------------------------------------- | ----------------------------------------------------------- |
-| `$table->dropPrimary('users_id_primary');`               | 從 "users" 表中刪除主鍵。                                    |
-| `$table->dropUnique('users_email_unique');`              | 從 "users" 表中刪除唯一索引。                                 |
-| `$table->dropIndex('geo_state_index');`                  | 從 "geo" 表中刪除基本索引。                                   |
-| `$table->dropFullText('posts_body_fulltext');`           | 從 "posts" 表中刪除全文索引。                                 |
-| `$table->dropSpatialIndex('geo_location_spatialindex');` | 從 "geo" 表中刪除空間索引（SQLite 除外）。                    |
+[boolean](#column-method-boolean)
 
 </div>
 
-如果您將一組列傳遞給刪除索引的方法，則將基於表名、列和索引類型生成傳統索引名稱：
+<a name="strings-and-texts-method-list"></a>
+#### 字串和文字型別
 
-```php
-Schema::table('geo', function (Blueprint $table) {
-    $table->dropIndex(['state']); // 刪除索引 'geo_state_index'
-});
-```
+<div class="collection-method-list" markdown="1">
 
-### 外鍵約束
-
-Laravel還支持創建外鍵約束，用於在數據庫層面強制引用完整性。例如，讓我們在 `posts` 表上定義一個 `user_id` 列，該列引用 `users` 表上的 `id` 列：
-
-由於此語法相當冗長，Laravel 提供了額外的簡潔方法，使用慣例提供更好的開發者體驗。當使用 `foreignId` 方法來創建您的列時，上面的示例可以重寫如下：
-
-```php
-Schema::table('posts', function (Blueprint $table) {
-    $table->foreignId('user_id')->constrained();
-});
-```
-
-`foreignId` 方法創建一個 `UNSIGNED BIGINT` 等效的列，而 `constrained` 方法將使用慣例來確定被引用的表和列。如果您的表名不符合 Laravel 的慣例，您可以手動提供給 `constrained` 方法。此外，還可以指定要分配給生成的索引的名稱：
-
-```php
-Schema::table('posts', function (Blueprint $table) {
-    $table->foreignId('user_id')->constrained(
-        table: 'users', indexName: 'posts_user_id'
-    );
-});
-```
-
-您還可以指定約束的 "刪除時" 和 "更新時" 屬性的所需操作：
-
-```php
-$table->foreignId('user_id')
-    ->constrained()
-    ->onUpdate('cascade')
-    ->onDelete('cascade');
-```
-
-還提供了這些操作的另一種表達方式：
-
-<div class="overflow-auto">
-
-| 方法                           | 描述                                             |
-| ----------------------------- | ------------------------------------------------- |
-| `$table->cascadeOnUpdate();`  | 更新應該級聯。                                   |
-| `$table->restrictOnUpdate();` | 更新應該受限。                                   |
-| `$table->nullOnUpdate();`     | 更新應將外鍵值設置為空。                         |
-| `$table->noActionOnUpdate();` | 更新時不採取任何操作。                           |
-| `$table->cascadeOnDelete();`  | 刪除應該級聯。                                   |
-| `$table->restrictOnDelete();` | 刪除應該受限。                                   |
-| `$table->nullOnDelete();`     | 刪除應將外鍵值設置為空。                         |
-| `$table->noActionOnDelete();` | 如果存在子記錄，則防止刪除。                     |
+[char](#column-method-char)
+[longText](#column-method-longText)
+[mediumText](#column-method-mediumText)
+[string](#column-method-string)
+[text](#column-method-text)
+[tinyText](#column-method-tinyText)
 
 </div>
 
-任何額外的 [列修飾符](#column-modifiers) 必須在 `constrained` 方法之前調用：
+<a name="numbers--method-list"></a>
+#### 數值型別
+
+<div class="collection-method-list" markdown="1">
+
+[bigIncrements](#column-method-bigIncrements)
+[bigInteger](#column-method-bigInteger)
+[decimal](#column-method-decimal)
+[double](#column-method-double)
+[float](#column-method-float)
+[id](#column-method-id)
+[increments](#column-method-increments)
+[integer](#column-method-integer)
+[mediumIncrements](#column-method-mediumIncrements)
+[mediumInteger](#column-method-mediumInteger)
+[smallIncrements](#column-method-smallIncrements)
+[smallInteger](#column-method-smallInteger)
+[tinyIncrements](#column-method-tinyIncrements)
+[tinyInteger](#column-method-tinyInteger)
+[unsignedBigInteger](#column-method-unsignedBigInteger)
+[unsignedInteger](#column-method-unsignedInteger)
+[unsignedMediumInteger](#column-method-unsignedMediumInteger)
+[unsignedSmallInteger](#column-method-unsignedSmallInteger)
+[unsignedTinyInteger](#column-method-unsignedTinyInteger)
+
+</div>
+
+<a name="dates-and-times-method-list"></a>
+#### 日期和時間型別
+
+<div class="collection-method-list" markdown="1">
+
+[dateTime](#column-method-dateTime)
+[dateTimeTz](#column-method-dateTimeTz)
+[date](#column-method-date)
+[time](#column-method-time)
+[timeTz](#column-method-timeTz)
+[timestamp](#column-method-timestamp)
+[timestamps](#column-method-timestamps)
+[timestampsTz](#column-method-timestampsTz)
+[softDeletes](#column-method-softDeletes)
+[softDeletesTz](#column-method-softDeletesTz)
+[year](#column-method-year)
+
+</div>
+
+<a name="binaries-method-list"></a>
+#### 二進位型別
+
+<div class="collection-method-list" markdown="1">
+
+[binary](#column-method-binary)
+
+</div>
+
+<a name="object-and-jsons-method-list"></a>
+#### 物件和 JSON 型別
+
+<div class="collection-method-list" markdown="1">
+
+[json](#column-method-json)
+[jsonb](#column-method-jsonb)
+
+</div>
+
+<a name="uuids-and-ulids-method-list"></a>
+#### UUID 和 ULID 型別
+
+<div class="collection-method-list" markdown="1">
+
+[ulid](#column-method-ulid)
+[ulidMorphs](#column-method-ulidMorphs)
+[uuid](#column-method-uuid)
+[uuidMorphs](#column-method-uuidMorphs)
+[nullableUlidMorphs](#column-method-nullableUlidMorphs)
+[nullableUuidMorphs](#column-method-nullableUuidMorphs)
+
+</div>
+
+<a name="spatials-method-list"></a>
+#### 空間型別
+
+<div class="collection-method-list" markdown="1">
+
+[geography](#column-method-geography)
+[geometry](#column-method-geometry)
+
+</div>
+
+<a name="relationship-method-list"></a>
+#### 關聯型別
+
+<div class="collection-method-list" markdown="1">
+
+[foreignId](#column-method-foreignId)
+[foreignIdFor](#column-method-foreignIdFor)
+[foreignUlid](#column-method-foreignUlid)
+[foreignUuid](#column-method-foreignUuid)
+[morphs](#column-method-morphs)
+[nullableMorphs](#column-method-nullableMorphs)
+
+</div>
+
+<a name="spacifics-method-list"></a>
+#### 特殊型別
+
+<div class="collection-method-list" markdown="1">
+
+[enum](#column-method-enum)
+[set](#column-method-set)
+[macAddress](#column-method-macAddress)
+[ipAddress](#column-method-ipAddress)
+[rememberToken](#column-method-rememberToken)
+[vector](#column-method-vector)
+
+</div>
+
+<a name="column-method-bigIncrements"></a>
+#### `bigIncrements()` {.collection-method .first-collection-method}
+
+`bigIncrements` 方法建立一個遞增的 `UNSIGNED BIGINT`（主鍵）等效欄位：
 
 ```php
-$table->foreignId('user_id')
-    ->nullable()
-    ->constrained();
+$table->bigIncrements('id');
 ```
 
-#### 刪除外鍵
+<a name="column-method-bigInteger"></a>
+#### `bigInteger()` {.collection-method}
 
-要刪除外鍵，您可以使用 `dropForeign` 方法，將要刪除的外鍵約束的名稱作為引數傳遞。外鍵約束使用與索引相同的命名慣例。換句話說，外鍵約束的名稱基於表的名稱和約束中的列名，後面跟著 "\_foreign" 後綴：
+`bigInteger` 方法建立一個 `BIGINT` 等效欄位：
 
 ```php
-$table->dropForeign('posts_user_id_foreign');
+$table->bigInteger('votes');
 ```
 
-或者，您可以將包含保存外鍵的列名的數組傳遞給 `dropForeign` 方法。該數組將根據 Laravel 的約束命名慣例轉換為外鍵約束名稱：
+<a name="column-method-binary"></a>
+#### `binary()` {.collection-method}
+
+`binary` 方法建立一個 `BLOB` 等效欄位：
 
 ```php
-$table->dropForeign(['user_id']);
+$table->binary('photo');
 ```
 
-#### 切換外鍵約束
-
-您可以通過以下方法在遷移中啟用或禁用外鍵約束：
+當使用 MySQL、MariaDB 或 SQL Server 時，你可以傳入 `length` 和 `fixed` 參數以建立 `VARBINARY` 或 `BINARY` 等效欄位：
 
 ```php
-Schema::enableForeignKeyConstraints();
+$table->binary('data', length: 16); // VARBINARY(16)
 
-Schema::disableForeignKeyConstraints();
+$table->binary('data', length: 16, fixed: true); // BINARY(16)
+```
 
-Schema::withoutForeignKeyConstraints(function () {
-    // Constraints disabled within this closure...
+<a name="column-method-boolean"></a>
+#### `boolean()` {.collection-method}
+
+`boolean` 方法建立一個 `BOOLEAN` 等效欄位：
+
+```php
+$table->boolean('confirmed');
+```
+
+<a name="column-method-char"></a>
+#### `char()` {.collection-method}
+
+`char` 方法建立一個指定長度的 `CHAR` 等效欄位：
+
+```php
+$table->char('name', length: 100);
+```
+
+<a name="column-method-dateTimeTz"></a>
+#### `dateTimeTz()` {.collection-method}
+
+`dateTimeTz` 方法建立一個具有選擇性小數秒精度的 `DATETIME`（帶時區）等效欄位：
+
+```php
+$table->dateTimeTz('created_at', precision: 0);
+```
+
+<a name="column-method-dateTime"></a>
+#### `dateTime()` {.collection-method}
+
+`dateTime` 方法建立一個具有選擇性小數秒精度的 `DATETIME` 等效欄位：
+
+```php
+$table->dateTime('created_at', precision: 0);
+```
+
+<a name="column-method-date"></a>
+#### `date()` {.collection-method}
+
+`date` 方法建立一個 `DATE` 等效欄位：
+
+```php
+$table->date('created_at');
+```
+
+<a name="column-method-decimal"></a>
+#### `decimal()` {.collection-method}
+
+`decimal` 方法建立一個具有給定精度（總位數）和刻度（小數位數）的 `DECIMAL` 等效欄位：
+
+```php
+$table->decimal('amount', total: 8, places: 2);
+```
+
+<a name="column-method-double"></a>
+#### `double()` {.collection-method}
+
+`double` 方法建立一個 `DOUBLE` 等效欄位：
+
+```php
+$table->double('amount');
+```
+
+<a name="column-method-enum"></a>
+#### `enum()` {.collection-method}
+
+`enum` 方法建立一個包含給定有效值的 `ENUM` 等效欄位：
+
+```php
+$table->enum('difficulty', ['easy', 'hard']);
+```
+
+當然，你可以使用 `Enum::cases()` 方法，而不是手動定義一個允許值的陣列：
+
+```php
+use App\Enums\Difficulty;
+
+$table->enum('difficulty', Difficulty::cases());
+```
+
+<a name="column-method-float"></a>
+#### `float()` {.collection-method}
+
+`float` 方法建立一個具有給定精度的 `FLOAT` 等效欄位：
+
+```php
+$table->float('amount', precision: 53);
+```
+
+<a name="column-method-foreignId"></a>
+#### `foreignId()` {.collection-method}
+
+`foreignId` 方法建立一個 `UNSIGNED BIGINT` 等效欄位：
+
+```php
+$table->foreignId('user_id');
+```
+
+<a name="column-method-foreignIdFor"></a>
+#### `foreignIdFor()` {.collection-method}
+
+`foreignIdFor` 方法為給定的模型類別新增一個 `{column}_id` 等效欄位。欄位型別將根據模型主鍵型別成為 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`：
+
+```php
+$table->foreignIdFor(User::class);
+```
+
+<a name="column-method-foreignUlid"></a>
+#### `foreignUlid()` {.collection-method}
+
+`foreignUlid` 方法建立一個 `ULID` 等效欄位：
+
+```php
+$table->foreignUlid('user_id');
+```
+
+<a name="column-method-foreignUuid"></a>
+#### `foreignUuid()` {.collection-method}
+
+`foreignUuid` 方法建立一個 `UUID` 等效欄位：
+
+```php
+$table->foreignUuid('user_id');
+```
+
+<a name="column-method-geography"></a>
+#### `geography()` {.collection-method}
+
+`geography` 方法建立一個具有給定空間型別和 SRID（空間參考系統識別碼）的 `GEOGRAPHY` 等效欄位：
+
+```php
+$table->geography('coordinates', subtype: 'point', srid: 4326);
+```
+
+> [!NOTE]
+> 空間型別的支援取決於你的資料庫驅動程式。請參閱你資料庫的文件。如果你應用程式使用的是 PostgreSQL 資料庫，在使用 `geography` 方法之前必須安裝 [PostGIS](https://postgis.net) 擴充功能。
+
+<a name="column-method-geometry"></a>
+#### `geometry()` {.collection-method}
+
+`geometry` 方法建立一個具有給定空間型別和 SRID（空間參考系統識別碼）的 `GEOMETRY` 等效欄位：
+
+```php
+$table->geometry('positions', subtype: 'point', srid: 0);
+```
+
+> [!NOTE]
+> 空間型別的支援取決於你的資料庫驅動程式。請參閱你資料庫的文件。如果你應用程式使用的是 PostgreSQL 資料庫，在使用 `geometry` 方法之前必須安裝 [PostGIS](https://postgis.net) 擴充功能。
+
+<a name="column-method-id"></a>
+#### `id()` {.collection-method}
+
+`id` 方法是 `bigIncrements` 方法的別名。預設情況下，該方法會建立一個 `id` 欄位；然而，如果你想為欄位指派不同的名稱，可以傳入一個欄位名稱：
+
+```php
+$table->id();
+```
+
+<a name="column-method-increments"></a>
+#### `increments()` {.collection-method}
+
+`increments` 方法建立一個遞增的 `UNSIGNED INTEGER` 等效欄位作為主鍵：
+
+```php
+$table->increments('id');
+```
+
+<a name="column-method-integer"></a>
+#### `integer()` {.collection-method}
+
+`integer` 方法建立一個 `INTEGER` 等效欄位：
+
+```php
+$table->integer('votes');
+```
+
+<a name="column-method-ipAddress"></a>
+#### `ipAddress()` {.collection-method}
+
+`ipAddress` 方法建立一個 `VARCHAR` 等效欄位：
+
+```php
+$table->ipAddress('visitor');
+```
+
+當使用 PostgreSQL 時，將會建立一個 `INET` 欄位。
+
+<a name="column-method-json"></a>
+#### `json()` {.collection-method}
+
+`json` 方法建立一個 `JSON` 等效欄位：
+
+```php
+$table->json('options');
+```
+
+當使用 SQLite 時，將會建立一個 `TEXT` 欄位。
+
+<a name="column-method-jsonb"></a>
+#### `jsonb()` {.collection-method}
+
+`jsonb` 方法建立一個 `JSONB` 等效欄位：
+
+```php
+$table->jsonb('options');
+```
+
+當使用 SQLite 時，將會建立一個 `TEXT` 欄位。
+
+<a name="column-method-longText"></a>
+#### `longText()` {.collection-method}
+
+`longText` 方法建立一個 `LONGTEXT` 等效欄位：
+
+```php
+$table->longText('description');
+```
+
+當使用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用至該欄位，以便建立一個 `LONGBLOB` 等效欄位：
+
+```php
+$table->longText('data')->charset('binary'); // LONGBLOB
+```
+
+<a name="column-method-macAddress"></a>
+#### `macAddress()` {.collection-method}
+
+`macAddress` 方法建立一個預期用於儲存 MAC 位址的欄位。有些資料庫系統（例如 PostgreSQL）對這種資料有專用的欄位型別。其他資料庫系統則會使用字串等效欄位：
+
+```php
+$table->macAddress('device');
+```
+
+<a name="column-method-mediumIncrements"></a>
+#### `mediumIncrements()` {.collection-method}
+
+`mediumIncrements` 方法建立一個遞增的 `UNSIGNED MEDIUMINT` 等效欄位作為主鍵：
+
+```php
+$table->mediumIncrements('id');
+```
+
+<a name="column-method-mediumInteger"></a>
+#### `mediumInteger()` {.collection-method}
+
+`mediumInteger` 方法建立一個 `MEDIUMINT` 等效欄位：
+
+```php
+$table->mediumInteger('votes');
+```
+
+<a name="column-method-mediumText"></a>
+#### `mediumText()` {.collection-method}
+
+`mediumText` 方法建立一個 `MEDIUMTEXT` 等效欄位：
+
+```php
+$table->mediumText('description');
+```
+
+當使用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用至該欄位，以便建立一個 `MEDIUMBLOB` 等效欄位：
+
+```php
+$table->mediumText('data')->charset('binary'); // MEDIUMBLOB
+```
+
+<a name="column-method-morphs"></a>
+#### `morphs()` {.collection-method}
+
+`morphs` 方法是一個便利方法，它會加入一個 `{column}_id` 等效欄位和一個 `{column}_type` `VARCHAR` 等效欄位。`{column}_id` 的欄位型別將根據模型主鍵型別成為 `UNSIGNED BIGINT`、`CHAR(36)` 或 `CHAR(26)`。
+
+此方法旨在定義多型 [Eloquent 關聯](/docs/{{version}}/eloquent-relationships)所需的欄位時使用。在以下範例中，將建立 `taggable_id` 和 `taggable_type` 欄位：
+
+```php
+$table->morphs('taggable');
+```
+
+<a name="column-method-nullableMorphs"></a>
+#### `nullableMorphs()` {.collection-method}
+
+此方法類似於 [morphs](#column-method-morphs) 方法；但是，建立的欄位將會是「可為空（nullable）」：
+
+```php
+$table->nullableMorphs('taggable');
+```
+
+<a name="column-method-nullableUlidMorphs"></a>
+#### `nullableUlidMorphs()` {.collection-method}
+
+此方法類似於 [ulidMorphs](#column-method-ulidMorphs) 方法；但是，建立的欄位將會是「可為空（nullable）」：
+
+```php
+$table->nullableUlidMorphs('taggable');
+```
+
+<a name="column-method-nullableUuidMorphs"></a>
+#### `nullableUuidMorphs()` {.collection-method}
+
+此方法類似於 [uuidMorphs](#column-method-uuidMorphs) 方法；但是，建立的欄位將會是「可為空（nullable）」：
+
+```php
+$table->nullableUuidMorphs('taggable');
+```
+
+<a name="column-method-rememberToken"></a>
+#### `rememberToken()` {.collection-method}
+
+`rememberToken` 方法建立一個可為空、等效於 `VARCHAR(100)` 的欄位，旨在儲存目前的「記住我」[認證權杖](/docs/{{version}}/authentication#remembering-users)：
+
+```php
+$table->rememberToken();
+```
+
+<a name="column-method-set"></a>
+#### `set()` {.collection-method}
+
+`set` 方法使用給定的有效值清單建立一個 `SET` 等效欄位：
+
+```php
+$table->set('flavors', ['strawberry', 'vanilla']);
+```
+
+<a name="column-method-smallIncrements"></a>
+#### `smallIncrements()` {.collection-method}
+
+`smallIncrements` 方法建立一個遞增的 `UNSIGNED SMALLINT` 等效欄位作為主鍵：
+
+```php
+$table->smallIncrements('id');
+```
+
+<a name="column-method-smallInteger"></a>
+#### `smallInteger()` {.collection-method}
+
+`smallInteger` 方法建立一個 `SMALLINT` 等效欄位：
+
+```php
+$table->smallInteger('votes');
+```
+
+<a name="column-method-softDeletesTz"></a>
+#### `softDeletesTz()` {.collection-method}
+
+`softDeletesTz` 方法新增一個可為空、等效於 `TIMESTAMP`（帶時區）的 `deleted_at` 欄位，並具有選擇性的小數秒精度。此欄位旨在儲存 Eloquent 的「軟刪除」功能所需的 `deleted_at` 時間戳記：
+
+```php
+$table->softDeletesTz('deleted_at', precision: 0);
+```
+
+<a name="column-method-softDeletes"></a>
+#### `softDeletes()` {.collection-method}
+
+`softDeletes` 方法新增一個可為空、等效於 `TIMESTAMP` 的 `deleted_at` 欄位，並具有選擇性的小數秒精度。此欄位旨在儲存 Eloquent 的「軟刪除」功能所需的 `deleted_at` 時間戳記：
+
+```php
+$table->softDeletes('deleted_at', precision: 0);
+```
+
+<a name="column-method-string"></a>
+#### `string()` {.collection-method}
+
+`string` 方法建立一個指定長度、等效於 `VARCHAR` 的欄位：
+
+```php
+$table->string('name', length: 100);
+```
+
+<a name="column-method-text"></a>
+#### `text()` {.collection-method}
+
+`text` 方法建立一個 `TEXT` 等效欄位：
+
+```php
+$table->text('description');
+```
+
+當使用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用至該欄位，以便建立一個 `BLOB` 等效欄位：
+
+```php
+$table->text('data')->charset('binary'); // BLOB
+```
+
+<a name="column-method-timeTz"></a>
+#### `timeTz()` {.collection-method}
+
+`timeTz` 方法建立一個具有選擇性小數秒精度、等效於 `TIME`（帶時區）的欄位：
+
+```php
+$table->timeTz('sunrise', precision: 0);
+```
+
+<a name="column-method-time"></a>
+#### `time()` {.collection-method}
+
+`time` 方法建立一個具有選擇性小數秒精度、等效於 `TIME` 的欄位：
+
+```php
+$table->time('sunrise', precision: 0);
+```
+
+<a name="column-method-timestampTz"></a>
+#### `timestampTz()` {.collection-method}
+
+`timestampTz` 方法建立一個具有選擇性小數秒精度、等效於 `TIMESTAMP`（帶時區）的欄位：
+
+```php
+$table->timestampTz('added_at', precision: 0);
+```
+
+<a name="column-method-timestamp"></a>
+#### `timestamp()` {.collection-method}
+
+`timestamp` 方法建立一個具有選擇性小數秒精度、等效於 `TIMESTAMP` 的欄位：
+
+```php
+$table->timestamp('added_at', precision: 0);
+```
+
+<a name="column-method-timestampsTz"></a>
+#### `timestampsTz()` {.collection-method}
+
+`timestampsTz` 方法建立具有選擇性小數秒精度、等效於 `TIMESTAMP`（帶時區）的 `created_at` 和 `updated_at` 欄位：
+
+```php
+$table->timestampsTz(precision: 0);
+```
+
+<a name="column-method-timestamps"></a>
+#### `timestamps()` {.collection-method}
+
+`timestamps` 方法建立具有選擇性小數秒精度、等效於 `TIMESTAMP` 的 `created_at` 和 `updated_at` 欄位：
+
+```php
+$table->timestamps(precision: 0);
+```
+
+<a name="column-method-tinyIncrements"></a>
+#### `tinyIncrements()` {.collection-method}
+
+`tinyIncrements` 方法建立一個遞增的 `UNSIGNED TINYINT` 等效欄位作為主鍵：
+
+```php
+$table->tinyIncrements('id');
+```
+
+<a name="column-method-tinyInteger"></a>
+#### `tinyInteger()` {.collection-method}
+
+`tinyInteger` 方法建立一個 `TINYINT` 等效欄位：
+
+```php
+$table->tinyInteger('votes');
+```
+
+<a name="column-method-tinyText"></a>
+#### `tinyText()` {.collection-method}
+
+`tinyText` 方法建立一個 `TINYTEXT` 等效欄位：
+
+```php
+$table->tinyText('notes');
+```
+
+當使用 MySQL 或 MariaDB 時，你可以將 `binary` 字元集套用至該欄位，以便建立一個 `TINYBLOB` 等效欄位：
+
+```php
+$table->tinyText('data')->charset('binary'); // TINYBLOB
+```
+
+<a name="column-method-unsignedBigInteger"></a>
+#### `unsignedBigInteger()` {.collection-method}
+
+`unsignedBigInteger` 方法建立一個 `UNSIGNED BIGINT` 等效欄位：
+
+```php
+$table->unsignedBigInteger('votes');
+```
+
+<a name="column-method-unsignedInteger"></a>
+#### `unsignedInteger()` {.collection-method}
+
+`unsignedInteger` 方法建立一個 `UNSIGNED INTEGER` 等效欄位：
+
+```php
+$table->unsignedInteger('votes');
+```
+
+<a name="column-method-unsignedMediumInteger"></a>
+#### `unsignedMediumInteger()` {.collection-method}
+
+`unsignedMediumInteger` 方法建立一個 `UNSIGNED MEDIUMINT` 等效欄位：
+
+```php
+$table->unsignedMediumInteger('votes');
+```
+
+<a name="column-method-unsignedSmallInteger"></a>
+#### `unsignedSmallInteger()` {.collection-method}
+
+`unsignedSmallInteger` 方法建立一個 `UNSIGNED SMALLINT` 等效欄位：
+
+```php
+$table->unsignedSmallInteger('votes');
+```
+
+<a name="column-method-unsignedTinyInteger"></a>
+#### `unsignedTinyInteger()` {.collection-method}
+
+`unsignedTinyInteger` 方法建立一個 `UNSIGNED TINYINT` 等效欄位：
+
+```php
+$table->unsignedTinyInteger('votes');
+```
+
+<a name="column-method-ulidMorphs"></a>
+#### `ulidMorphs()` {.collection-method}
+
+`ulidMorphs` 方法是一個便利方法，它會加入一個 `{column}_id` `CHAR(26)` 等效欄位和一個 `{column}_type` `VARCHAR` 等效欄位。
+
+此方法旨在定義使用 ULID 識別碼的多型 [Eloquent 關聯](/docs/{{version}}/eloquent-relationships)所需的欄位時使用。在以下範例中，將建立 `taggable_id` 和 `taggable_type` 欄位：
+
+```php
+$table->ulidMorphs('taggable');
+```
+
+<a name="column-method-uuidMorphs"></a>
+#### `uuidMorphs()` {.collection-method}
+
+`uuidMorphs` 方法是一個便利方法，它會加入一個 `{column}_id` `CHAR(36)` 等效欄位和一個 `{column}_type` `VARCHAR` 等效欄位。
+
+此方法旨在定義使用 UUID 識別碼的[多型 Eloquent 關聯](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)所需的欄位時使用。在以下範例中，將建立 `taggable_id` 和 `taggable_type` 欄位：
+
+```php
+$table->uuidMorphs('taggable');
+```
+
+<a name="column-method-ulid"></a>
+#### `ulid()` {.collection-method}
+
+`ulid` 方法建立一個 `ULID` 等效欄位：
+
+```php
+$table->ulid('id');
+```
+
+<a name="column-method-uuid"></a>
+#### `uuid()` {.collection-method}
+
+`uuid` 方法建立一個 `UUID` 等效欄位：
+
+```php
+$table->uuid('id');
+```
+
+<a name="column-method-vector"></a>
+#### `vector()` {.collection-method}
+
+`vector` 方法建立一個 `vector` 等效欄位：
+
+```php
+$table->vector('embedding', dimensions: 100);
+```
+
+當使用 PostgreSQL 時，必須在可以建立 `vector` 欄位之前載入 `pgvector` 擴充功能：
+
+```php
+Schema::ensureVectorExtensionExists();
+```
+
+<a name="column-method-year"></a>
+#### `year()` {.collection-method}
+
+`year` 方法建立一個 `YEAR` 等效欄位：
+
+```php
+$table->year('birth_year');
+```
+
+<a name="column-modifiers"></a>
+### 欄位修飾子
+
+除了上面列出的欄位型別之外，在將欄位新增到資料庫資料表時，你還可以使用幾個欄位「修飾子」。例如，要讓欄位「可為空（nullable）」，你可以使用 `nullable` 方法：
+
+```php
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+Schema::table('users', function (Blueprint $table) {
+    $table->string('email')->nullable();
 });
 ```
 
-> [!WARNING]  
-> SQLite 默認禁用外鍵約束。在使用 SQLite 時，請確保在嘗試在遷移中創建它們之前，在數據庫配置中[啟用外鍵支持](/docs/{{version}}/database#configuration)。
-
-## 事件
-
-為了方便起見，每個遷移操作都會發送一個[事件](/docs/{{version}}/events)。以下所有事件都擴展了基本的 `Illuminate\Database\Events\MigrationEvent` 類：
-
-<div class="overflow-auto">
-
-| 類別                                            | 描述                                      |
-| ------------------------------------------------ | ------------------------------------------------ |
-| `Illuminate\Database\Events\MigrationsStarted`   | 將執行一批遷移。   |
-| `Illuminate\Database\Events\MigrationsEnded`     | 一批遷移已完成執行。    |
-| `Illuminate\Database\Events\MigrationStarted`    | 將執行單個遷移。      |
-| `Illuminate\Database\Events\MigrationEnded`      | 單個遷移已完成執行。       |
-| `Illuminate\Database\Events\NoPendingMigrations` | 遷移命令未找到待處理的遷移。 |
-| `Illuminate\Database\Events\SchemaDumped`        | 數據庫結構已完成傾印。            |
-| `Illuminate\Database\Events\SchemaLoaded`        | 已加載現有數據庫結構傾印。     |
-
-</div>
+下表包含所有可用的欄位修飾子。此清單不包括[索引修飾子](#creating-
+ClearcutLogger: Flush already in progress, marking pending flush.

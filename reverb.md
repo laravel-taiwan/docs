@@ -2,46 +2,47 @@
 
 - [簡介](#introduction)
 - [安裝](#installation)
-- [組態設定](#configuration)
+- [設定](#configuration)
     - [應用程式憑證](#application-credentials)
     - [允許的來源](#allowed-origins)
-    - [其他應用程式](#additional-applications)
+    - [額外應用程式](#additional-applications)
     - [SSL](#ssl)
 - [執行伺服器](#running-server)
     - [除錯](#debugging)
     - [重新啟動](#restarting)
 - [監控](#monitoring)
 - [在正式環境中執行 Reverb](#production)
-    - [開啟檔案](#open-files)
+    - [開啟的檔案](#open-files)
     - [事件迴圈](#event-loop)
     - [網頁伺服器](#web-server)
-    - [埠號](#ports)
-    - [處理程序管理](#process-management)
+    - [連接埠](#ports)
+    - [程序管理](#process-management)
     - [擴展](#scaling)
+- [事件](#events)
 
 <a name="introduction"></a>
 ## 簡介
 
-[Laravel Reverb](https://github.com/laravel/reverb) 將極快速且可擴展的即時 WebSocket 通訊直接帶入您的 Laravel 應用程式，並與 Laravel 現有的一系列 [事件廣播工具](/docs/{{version}}/broadcasting) 無縫整合。
+[Laravel Reverb](https://github.com/laravel/reverb) 為你的 Laravel 應用程式直接帶來極速且可擴展的即時 WebSocket 通訊，並與 Laravel 現有的[事件廣播工具](/docs/{{version}}/broadcasting)套件無縫整合。
 
 <a name="installation"></a>
 ## 安裝
 
-您可以使用 `install:broadcasting` Artisan 指令安裝 Reverb：
+你可以使用 `install:broadcasting` Artisan 指令來安裝 Reverb：
 
 ```shell
 php artisan install:broadcasting
 ```
 
 <a name="configuration"></a>
-## 組態設定
+## 設定
 
-在幕後，`install:broadcasting` Artisan 指令將執行 `reverb:install` 指令，該指令將使用一組明智的預設組態選項安裝 Reverb。如果您想要進行任何組態更改，您可以通過更新 Reverb 的環境變數或更新 `config/reverb.php` 組態檔案來進行。
+在幕後，`install:broadcasting` Artisan 指令會執行 `reverb:install` 指令，該指令將以一組合適的預設設定選項來安裝 Reverb。如果你想要進行任何設定變更，你可以透過更新 Reverb 的環境變數或更新 `config/reverb.php` 設定檔來完成。
 
 <a name="application-credentials"></a>
 ### 應用程式憑證
 
-為了建立與 Reverb 的連線，必須在客戶端和伺服器之間交換一組 Reverb「應用程式」憑證。這些憑證在伺服器上進行配置，並用於驗證來自客戶端的請求。您可以使用以下環境變數定義這些憑證：
+為了建立與 Reverb 的連線，必須在用戶端與伺服器之間交換一組 Reverb「應用程式」憑證。這些憑證設定在伺服器上，用於驗證來自用戶端的請求。你可以使用以下環境變數來定義這些憑證：
 
 ```ini
 REVERB_APP_ID=my-app-id
@@ -52,7 +53,7 @@ REVERB_APP_SECRET=my-app-secret
 <a name="allowed-origins"></a>
 ### 允許的來源
 
-您可以通過更新 `config/reverb.php` 配置文件中 `apps` 部分內的 `allowed_origins` 配置值來定義客戶端請求可能來源的來源。任何來自未列在您允許來源中的來源的請求將被拒絕。您可以使用 `*` 允許所有來源：
+你也可以透過更新 `config/reverb.php` 設定檔中 `apps` 區塊內的 `allowed_origins` 設定值，來定義允許發出用戶端請求的來源。來自未列在允許來源清單中的任何請求都將被拒絕。你可以使用 `*` 來允許所有來源：
 
 ```php
 'apps' => [
@@ -65,11 +66,11 @@ REVERB_APP_SECRET=my-app-secret
 ```
 
 <a name="additional-applications"></a>
-### 附加應用程式
+### 額外應用程式
 
-通常，Reverb 為安裝它的應用程式提供 WebSocket 伺服器。但是，可以使用單個 Reverb 安裝來提供多個應用程式。
+通常，Reverb 會為安裝它的應用程式提供 WebSocket 伺服器。然而，單一 Reverb 安裝也有可能服務多個應用程式。
 
-例如，您可能希望維護一個單個的 Laravel 應用程式，通過 Reverb 為多個應用程式提供 WebSocket 連接。這可以通過在應用程式的 `config/reverb.php` 配置文件中定義多個 `apps` 來實現：
+例如，你可能希望維護單一的 Laravel 應用程式，並透過 Reverb 為多個應用程式提供 WebSocket 連線。這可以透過在應用程式的 `config/reverb.php` 設定檔中定義多個 `apps` 來實現：
 
 ```php
 'apps' => [
@@ -87,17 +88,17 @@ REVERB_APP_SECRET=my-app-secret
 <a name="ssl"></a>
 ### SSL
 
-在大多數情況下，安全的 WebSocket 連接是由上游網頁伺服器（如 Nginx 等）處理，然後將請求代理到您的 Reverb 伺服器。
+在大多數情況下，安全的 WebSocket 連線會在請求被代理到你的 Reverb 伺服器之前，由上游網頁伺服器（例如 Nginx）處理。
 
-但是，有時候這樣做可能很有用，例如在本地開發期間，讓 Reverb 伺服器直接處理安全連接。如果您正在使用 [Laravel Herd](https://herd.laravel.com) 的安全站點功能，或者您正在使用 [Laravel Valet](/docs/{{version}}/valet) 並且已對您的應用程式運行了 [secure 命令](/docs/{{version}}/valet#securing-sites)，您可以使用 Herd / Valet 為您的站點生成的憑證來保護您的 Reverb 連接。為此，將 `REVERB_HOST` 環境變數設置為您站點的主機名，或在啟動 Reverb 伺服器時明確傳遞主機名選項：
+然而，讓 Reverb 伺服器直接處理安全連線有時會很有用（例如在本地開發期間）。如果你正在使用 [Laravel Herd 的](https://herd.laravel.com) 安全網站功能，或者你正在使用 [Laravel Valet](/docs/{{version}}/valet) 並且已對你的應用程式執行了 [secure 指令](/docs/{{version}}/valet#securing-sites)，你可以使用 Herd / Valet 為你的網站產生的憑證來保護你的 Reverb 連線。為此，請將 `REVERB_HOST` 環境變數設定為你網站的主機名稱，或在啟動 Reverb 伺服器時明確傳遞 `hostname` 選項：
 
 ```shell
 php artisan reverb:start --host="0.0.0.0" --port=8080 --hostname="laravel.test"
 ```
 
-由於 Herd 和 Valet 域名解析為 `localhost`，運行上面的命令將使您的 Reverb 伺服器可以通過安全的 WebSocket 協議 (`wss`) 在 `wss://laravel.test:8080` 上訪問。
+由於 Herd 和 Valet 網域解析為 `localhost`，執行上述指令將使你的 Reverb 伺服器能夠透過安全的 WebSocket 協定 (`wss`) 於 `wss://laravel.test:8080` 被存取。
 
-您還可以通過在應用程式的 `config/reverb.php` 配置文件中定義 `tls` 選項來手動選擇憑證。在 `tls` 選項數組中，您可以提供 [PHP SSL 上下文選項](https://www.php.net/manual/en/context.ssl.php) 支持的任何選項。
+你也可以透過在應用程式的 `config/reverb.php` 設定檔中定義 `tls` 選項來手動選擇憑證。在 `tls` 選項陣列中，你可以提供任何 [PHP SSL context 選項](https://www.php.net/manual/zh/context.ssl.php)支援的選項：
 
 ```php
 'options' => [
@@ -108,7 +109,7 @@ php artisan reverb:start --host="0.0.0.0" --port=8080 --hostname="laravel.test"
 ```
 
 <a name="running-server"></a>
-## 啟動伺服器
+## 執行伺服器
 
 可以使用 `reverb:start` Artisan 指令來啟動 Reverb 伺服器：
 
@@ -116,17 +117,17 @@ php artisan reverb:start --host="0.0.0.0" --port=8080 --hostname="laravel.test"
 php artisan reverb:start
 ```
 
-預設情況下，Reverb 伺服器將在 `0.0.0.0:8080` 啟動，使其可以從所有網路介面訪問。
+預設情況下，Reverb 伺服器將在 `0.0.0.0:8080` 啟動，使其可以從所有網路介面存取。
 
-如果需要指定自訂主機或埠，可以在啟動伺服器時通過 `--host` 和 `--port` 選項進行設定：
+如果你需要指定自訂的主機或連接埠，你可以在啟動伺服器時透過 `--host` 和 `--port` 選項來達成：
 
 ```shell
 php artisan reverb:start --host=127.0.0.1 --port=9000
 ```
 
-或者，您可以在應用程式的 `.env` 組態檔中定義 `REVERB_SERVER_HOST` 和 `REVERB_SERVER_PORT` 環境變數。
+或者，你也可以在應用程式的 `.env` 設定檔中定義 `REVERB_SERVER_HOST` 和 `REVERB_SERVER_PORT` 環境變數。
 
-`REVERB_SERVER_HOST` 和 `REVERB_SERVER_PORT` 環境變數不應與 `REVERB_HOST` 和 `REVERB_PORT` 混淆。前者指定運行 Reverb 伺服器本身的主機和埠，而後者則指示 Laravel 將廣播訊息發送到何處。例如，在正式環境中，您可能會將從公共 Reverb 主機名稱的埠 `443` 路由到運行在 `0.0.0.0:8080` 上的 Reverb 伺服器。在這種情況下，您的環境變數應定義如下：
+不應將 `REVERB_SERVER_HOST` 和 `REVERB_SERVER_PORT` 環境變數與 `REVERB_HOST` 和 `REVERB_PORT` 混淆。前者指定了 Reverb 伺服器本身要執行的主機和連接埠，而後者則指示 Laravel 將廣播訊息傳送到何處。例如，在正式環境中，你可能會將來自公用 Reverb 主機名稱在 443 連接埠的請求路由到在 `0.0.0.0:8080` 上運行的 Reverb 伺服器。在這種情境下，你的環境變數應定義如下：
 
 ```ini
 REVERB_SERVER_HOST=0.0.0.0
@@ -137,9 +138,9 @@ REVERB_PORT=443
 ```
 
 <a name="debugging"></a>
-### 調試
+### 除錯
 
-為了提高效能，Reverb 預設不會輸出任何調試資訊。如果您想查看通過 Reverb 伺服器的數據流，可以在 `reverb:start` 指令中提供 `--debug` 選項：
+為了提升效能，Reverb 預設不會輸出任何除錯資訊。如果你想查看流經 Reverb 伺服器的資料流，你可以為 `reverb:start` 指令提供 `--debug` 選項：
 
 ```shell
 php artisan reverb:start --debug
@@ -148,19 +149,20 @@ php artisan reverb:start --debug
 <a name="restarting"></a>
 ### 重新啟動
 
-由於 Reverb 是一個長期運行的進程，更改代碼後需要通過 `reverb:restart` Artisan 指令重新啟動伺服器才能反映這些更改。
+由於 Reverb 是一個長時間執行的程序，如果不透過 `reverb:restart` Artisan 指令重新啟動伺服器，對程式碼的變更將不會反映出來。
 
-`reverb:restart` 指令確保在停止伺服器之前優雅地終止所有連接。如果您使用進程管理器（如 Supervisor）運行 Reverb，則在終止所有連接後，進程管理器將自動重新啟動伺服器：
+`reverb:restart` 指令確保在停止伺服器之前優雅地終止所有連線。如果你使用諸如 Supervisor 等程序管理器來執行 Reverb，則伺服器會在所有連線終止後由程序管理器自動重新啟動：
 
 ```shell
 php artisan reverb:restart
 ```
 
+<a name="monitoring"></a>
 ## 監控
 
-透過與 [Laravel Pulse](/docs/{{version}}/pulse) 整合，可以監控 Reverb。啟用 Reverb 的 Pulse 整合後，您可以追蹤伺服器處理的連線數和訊息數。
+可以透過與 [Laravel Pulse](/docs/{{version}}/pulse) 的整合來監控 Reverb。啟用 Reverb 的 Pulse 整合後，你可以追蹤伺服器正在處理的連線數量和訊息數量。
 
-要啟用整合，您應先確保已安裝 [Pulse](/docs/{{version}}/pulse#installation)。然後，將 Reverb 的任何記錄器新增到應用程式的 `config/pulse.php` 組態檔中：
+要啟用整合，你應首先確保已[安裝 Pulse](/docs/{{version}}/pulse#installation)。接著，將任何 Reverb 的記錄器 (recorders) 新增至應用程式的 `config/pulse.php` 設定檔中：
 
 ```php
 use Laravel\Reverb\Pulse\Recorders\ReverbConnections;
@@ -179,7 +181,7 @@ use Laravel\Reverb\Pulse\Recorders\ReverbMessages;
 ],
 ```
 
-接著，將每個記錄器的 Pulse 卡片新增到您的 [Pulse 儀表板](/docs/{{version}}/pulse#dashboard-customization)：
+接下來，將每個記錄器的 Pulse 卡片新增至你的 [Pulse 儀表板](/docs/{{version}}/pulse#dashboard-customization) 中：
 
 ```blade
 <x-pulse>
@@ -189,28 +191,31 @@ use Laravel\Reverb\Pulse\Recorders\ReverbMessages;
 </x-pulse>
 ```
 
-連線活動是透過定期輪詢新更新來記錄的。為確保此資訊在 Pulse 儀表板上正確呈現，您必須在 Reverb 伺服器上執行 `pulse:check` Daemon。如果您正在以 [水平擴展](#scaling) 的方式運行 Reverb，則應僅在其中一台伺服器上執行此 Daemon。
+連線活動是透過定期輪詢新更新來記錄的。為確保此資訊正確呈現在 Pulse 儀表板上，你必須在 Reverb 伺服器上執行 `pulse:check` 守護程序 (daemon)。如果你在[水平擴展](#scaling)的設定中執行 Reverb，你應該只在其中一台伺服器上執行此守護程序。
 
+<a name="production"></a>
 ## 在正式環境中執行 Reverb
 
-由於 WebSocket 伺服器的長時間運行特性，您可能需要對伺服器和主機環境進行一些優化，以確保您的 Reverb 伺服器能有效處理伺服器上可用資源的最佳連線數。
+由於 WebSocket 伺服器長時間執行的特性，你可能需要對伺服器和託管環境進行一些最佳化，以確保 Reverb 伺服器能有效處理伺服器可用資源的最佳連線數。
 
-> [!NOTE]  
-> 如果您的網站由 [Laravel Forge](https://forge.laravel.com) 管理，您可以直接從「應用程式」面板為 Reverb 自動優化您的伺服器。啟用 Reverb 整合後，Forge 將確保您的伺服器已準備好投入生產，包括安裝任何必要的擴充功能並增加允許的連線數。
+> [!NOTE]
+> [Laravel Cloud](https://cloud.laravel.com) 提供由 Laravel Reverb 叢集驅動的完全代管 WebSocket 基礎設施，讓你無需管理基礎設施即可擴展和發布啟用 Reverb 的應用程式。
 
-### 開啟檔案
+<a name="open-files"></a>
+### 開啟的檔案
 
-每個 WebSocket 連線會一直保留在記憶體中，直到客戶端或伺服器中斷連線。在 Unix 和類 Unix 環境中，每個連線都以檔案表示。但是，在作業系統和應用程式層面通常會對允許的開啟檔案數量設定限制。
+每個 WebSocket 連線都會保留在記憶體中，直到用戶端或伺服器斷線為止。在 Unix 和類 Unix 環境中，每個連線都由一個檔案表示。然而，通常在作業系統和應用程式層級對允許開啟的檔案數量都有限制。
 
+<a name="operating-system"></a>
 #### 作業系統
 
-在基於 Unix 的作業系統上，您可以使用 `ulimit` 命令來確定允許的開啟文件數量：
+在基於 Unix 的作業系統上，你可以使用 `ulimit` 指令來決定允許開啟的檔案數量：
 
 ```shell
 ulimit -n
 ```
 
-此命令將顯示不同使用者允許的開啟文件限制。您可以通過編輯 `/etc/security/limits.conf` 檔案來更新這些值。例如，將 `forge` 使用者的最大開啟文件數量更新為 10,000，將如下所示：
+此指令將顯示不同使用者允許的開啟檔案限制。你可以透過編輯 `/etc/security/limits.conf` 檔案來更新這些值。例如，將 `forge` 使用者的最大開啟檔案數量更新為 10,000 的設定如下所示：
 
 ```ini
 # /etc/security/limits.conf
@@ -221,9 +226,9 @@ forge        hard  nofile  10000
 <a name="event-loop"></a>
 ### 事件迴圈
 
-在底層，Reverb 使用 ReactPHP 事件迴圈來管理伺服器上的 WebSocket 連線。預設情況下，此事件迴圈由 `stream_select` 驅動，不需要任何額外的擴充功能。然而，`stream_select` 通常限制為 1,024 個開啟文件。因此，如果您計劃處理超過 1,000 個並行連線，您將需要使用一個不受相同限制約束的替代事件迴圈。
+在底層，Reverb 使用 ReactPHP 事件迴圈 (event loop) 來管理伺服器上的 WebSocket 連線。預設情況下，此事件迴圈由 `stream_select` 驅動，不需要任何額外的擴充套件。然而，`stream_select` 通常被限制為 1,024 個開啟的檔案。因此，如果你計劃處理超過 1,000 個併發連線，你將需要使用不受相同限制綁定的替代事件迴圈。
 
-當可用時，Reverb 將自動切換到由 `ext-uv` 驅動的迴圈。此 PHP 擴充功能可通過 PECL 進行安裝：
+當可用時，Reverb 將自動切換到由 `ext-uv` 驅動的迴圈。可以透過 PECL 安裝這個 PHP 擴充套件：
 
 ```shell
 pecl install uv
@@ -232,7 +237,7 @@ pecl install uv
 <a name="web-server"></a>
 ### 網頁伺服器
 
-在大多數情況下，Reverb 在伺服器上運行在非面向網頁的埠。因此，為了將流量路由到 Reverb，您應該配置一個反向代理。假設 Reverb 在主機 `0.0.0.0` 和埠 `8080` 上運行，並且您的伺服器使用 Nginx 網頁伺服器，可以使用以下 Nginx 網站配置為您的 Reverb 伺服器定義一個反向代理：
+在大多數情況下，Reverb 在你伺服器上非面向網頁的連接埠上執行。因此，為了將流量路由到 Reverb，你應該設定反向代理 (reverse proxy)。假設 Reverb 在主機 `0.0.0.0` 和連接埠 `8080` 上運行，並且你的伺服器使用 Nginx 網頁伺服器，可以使用以下 Nginx 站點設定來為你的 Reverb 伺服器定義反向代理：
 
 ```nginx
 server {
@@ -255,10 +260,10 @@ server {
 }
 ```
 
-> [!WARNING]  
-> Reverb 在 `/app` 處聆聽 WebSocket 連線，並在 `/apps` 處處理 API 請求。您應確保處理 Reverb 請求的網頁伺服器可以提供這兩個 URI。如果您正在使用 [Laravel Forge](https://forge.laravel.com) 來管理您的伺服器，則您的 Reverb 伺服器將被正確地預設配置。
+> [!WARNING]
+> Reverb 在 `/app` 監聽 WebSocket 連線，並在 `/apps` 處理 API 請求。你應該確保處理 Reverb 請求的網頁伺服器可以服務這兩個 URI。如果你正在使用 [Laravel Forge](https://forge.laravel.com) 來管理伺服器，你的 Reverb 伺服器在預設情況下將會被正確設定。
 
-通常，為了防止伺服器過載，網頁伺服器通常會配置限制允許的連線數量。要將 Nginx 網頁伺服器上允許的連線數量增加到 10,000，應更新 `nginx.conf` 檔案中的 `worker_rlimit_nofile` 和 `worker_connections` 值：
+通常，網頁伺服器會被設定為限制允許的連線數，以防止伺服器過載。要將 Nginx 網頁伺服器上允許的連線數增加到 10,000，應更新 `nginx.conf` 檔案中的 `worker_rlimit_nofile` 和 `worker_connections` 值：
 
 ```nginx
 user forge;
@@ -273,24 +278,24 @@ events {
 }
 ```
 
-上述配置將允許每個進程最多生成 10,000 個 Nginx 工作進程。此外，此配置將 Nginx 的開啟文件限制設置為 10,000。
+上述設定將允許每個程序產生最多 10,000 個 Nginx worker。此外，這個設定將 Nginx 的開啟檔案限制設為 10,000。
 
 <a name="ports"></a>
 ### 連接埠
 
-基於 Unix 的作業系統通常限制伺服器上可以開啟的連接埠數量。您可以通過以下命令查看當前允許的範圍：
+基於 Unix 的作業系統通常會限制在伺服器上可以開啟的連接埠數量。你可以透過以下指令查看目前允許的範圍：
 
 ```shell
 cat /proc/sys/net/ipv4/ip_local_port_range
 # 32768	60999
 ```
 
-上面的輸出顯示伺服器最多可以處理 28,231 個連線（60,999 - 32,768），因為每個連線都需要一個空閒連接埠。儘管我們建議[水平擴展](#scaling)以增加允許的連線數量，您可以通過更新伺服器的 `/etc/sysctl.conf` 配置文件中允許的連接埠範圍來增加可用的開放連接埠數量。
+上述輸出顯示伺服器最多可處理 28,231 (60,999 - 32,768) 個連線，因為每個連線都需要一個閒置的連接埠。雖然我們建議透過[水平擴展](#scaling)來增加允許的連線數量，但你可以透過更新伺服器 `/etc/sysctl.conf` 設定檔中允許的連接埠範圍來增加可用開啟連接埠的數量。
 
 <a name="process-management"></a>
-### 進程管理
+### 程序管理
 
-在大多數情況下，您應該使用進程管理器（如 Supervisor）來確保 Reverb 伺服器持續運行。如果您正在使用 Supervisor 來運行 Reverb，您應該更新伺服器的 `supervisor.conf` 文件中的 `minfds` 設置，以確保 Supervisor 能夠打開處理到您的 Reverb 伺服器的連線所需的文件：
+在大多數情況下，你應該使用 Supervisor 等程序管理器來確保 Reverb 伺服器持續執行。如果你使用 Supervisor 來執行 Reverb，你應該更新伺服器 `supervisor.conf` 檔案的 `minfds` 設定，以確保 Supervisor 能夠開啟處理 Reverb 伺服器連線所需的檔案：
 
 ```ini
 [supervisord]
@@ -301,18 +306,42 @@ minfds=10000
 <a name="scaling"></a>
 ### 擴展
 
-如果您需要處理比單個伺服器允許的更多連線，您可以將 Reverb 伺服器水平擴展。利用 Redis 的發布/訂閱功能，Reverb 能夠跨多個伺服器管理連線。當您應用程式的一個 Reverb 伺服器接收到消息時，該伺服器將使用 Redis 將傳入的消息發佈到所有其他伺服器。
+如果你需要處理多於單一伺服器所允許的連線數，你可以水平擴展你的 Reverb 伺服器。利用 Redis 的發布 / 訂閱 (publish / subscribe) 功能，Reverb 能夠管理跨多台伺服器的連線。當應用程式的其中一台 Reverb 伺服器收到訊息時，伺服器將使用 Redis 將傳入的訊息發布給所有其他伺服器。
 
-要啟用水平擴展，您應該在應用程式的 `.env` 配置文件中將 `REVERB_SCALING_ENABLED` 環境變數設置為 `true`：
+要啟用水平擴展，你應該在應用程式的 `.env` 設定檔中將 `REVERB_SCALING_ENABLED` 環境變數設定為 `true`：
 
 ```env
 REVERB_SCALING_ENABLED=true
 ```
 
-接下來，您應該擁有一個專用的中央 Redis 伺服器，所有 Reverb 伺服器將與其通信。Reverb 將使用您應用程式配置的[默認 Redis 連線](/docs/{{version}}/redis#configuration)來向所有 Reverb 伺服器發佈消息。
+接下來，你應該擁有一個專用的集中式 Redis 伺服器，所有 Reverb 伺服器都將與其通訊。Reverb 將使用[為應用程式設定的預設 Redis 連線](/docs/{{version}}/redis#configuration)向所有 Reverb 伺服器發布訊息。
 
-一旦您啟用了 Reverb 的擴展選項並配置了 Redis 伺服器，您只需在能夠與您的 Redis 伺服器通信的多個伺服器上調用 `reverb:start` 命令。這些 Reverb 伺服器應該放置在一個負載均衡器後面，該負載均衡器將傳入的請求均勻分配給這些伺服器。  
+啟用 Reverb 的擴展選項並設定 Redis 伺服器後，你可以直接在能夠與 Redis 伺服器通訊的多台伺服器上呼叫 `reverb:start` 指令。這些 Reverb 伺服器應放置在負載平衡器後方，該負載平衡器會在伺服器之間平均分配傳入的請求。
 
----  
+<a name="events"></a>
+## 事件
 
-**permalink:** https://example.com  
+Reverb 在連線和訊息處理的生命週期中會分派內部事件。你可以[監聽這些事件](/docs/{{version}}/events)，以便在管理連線或交換訊息時執行動作。
+
+以下是 Reverb 分派的事件：
+
+#### `Laravel\Reverb\Events\ChannelCreated`
+
+在頻道建立時分派。這通常發生在第一個連線訂閱特定頻道時。此事件接收 `Laravel\Reverb\Protocols\Pusher\Channel` 實例。
+
+#### `Laravel\Reverb\Events\ChannelRemoved`
+
+在頻道移除時分派。這通常發生在最後一個連線取消訂閱頻道時。此事件接收 `Laravel\Reverb\Protocols\Pusher\Channel` 實例。
+
+#### `Laravel\Reverb\Events\ConnectionPruned`
+
+在伺服器修剪陳舊連線時分派。此事件接收 `Laravel\Reverb\Contracts\Connection` 實例。
+
+#### `Laravel\Reverb\Events\MessageReceived`
+
+在從用戶端連線接收到訊息時分派。此事件接收 `Laravel\Reverb\Contracts\Connection` 實例和原始字串 `$message`。
+
+#### `Laravel\Reverb\Events\MessageSent`
+
+在傳送訊息至用戶端連線時分派。此事件接收 `Laravel\Reverb\Contracts\Connection` 實例和原始字串 `$message`。
+ClearcutLogger: Flush already in progress, marking pending flush.
